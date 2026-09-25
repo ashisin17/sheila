@@ -512,79 +512,116 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </span>
         </div>
 
-        {/* Lifestyle Factors: Sleep, Sugar, Alcohol */}
-        <div className="space-y-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-            Lifestyle Factors
-          </span>
+        {/* Lifestyle Factors: Sleep, Sugar, Alcohol (Roomy, full-width segmented rows) */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Daily Lifestyle Factors
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">
+              Tap to update
+            </span>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            {/* Sleep */}
-            <div className="p-3 rounded-2xl bg-[#F8F5FA] border border-purple-100/60">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 mb-2">
-                <Moon className="w-3.5 h-3.5 text-purple-700" />
-                <span>Sleep Duration</span>
+          {/* Sleep Duration */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-purple-100/80 flex items-center justify-center text-purple-800">
+                  <Moon className="w-3.5 h-3.5" />
+                </div>
+                <span className="font-bold text-slate-800">Sleep Duration</span>
               </div>
-              <div className="flex gap-1.5">
-                {[5, 7, 8].map((h) => (
-                  <button
-                    key={h}
-                    onClick={() => setHoursSlept(h)}
-                    className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer min-h-[38px] ${
-                      hoursSlept === h
-                        ? 'bg-purple-900 text-white shadow-2xs'
-                        : 'bg-white text-slate-600 hover:bg-purple-100/60 border border-slate-200/50'
-                    }`}
-                  >
-                    {h}h{h === 8 ? '+' : ''}
-                  </button>
-                ))}
-              </div>
+              <span className="font-bold text-purple-900 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200/60">
+                {hoursSlept} hrs {hoursSlept >= 8 ? '· Optimal' : hoursSlept <= 5 ? '· Deprived' : '· Moderate'}
+              </span>
             </div>
-
-            {/* Added Sugar */}
-            <div className="p-3 rounded-2xl bg-[#F8F5FA] border border-purple-100/60">
-              <div className="text-xs font-semibold text-slate-700 mb-2">
-                <span>Added Sugar</span>
-              </div>
-              <div className="flex gap-1.5">
-                {(['none', 'low', 'high'] as const).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSugarIntake(s)}
-                    className={`flex-1 py-1.5 rounded-xl text-xs font-semibold uppercase transition cursor-pointer min-h-[38px] ${
-                      sugarIntake === s
-                        ? 'bg-purple-900 text-white shadow-2xs'
-                        : 'bg-white text-slate-600 hover:bg-purple-100/60 border border-slate-200/50'
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+            <div className="grid grid-cols-3 gap-2 bg-[#F5EEF8] p-1.5 rounded-2xl border border-purple-100/60">
+              {[
+                { val: 5, label: '< 6 hrs' },
+                { val: 7, label: '7–8 hrs' },
+                { val: 8, label: '8+ hrs' },
+              ].map((opt) => (
+                <button
+                  key={opt.val}
+                  onClick={() => setHoursSlept(opt.val)}
+                  className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center min-h-[42px] ${
+                    hoursSlept === opt.val
+                      ? 'bg-white text-purple-950 shadow-xs border border-purple-200/80 font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Alcohol */}
-            <div className="p-3 rounded-2xl bg-[#F8F5FA] border border-purple-100/60">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 mb-2">
-                <Wine className="w-3.5 h-3.5 text-rose-600" />
-                <span>Alcohol Drinks</span>
+          {/* Added Sugar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-amber-100/80 flex items-center justify-center text-amber-800">
+                  <Coffee className="w-3.5 h-3.5" />
+                </div>
+                <span className="font-bold text-slate-800">Added Sugar Intake</span>
               </div>
-              <div className="flex gap-1.5">
-                {[0, 1, 2].map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => setAlcoholDrinks(a)}
-                    className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer min-h-[38px] ${
-                      alcoholDrinks === a
-                        ? 'bg-rose-700 text-white shadow-2xs'
-                        : 'bg-white text-slate-600 hover:bg-rose-50 border border-slate-200/50'
-                    }`}
-                  >
-                    {a === 2 ? '2+' : a}
-                  </button>
-                ))}
+              <span className="font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200/60 capitalize">
+                {sugarIntake === 'none' ? 'None' : sugarIntake === 'low' ? 'Low / Minimal' : 'High / Syrups'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 bg-[#F5EEF8] p-1.5 rounded-2xl border border-purple-100/60">
+              {[
+                { val: 'none', label: 'None' },
+                { val: 'low', label: 'Low' },
+                { val: 'high', label: 'High' },
+              ].map((opt) => (
+                <button
+                  key={opt.val}
+                  onClick={() => setSugarIntake(opt.val as any)}
+                  className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center min-h-[42px] ${
+                    sugarIntake === opt.val
+                      ? 'bg-white text-purple-950 shadow-xs border border-purple-200/80 font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Alcohol */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-rose-100/80 flex items-center justify-center text-rose-800">
+                  <Wine className="w-3.5 h-3.5" />
+                </div>
+                <span className="font-bold text-slate-800">Alcohol Intake</span>
               </div>
+              <span className="font-bold text-rose-800 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200/60">
+                {alcoholDrinks === 0 ? '0 drinks' : alcoholDrinks === 1 ? '1 drink' : '2+ drinks (Neuropathy Spike)'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 bg-[#F5EEF8] p-1.5 rounded-2xl border border-purple-100/60">
+              {[
+                { val: 0, label: '0 drinks' },
+                { val: 1, label: '1 drink' },
+                { val: 2, label: '2+ drinks' },
+              ].map((opt) => (
+                <button
+                  key={opt.val}
+                  onClick={() => setAlcoholDrinks(opt.val)}
+                  className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center min-h-[42px] ${
+                    alcoholDrinks === opt.val
+                      ? 'bg-white text-rose-950 shadow-xs border border-rose-200/80 font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
