@@ -12,6 +12,12 @@ interface ProvidersTabProps {
   onClearCptFilter?: () => void;
 }
 
+const PROVIDER_PHONES: Record<string, string> = {
+  'dr-jordan-lee': '(555) 234-8901',
+  'dr-priya-shah': '(555) 482-1920',
+  'dr-elena-ruiz': '(555) 619-3382',
+  'dr-marcus-chen': '(555) 792-8811',
+};
 const PHARMACY_PHONE = '(555) 321-7654';
 
 const toTelHref = (phone: string) => `tel:${phone.replace(/[^0-9+]/g, '')}`;
@@ -93,7 +99,9 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
               </p>
             </div>
           </div>
-          {primaryDoctor.phone && <CallButton phone={primaryDoctor.phone} label={primaryDoctor.name} />}
+          {PROVIDER_PHONES[primaryDoctor.id] && (
+            <CallButton phone={PROVIDER_PHONES[primaryDoctor.id]} label={primaryDoctor.name} />
+          )}
         </div>
       </div>
 
@@ -127,7 +135,9 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
                   </p>
                 </div>
               </div>
-              {doc.phone && <CallButton phone={doc.phone} label={doc.name} />}
+              {PROVIDER_PHONES[doc.id] && (
+                <CallButton phone={PROVIDER_PHONES[doc.id]} label={doc.name} />
+              )}
             </div>
           ))}
         </div>
