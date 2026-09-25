@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Pill, CheckCircle2, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Pill, CheckCircle2, X, Search, Star, Clock } from 'lucide-react';
 import { Provider, Language, BillAuditResult } from '../types';
 import { INITIAL_PROVIDERS } from '../data/initialData';
 
@@ -25,9 +25,31 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
   const [pharmacyName, setPharmacyName] = useState('[Pharmacy name]');
   const [isEditingPharmacy, setIsEditingPharmacy] = useState(false);
 
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('All');
+
   // Providers data
   const primaryDoctor = INITIAL_PROVIDERS.find((p) => p.isPrimary) || INITIAL_PROVIDERS[0];
-  const recommendedDoctors = INITIAL_PROVIDERS.filter((p) => !p.isPrimary);
+  const allRecommended = INITIAL_PROVIDERS.filter((p) => !p.isPrimary);
+
+  const filteredDoctors = useMemo(() => {
+    return allRecommended.filter((doc) => {
+      const matchesSpecialty =
+        selectedSpecialty === 'All' ||
+        doc.specialty.toLowerCase().includes(selectedSpecialty.toLowerCase()) ||
+        doc.subspecialty.toLowerCase().includes(selectedSpecialty.toLowerCase());
+
+      const matchesSearch =
+        searchQuery.trim() === '' ||
+        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.subspecialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.facility.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesSpecialty && matchesSearch;
+    });
+  }, [allRecommended, selectedSpecialty, searchQuery]);
 
   const handleRefillClick = () => {
     setRefillSuccess(true);
@@ -100,8 +122,8 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
         </div>
       </div>
 
-      {/* 3. SECTION: RECOMMENDED PROVIDERS */}
-      <div className="space-y-2.5">
+      {/* 3. SECTION: RECOMMENDED PROVIDERS WITH SEARCH & AVAILABILITY */}
+      <div className="space-y-3">
         <div className="flex items-baseline justify-between px-0.5">
           <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase">
             RECOMMENDED PROVIDERS
@@ -111,9 +133,39 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
           </span>
         </div>
 
-        {/* List of recommended dermatologists */}
+        {/* Search & Filter Bar */}
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search providers, specialty, clinic..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 rounded-2xl text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-purple-300 transition"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
+            {['All', 'Dermatology', 'Primary care', 'Acne'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setSelectedSpecialty(filter)}
+                className={`px-3 py-1 rounded-full font-bold transition shrink-0 ${
+                  selectedSpecialty === filter
+                    ? 'bg-[#231A2F] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* List of recommended doctors */}
         <div className="space-y-3">
-          {recommendedDoctors.map((doc) => (
+          {filteredDoctors.map((doc) => (
             <div
               key={doc.id}
               className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80 transition-shadow hover:shadow-sm"
@@ -125,9 +177,15 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="text-[15px] font-bold text-[#231A2F] leading-tight">
-                    {doc.name}
-                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-[15px] font-bold text-[#231A2F] leading-tight">
+                      {doc.name}
+                    </h3>
+                    <span className="flex items-center text-[10px] text-amber-600 font-bold">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline mr-0.5" />
+                      4.9
+                    </span>
+                  </div>
                   <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
                     {doc.specialty} · {doc.subspecialty}
                   </p>
@@ -146,6 +204,12 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
               </button>
             </div>
           ))}
+
+          {filteredDoctors.length === 0 && (
+            <div className="text-center py-6 text-xs text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              No providers found matching your search.
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   X,
   Calendar,
@@ -6,12 +6,17 @@ import {
   Video,
   MapPin,
   CheckCircle,
-  FileText,
   Sparkles,
-  ShieldCheck,
-  DollarSign,
+  AlertTriangle,
+  ExternalLink,
 } from 'lucide-react';
 import { Provider, Language } from '../types';
+import {
+  getProviderAvailableSlots,
+  buildGoogleCalendarUrl,
+  ProviderSlot,
+} from '../services/providerService';
+import { INITIAL_MARKED_DAYS } from '../data/initialData';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -28,20 +33,44 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   language,
   onConfirmSuccess,
 }) => {
-  const [selectedSlot, setSelectedSlot] = useState('Thursday, June 12 · 10:30 AM');
+  const slots: ProviderSlot[] = useMemo(() => {
+    if (!provider) return [];
+    return getProviderAvailableSlots(provider, INITIAL_MARKED_DAYS);
+  }, [provider]);
+
+  const [selectedSlot, setSelectedSlot] = useState<ProviderSlot | null>(null);
   const [attachSoap, setAttachSoap] = useState(true);
   const [isBooked, setIsBooked] = useState(false);
 
+  // Set default slot
+  React.useEffect(() => {
+    if (slots.length > 0 && !selectedSlot) {
+      setSelectedSlot(slots[0]);
+    }
+  }, [slots, selectedSlot]);
+
   if (!isOpen || !provider) return null;
+
+  const currentSlot = selectedSlot || slots[0];
 
   const handleConfirm = () => {
     setIsBooked(true);
     setTimeout(() => {
       onConfirmSuccess();
-      setIsBooked(false);
-      onClose();
-    }, 1800);
+    }, 1200);
   };
+
+  const googleCalUrl = currentSlot
+    ? buildGoogleCalendarUrl({
+        providerName: provider.name,
+        specialty: provider.specialty,
+        facility: provider.facility,
+        slot: currentSlot,
+        notes: attachSoap
+          ? "Attached Maya's June Clinical SOAP packet with logged flare timelines & CPT 86038 ANA requisition."
+          : undefined,
+      })
+    : '';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto animate-fade-in">
@@ -54,7 +83,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-800">
-                Direct Booking
+                Direct Booking & Availability
               </span>
               <h3 className="font-extrabold text-base leading-tight">
                 Schedule with {provider.name}
@@ -119,35 +148,60 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             )}
           </div>
 
-          {/* Select Date & Time Slot */}
+          {/* Select Date & Time Slot with Conflict Detection */}
           <div className="space-y-1.5">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block px-1">
-              Select Available Appointment Slot
-            </span>
-            <div className="grid grid-cols-1 gap-1.5">
-              {[
-                'Thursday, June 12 · 10:30 AM (Video)',
-                'Thursday, June 12 · 2:00 PM (In Person)',
-                'Friday, June 13 · 11:15 AM (Video)',
-              ].map((slot) => (
-                <button
-                  key={slot}
-                  onClick={() => setSelectedSlot(slot)}
-                  className={`p-2.5 rounded-2xl border text-left text-xs font-semibold transition flex items-center justify-between ${
-                    selectedSlot === slot
-                      ? 'bg-[#E8DFF2] border-purple-500 text-purple-950 font-bold shadow-2xs'
-                      : 'bg-white border-purple-100 text-slate-700 hover:bg-[#F3EDF7]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-purple-700" />
-                    <span>{slot}</span>
-                  </div>
-                  {selectedSlot === slot && (
-                    <CheckCircle className="w-4 h-4 text-purple-800 shrink-0" />
-                  )}
-                </button>
-              ))}
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                Live Available Slots
+              </span>
+              <span className="text-[10px] text-emerald-700 font-bold">
+                ✓ Calendar Conflict Checking
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              {slots.map((slot) => {
+                const isSelected = currentSlot?.id === slot.id;
+                return (
+                  <button
+                    key={slot.id}
+                    onClick={() => setSelectedSlot(slot)}
+                    className={`p-3 rounded-2xl border text-left text-xs font-semibold transition flex items-center justify-between ${
+                      isSelected
+                        ? 'bg-[#E8DFF2] border-purple-500 text-purple-950 font-bold shadow-2xs'
+                        : 'bg-white border-purple-100 text-slate-700 hover:bg-[#F3EDF7]'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-purple-700 shrink-0" />
+                        <span>
+                          {slot.dateStr} · {slot.timeStr}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-100/80 text-purple-900 font-bold">
+                          {slot.type}
+                        </span>
+                      </div>
+
+                      {/* Conflict Indicator */}
+                      {slot.hasConflict ? (
+                        <div className="flex items-center gap-1.5 text-[10px] text-amber-700 font-bold pl-5">
+                          <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+                          <span>{slot.conflictReason}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-medium pl-5">
+                          <span>✓ No schedule conflict with your marked care events</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {isSelected && (
+                      <CheckCircle className="w-4 h-4 text-purple-800 shrink-0 ml-2" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -170,30 +224,47 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </label>
           </div>
 
-          {/* Booking Action Button */}
-          <div>
-            <button
-              onClick={handleConfirm}
-              disabled={isBooked}
-              className={`w-full py-3 px-4 rounded-2xl text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-2 ${
-                isBooked
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 active:scale-98'
-              }`}
-            >
-              {isBooked ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Appointment Confirmed & Packet Sent!</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 text-slate-900" />
-                  <span>Confirm Appointment & Transmit SOAP Packet</span>
-                </>
-              )}
-            </button>
-          </div>
+          {/* Booking Confirmation / Calendar Actions */}
+          {isBooked ? (
+            <div className="space-y-2.5 bg-emerald-50 rounded-2xl p-4 border border-emerald-200 animate-fade-in text-center">
+              <div className="flex items-center justify-center gap-2 text-emerald-800 font-extrabold text-sm">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                <span>Appointment Confirmed!</span>
+              </div>
+              <p className="text-[11px] text-emerald-700">
+                Transmitted SOAP packet to {provider.name} for {currentSlot?.dateStr} at {currentSlot?.timeStr}.
+              </p>
+
+              {/* One-Click Google Calendar Sync */}
+              <a
+                href={googleCalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-100/50 text-emerald-950 font-bold text-xs shadow-xs transition"
+              >
+                <Calendar className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Add to Google Calendar</span>
+                <ExternalLink className="w-3 h-3 text-emerald-600 ml-0.5" />
+              </a>
+
+              <button
+                onClick={onClose}
+                className="w-full mt-1 text-slate-500 hover:text-slate-800 text-[11px] font-bold py-1"
+              >
+                Close Window
+              </button>
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={handleConfirm}
+                className="w-full py-3 px-4 rounded-2xl text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-2 bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 active:scale-98"
+              >
+                <Sparkles className="w-4 h-4 text-slate-900" />
+                <span>Confirm Appointment & Transmit SOAP Packet</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
