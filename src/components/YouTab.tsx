@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, Language, HealthBoardTrigger } from '../types';
 import { TRANSLATIONS } from '../data/initialData';
+import { GoogleAccountCard, GoogleAccountState } from './GoogleAccountCard';
 
 interface YouTabProps {
   language: Language;
@@ -26,6 +27,11 @@ interface YouTabProps {
   onOpenPassportModal: () => void;
   streakCount: number;
   onIncrementStreak: () => void;
+  googleAccount?: GoogleAccountState;
+  onConnectGoogle?: () => void;
+  onDisconnectGoogle?: () => void;
+  onToggleCalendarSync?: (enabled: boolean) => void;
+  onToggleCloudBackup?: (enabled: boolean) => void;
 }
 
 export const YouTab: React.FC<YouTabProps> = ({
@@ -36,9 +42,65 @@ export const YouTab: React.FC<YouTabProps> = ({
   onOpenPassportModal,
   streakCount,
   onIncrementStreak,
+  googleAccount,
+  onConnectGoogle,
+  onDisconnectGoogle,
+  onToggleCalendarSync,
+  onToggleCloudBackup,
 }) => {
   const t = TRANSLATIONS[language].you;
   const [markedTaken, setMarkedTaken] = useState(false);
+
+  // Local fallback state if not passed from parent
+  const [localAccount, setLocalAccount] = useState<GoogleAccountState>({
+    isConnected: false,
+    email: 'maya.health@gmail.com',
+    name: 'Maya Lin',
+    syncCalendar: true,
+    cloudBackup: true,
+  });
+
+  const activeAccount = googleAccount || localAccount;
+
+  const handleConnect = () => {
+    if (onConnectGoogle) {
+      onConnectGoogle();
+    } else {
+      setLocalAccount((prev) => ({
+        ...prev,
+        isConnected: true,
+        email: 'maya.health@gmail.com',
+        name: 'Maya Lin',
+      }));
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (onDisconnectGoogle) {
+      onDisconnectGoogle();
+    } else {
+      setLocalAccount((prev) => ({
+        ...prev,
+        isConnected: false,
+      }));
+    }
+  };
+
+  const handleToggleCal = (enabled: boolean) => {
+    if (onToggleCalendarSync) {
+      onToggleCalendarSync(enabled);
+    } else {
+      setLocalAccount((prev) => ({ ...prev, syncCalendar: enabled }));
+    }
+  };
+
+  const handleToggleBackup = (enabled: boolean) => {
+    if (onToggleCloudBackup) {
+      onToggleCloudBackup(enabled);
+    } else {
+      setLocalAccount((prev) => ({ ...prev, cloudBackup: enabled }));
+    }
+  };
 
   const handleTakeMed = () => {
     onIncrementStreak();
@@ -178,6 +240,15 @@ export const YouTab: React.FC<YouTabProps> = ({
         </div>
       </div>
 
+      {/* 3. GOOGLE ACCOUNT CONNECTION & CLOUD SYNC CARD */}
+      <GoogleAccountCard
+        account={activeAccount}
+        onConnect={handleConnect}
+        onDisconnect={handleDisconnect}
+        onToggleCalendarSync={handleToggleCal}
+        onToggleCloudBackup={handleToggleBackup}
+      />
+
       {/* Pinned Flare Triggers Detail Box */}
       {userProfile.pinnedTriggers.length > 0 && (
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-purple-100 space-y-2">
@@ -209,7 +280,7 @@ export const YouTab: React.FC<YouTabProps> = ({
         </div>
       )}
 
-      {/* 3. Bottom Actions */}
+      {/* 4. Bottom Actions */}
       <div className="space-y-2 pt-1">
         {/* White button matching mockup */}
         <button
