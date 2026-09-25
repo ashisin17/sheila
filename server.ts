@@ -54,18 +54,27 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
         category: 'cross_contamination',
         riskScore: 8.9,
         riskLevel: 'High Risk',
+        isItemSpecific: true,
+        showBaristaQuestion: true,
+        showSafeAlternatives: false,
         crossContaminationTraps: 'Commercial barista oat milk is frequently rolled on shared wheat/barley milling equipment unless certified gluten-free. Additionally, shared espresso steam wands froth dairy and oat milk together, depositing wheat protein directly into every beverage.',
         concreteCorrelation: `Your hand tingling (${handTingling}/10) and heart rate (${rapidHeartbeat > 7 ? 'tachycardia 112+ bpm' : 'elevated'}) correlate with hidden gluten ingestion within an 18-hour window on ${hoursSlept} hours of sleep.`,
         clinicalMechanism: 'In Celiac patients with intestinal villous atrophy, trace gluten cross-contamination activates circulating tissue transglutaminase antibodies (tTG-IgA) and cross-reacts with transglutaminase-6 (TG6) in the central and peripheral nervous system, provoking rapid ataxia, small fiber neuropathy, and autonomic tachycardia.',
+        generalAdvice: 'Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare.',
         exactQuestionToAsk: {
-          en: '“Is your oat milk certified gluten-free, and can you wipe down and purge the steam wand with a clean towel before frothing my drink?”',
-          es: '“¿Su leche de avena tiene certificación libre de gluten, y podría limpiar y purgar la boquilla de vapor con un paño limpio antes de preparar mi bebida?”',
-          zh: '“请问贵店的燕麦奶是否有明确的无麸质认证（Gluten-Free）？能否在制作前用干净毛巾彻底擦拭并释放蒸汽冲洗喷嘴以防交叉污染？”'
+          en: 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?',
+          es: 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?',
+          zh: '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？'
         },
         recommendations: [
           'Request a cold brew or drink prepared with clean shaker rather than the shared espresso steam wand.',
           'Verify if the oat milk brand specifies <20 ppm or certified gluten-free batch testing.',
           'Take sublingual Methyl-B12 to protect small nerve fiber myelin from immune attack.'
+        ],
+        safeAlternatives: [
+          'Cold brew with certified GF unsweetened almond or coconut milk',
+          'Freshly brewed black coffee or espresso over ice in a clean glass',
+          'Ceremonial grade matcha whisked with warm water and a splash of coconut cream'
         ],
         calendarEventSuggestion: {
           title: 'Gluten Spike: Barista Oat Milk Cross-Contamination',
@@ -84,19 +93,27 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
         category: 'gluten',
         riskScore: 9.2,
         riskLevel: 'High Risk',
+        isItemSpecific: true,
+        showBaristaQuestion: true,
+        showSafeAlternatives: true,
         crossContaminationTraps: 'Many café caramel syrups and drizzles use barley malt extract or coloring. Barley has gluten, which triggers severe nerve tingling and brain fog even if you do not have stomach pain.',
         concreteCorrelation: 'Cross-checking what you logged today at 11:00 AM: You had an Iced Latte with caramel drizzle. Caramel syrup commonly contains barley malt (hidden gluten), which irritates nerves and triggers shaky hands, tremors, and brain fog within 2 to 6 hours.',
         clinicalMechanism: 'Barley malt has gluten. For celiac, gluten causes an immune response that irritates small nerve endings and blocks nutrient absorption, leading to shaky fingers and brain fog.',
+        generalAdvice: 'Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare.',
         exactQuestionToAsk: {
-          en: '“Does this caramel sauce or flavoring syrup contain any barley malt, malt syrup, or wheat ingredients?”',
-          es: '“¿Este sirope o salsa de caramelo contiene extracto de malta de cebada o trigo?”',
-          zh: '“请问这款焦糖糖浆或酱汁中，是否含有大麦芽提取物（Barley Malt）或小麦成分？”'
+          en: 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?',
+          es: 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?',
+          zh: '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？'
         },
         recommendations: [
-          'Safe Swap: Order pure vanilla syrup or pure maple syrup instead of caramel drizzle.',
-          'Drink 16 oz water with electrolytes to calm nerve inflammation.',
+          'Drink 16-24 oz water with electrolytes to soothe hyperactive nerve signaling.',
           'Take your sublingual B12 to soothe nerve tingling and rest quietly.',
-          'Ask the barista: “Could you please rinse the pitcher and shaker before making my drink?”'
+          'Request pure maple syrup or pure vanilla bean without barley malt.'
+        ],
+        safeAlternatives: [
+          '100% Pure Grade-A Vermont Maple Syrup (naturally gluten-free)',
+          'Pure Vanilla Bean syrup made without barley malt or wheat thickeners',
+          'Cold Brew with organic Ceylon cinnamon and unsweetened almond milk'
         ],
         calendarEventSuggestion: {
           title: 'Hidden Gluten Flare: Caramel Drizzle Syrup',
@@ -111,33 +128,38 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
         }
       },
       checkin: {
-        compoundName: 'Neuro-Inflammatory Cluster (Sleep & Metabolic Trigger)',
+        compoundName: 'Symptom Relief: Soothing Your Nerves & Tachycardia',
         category: 'neuropathy_trigger',
         riskScore: 7.8,
-        riskLevel: 'High Risk',
-        crossContaminationTraps: 'Lack of sleep combined with alcohol and simple sugars impairs blood-brain barrier integrity and amplifies gluten-induced neuro-inflammation.',
-        concreteCorrelation: `Your hand tingling (${handTingling}/10), burning feet (${burningFeet}/10), and heart rate spiked 18 hours after having an iced oat latte + ${alcoholDrinks} drink on ${hoursSlept} hours of sleep.`,
-        clinicalMechanism: 'Ethanol and sleep deprivation reduce peripheral nerve microcirculation, triggering unmyelinated C-fiber hyperexcitability and orthostatic tachycardia in patients with existing villi malabsorption.',
+        riskLevel: 'Moderate to High Flare',
+        isItemSpecific: false,
+        showBaristaQuestion: false,
+        showSafeAlternatives: false,
+        crossContaminationTraps: '',
+        concreteCorrelation: `With only ${hoursSlept} hours of sleep, a drink last night, and hand tingling at ${handTingling}/10 with a racing heart at ${rapidHeartbeat}/10, your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment.`,
+        clinicalMechanism: 'Ethanol and sleep deprivation reduce peripheral nerve microcirculation, triggering unmyelinated C-fiber hyperexcitability and autonomic tachycardia in patients with small fiber neuropathy.',
+        generalAdvice: `Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare. With only ${hoursSlept} hours of sleep, a drink last night, and hand tingling at ${handTingling}/10 with a racing heart at ${rapidHeartbeat}/10, your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment.`,
         exactQuestionToAsk: {
-          en: '“Can I verify that all ingredients in this meal are prepared in a dedicated gluten-free prep area?”',
-          es: '“¿Puedo verificar que todos los ingredientes de este plato se preparen en un área exclusiva sin gluten?”',
-          zh: '“请问这道餐品的所有原料是否是在专用的无麸质操作区域进行备餐制作的？”'
+          en: 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?',
+          es: 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?',
+          zh: '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？'
         },
         recommendations: [
-          'Take 400 mg Magnesium Glycinate at bedtime to quiet autonomic tachycardia and nocturnal burning feet.',
-          'Maintain 1,000 mcg sublingual Methyl-B12 daily to support remyelination.',
-          'Prioritize 8+ hours restorative sleep to halt systemic cytokine production.'
+          'Drink 16-24 oz room-temperature water with electrolytes to calm nerve excitability and quiet autonomic tachycardia.',
+          'Take 400 mg Magnesium Glycinate at bedtime to soothe nocturnal burning feet and relax muscle tone.',
+          'Maintain 1,000 mcg sublingual Methyl-B12 daily to support remyelination and protect nerve sheaths.'
         ],
+        safeAlternatives: [],
         calendarEventSuggestion: {
-          title: 'Neuropathy Spike: Low Sleep & Alcohol Exposure',
+          title: 'Neuropathy Spike: Flare Check-in',
           date: 'June 19, 2025',
           severity: 7.5,
           notes: `Hand tingling ${handTingling}/10, burning feet ${burningFeet}/10 on ${hoursSlept}h sleep.`
         },
         healthBoardTag: {
-          name: 'Alcohol + Sleep Deficit Spike',
-          riskBadge: 'Neuropathy Multiplier',
-          notes: 'Dramatically worsens peripheral tingling and resting tachycardia.'
+          name: 'Nervous System Flare Recovery',
+          riskBadge: 'Neuropathy Support',
+          notes: 'Dramatically improves with hydration, magnesium glycinate, and sublingual B12.'
         }
       }
     };
@@ -160,16 +182,29 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
     const systemInstruction = `You are Sheila, a warm, caring, personalized AI health advocate helping Chloe (age 22).
 
 About Chloe:
-- Chloe has Suspected Atypical Celiac Disease (Marsh III villous enteropathy) with nerve sensitivity (small fiber neuropathy: burning feet & hand tingling, tremors/shakiness in fingers, and tachycardia/racing heart).
+- Chloe has Suspected Atypical Celiac Disease (Marsh III villous enteropathy) with severe small fiber neuropathy (burning feet & hand tingling, tremors/shakiness in fingers, and tachycardia/racing heart).
 - Even trace gluten (>20 ppm) triggers nerve flares and prevents her intestinal villi from healing.
 - Current Check-in: Sleep: ${hoursSlept}h, Sugar: ${sugarIntake}, Alcohol: ${alcoholDrinks} drinks. Symptoms: Burning Feet (${burningFeet}/10), Hand Tingling (${handTingling}/10), Shaky Tremors (${tremorsAtaxia}/10), Heartbeat (${rapidHeartbeat}/10).
 
-CRITICAL INSTRUCTIONS:
-1. ADDRESS HER EXACT PROMPT DIRECTLY: Look closely at what Chloe asked ("${prompt || 'General check-in'}"). If she asks about sourdough bread, talk about bread! If she asks about iced matcha or caramel latte, talk about that beverage! Never give unrelated canned advice.
-2. KEEP IT SIMPLE, CLEAR & COMFORTING: Avoid dense medical textbooks and convoluted medical jargon. Use clean, plain English that is easy to read in 10 seconds.
-3. DYNAMIC SAFE ALTERNATIVES: Provide 2-3 specific, delicious, 100% gluten-free alternatives tailored strictly to WHAT SHE ASKED. (E.g. for sourdough bread: recommend certified gluten-free sourdough like Bread SRSLY or millet bread, toasted in a dedicated GF toaster; for coffee: recommend cold brew with almond/coconut milk and pure maple syrup; for pasta: recommend brown rice or chickpea pasta).
-4. SYMPTOM CORRELATION: In simple words, explain how this item relates to her current feeling (e.g. tingling at ${handTingling}/10 or shakiness at ${tremorsAtaxia}/10) and low sleep (${hoursSlept}h).
-5. EXACT QUESTION: Provide a simple, polite 1-sentence question to ask the barista or server in English, Spanish, and Simplified Chinese.
+CRITICAL INSTRUCTIONS FOR CONTEXTUAL CARD DISPLAY:
+1. INTENT RECOGNITION & RELEVANCE FLAGS (CRITICAL):
+   - isItemSpecific: Set to true ONLY if Chloe is asking about a specific food, beverage, ingredient, dish, supplement, or cosmetic item (e.g. oat milk, caramel syrup, gluten-free pizza, sourdough bread, protein bar, teriyaki sauce, lip balm).
+     Set to false if Chloe is asking about symptoms, feeling sick/shaky/tingling/racing heart, or asking general wellness questions (e.g. "having this symptom what to do?", "I have burning feet and tremors, what should I do?").
+     When isItemSpecific is false, DO NOT pull up food item information in crossContaminationTraps!
+   - showBaristaQuestion: Set to true ONLY if Chloe is asking about dining out, ordering at a café/restaurant/barista, or asking what to ask the server/barista/chef.
+     Set to false if she is asking about symptoms at home or general advice without dining out.
+   - showSafeAlternatives: Set to true ONLY if Chloe is asking about food AND explicitly asking for alternatives / swaps / substitutes / what to order instead (e.g. "what safe alternatives do you recommend?", "what can I order instead?", "what should I get instead?").
+     Set to false otherwise! Never show safe alternatives if she did not ask for alternatives or if she is asking about symptoms.
+2. GENERAL ADVICE / CLINICAL GUIDANCE:
+   - Provide warm, comforting, clinical advice answering her prompt directly.
+   - When she asks about symptoms or flare management:
+     "Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare. With only ${hoursSlept} hours of sleep, a drink last night, and hand tingling at ${handTingling}/10 with a racing heart at ${rapidHeartbeat}/10, your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment."
+3. EXACT QUESTION TO ASK BARISTA OR SERVER:
+   If showBaristaQuestion is true, provide the exact 1-sentence advocacy question. Gold-standard phrasing:
+   "I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?"
+   (Provide English, Spanish, and Simplified Chinese).
+4. STEPS TO FEEL BETTER RIGHT NOW:
+   In recommendations, give 2-3 simple, calming steps (hydration with electrolytes, 400 mg magnesium glycinate, sublingual Methyl-B12, quiet rest).
 Language requested: ${language}.`;
 
     const contents = parts.length > 0 
@@ -189,13 +224,17 @@ Language requested: ${language}.`;
             category: { type: Type.STRING },
             riskScore: { type: Type.NUMBER, description: 'Risk score from 1 to 10' },
             riskLevel: { type: Type.STRING, description: 'High Risk, Moderate Risk, or Low Risk' },
-            crossContaminationTraps: { type: Type.STRING, description: 'Simple, direct 1-2 sentence explanation of hidden gluten or prep risks' },
+            isItemSpecific: { type: Type.BOOLEAN, description: 'True ONLY if asking about a specific food/drink/supplement item. False if asking about symptoms or general health.' },
+            showBaristaQuestion: { type: Type.BOOLEAN, description: 'True ONLY if ordering food/drink at a restaurant/café/barista or asking what to ask staff.' },
+            showSafeAlternatives: { type: Type.BOOLEAN, description: 'True ONLY if asking about food AND explicitly asking for alternatives or substitutes.' },
+            generalAdvice: { type: Type.STRING, description: 'Warm comforting clinical advice answering Chloe directly.' },
+            crossContaminationTraps: { type: Type.STRING, description: 'Simple, direct 1-2 sentence explanation of hidden gluten or prep risks (empty if not item specific)' },
             concreteCorrelation: { type: Type.STRING, description: 'Simple 1-2 sentence correlation to Chloe current symptoms' },
             clinicalMechanism: { type: Type.STRING, description: 'Easy-to-understand explanation of why her body reacts' },
             safeAlternatives: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
-              description: '2-3 specific, delicious 100% gluten-free alternatives matching Chloe question',
+              description: '2-3 specific, delicious 100% gluten-free alternatives matching Chloe question (empty if showSafeAlternatives is false)',
             },
             exactQuestionToAsk: {
               type: Type.OBJECT,
@@ -236,6 +275,10 @@ Language requested: ${language}.`;
             'category',
             'riskScore',
             'riskLevel',
+            'isItemSpecific',
+            'showBaristaQuestion',
+            'showSafeAlternatives',
+            'generalAdvice',
             'crossContaminationTraps',
             'concreteCorrelation',
             'clinicalMechanism',
@@ -256,6 +299,16 @@ Language requested: ${language}.`;
     
     // Dynamically construct a personalized response using Chloe's real inputs and biometrics
     const userPrompt = (req.body.prompt || '').trim();
+    const promptLower = userPrompt.toLowerCase();
+    const asksAlternatives = /alternative|instead|swap|substitute|recommend/i.test(promptLower);
+    const asksBaristaOrDining = /barista|server|waiter|chef|order|café|cafe|restaurant|menu|ask.*(server|barista)|latte|drizzle/i.test(promptLower);
+    const isSpecificItem = Boolean(req.body.imageBase64) || /syrup|caramel|oat|milk|bread|sourdough|sauce|teriyaki|beer|pasta|snack|cookie|bar|supplement|lip balm|dish/i.test(promptLower);
+    const isSymptomFocus = /symptom|flare|burn|tingl|tremor|shak|fog|heart|tachy|palp|what to do|what should i do|feel.*bad|hurts/i.test(promptLower);
+
+    const isItemSpecific = isSpecificItem && !(isSymptomFocus && !req.body.imageBase64 && !/syrup|oat|caramel|bread/i.test(promptLower));
+    const showBaristaQuestion = asksBaristaOrDining;
+    const showSafeAlternatives = asksAlternatives && (isSpecificItem || /food|eat|drink/i.test(promptLower));
+
     const isSyrupOrCaramel = /caramel|syrup|drizzle|flavor|sauce|sweet/i.test(userPrompt);
     const isNerveOrFlare = /tingl|tremor|shak|burn|nerve|fog|heart|tachy|palp/i.test(userPrompt);
     const isFoodOrEat = /eat|food|bread|pasta|snack|cookie|bar|lunch|dinner|breakfast/i.test(userPrompt);
@@ -267,14 +320,15 @@ Language requested: ${language}.`;
     let crossContaminationTraps = 'Commercial café oat milk is often processed on shared wheat machinery, and shared espresso steam wands cross-contaminate every hot beverage with aerosolized gluten.';
     let concreteCorrelation = `Your hand tingling (${handTingling}/10) and heart rate (${rapidHeartbeat > 7 ? 'tachycardia 112+ bpm' : 'elevated'}) correlate directly with potential gluten exposure within an 18-hour window on ${hoursSlept}h of sleep.`;
     let clinicalMechanism = 'In Celiac disease with Marsh III villi blunting, even micro-doses of gluten trigger an immune cross-reaction affecting peripheral small nerve fibers (causing tingling and burning feet) and the autonomic nervous system.';
+    let generalAdvice = `Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare. With only ${hoursSlept} hours of sleep, a drink last night, and hand tingling at ${handTingling}/10 with a racing heart at ${rapidHeartbeat}/10, your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment.`;
     let recommendations = [
       'Choose cold brew or drinks shaken in clean dedicated shakers rather than steam wand frothing.',
       'Take 1,000 mcg sublingual Methyl-B12 daily to protect nerve sheath myelin.',
       'Log this event in your Calendar to sync with your Clinical SOAP memo.',
     ];
-    let exactEn = '“Is this item certified gluten-free, and can clean dedicated equipment be used to prepare it?”';
-    let exactEs = '“¿Este producto está certificado sin gluten y se puede preparar con equipo limpio y exclusivo?”';
-    let exactZh = '“请问这款产品是否有明确的无麸质认证？能否使用专用清洁用具进行备餐？”';
+    let exactEn = 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?';
+    let exactEs = 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?';
+    let exactZh = '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？';
 
     let safeAlternatives = [
       'Cold brew or iced drip coffee with certified GF almond or coconut milk',
@@ -300,30 +354,27 @@ Language requested: ${language}.`;
         'Drink 16 oz of electrolyte-rich water to flush cytokines and soothe nerve excitability.',
         'Rest in a quiet space and take sublingual B12 to protect nerve endings.',
       ];
-      exactEn = '“Does this caramel or syrup contain barley malt, malt extract, or any wheat-based thickeners?”';
-      exactEs = '“¿Este sirope o caramelo contiene extracto de malta de cebada o espesantes de trigo?”';
-      exactZh = '“请问这款焦糖或糖浆中是否含有大麦芽提取物（Barley Malt）或小麦衍生成分？”';
-    } else if (isNerveOrFlare) {
-      compoundName = 'Autoimmune Neuro-Inflammatory Cluster';
+      exactEn = 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?';
+      exactEs = 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?';
+      exactZh = '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？';
+    } else if (isNerveOrFlare || isSymptomFocus) {
+      compoundName = 'Symptom Relief: Soothing Your Nerves & Tachycardia';
       category = 'neuropathy_trigger';
-      riskLevel = 'High Risk';
+      riskLevel = 'Moderate to High Flare';
       riskScore = 8.5;
-      crossContaminationTraps = `Sleep deprivation (${hoursSlept}h) and immune activation amplify peripheral nerve hyper-excitability. Hand tremors (${tremorsAtaxia}/10) and burning feet (${burningFeet}/10) indicate active small fiber irritation.`;
-      concreteCorrelation = `Chloe's logged biometrics (Sleep: ${hoursSlept}h, Tingling: ${handTingling}/10, Shakiness: ${tremorsAtaxia}/10, Heart: ${rapidHeartbeat}/10) confirm a neuro-autonomic flare pattern.`;
+      crossContaminationTraps = '';
+      concreteCorrelation = `With only ${hoursSlept} hours of sleep, a drink last night, and hand tingling at ${handTingling}/10 with a racing heart at ${rapidHeartbeat}/10, your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment.`;
       clinicalMechanism = 'Gluten ataxia and autonomic tachycardia occur when transglutaminase antibodies cross the blood-brain barrier and irritate autonomic ganglia, exacerbated by low sleep and nutrient malabsorption.';
-      safeAlternatives = [
-        'Electrolyte water with sea salt, lemon, and magnesium glycinate',
-        'Warm chamomile or peppermint herbal tea (naturally caffeine-free)',
-        'Anti-inflammatory golden turmeric latte with unsweetened almond milk',
-      ];
+      generalAdvice = `Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare. With only ${hoursSlept} hours of sleep, a drink last night, and hand tingling at ${handTingling}/10 with a racing heart at ${rapidHeartbeat}/10, your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment.`;
+      safeAlternatives = [];
       recommendations = [
-        'Sip warm water with electrolytes and take 400 mg Magnesium Glycinate to calm autonomic tachycardia.',
-        'Prioritize 8+ hours of sleep tonight to enable small intestinal villi cellular repair.',
-        'Apply cool compresses to burning feet and rest hands gently.',
+        'Drink 16-24 oz room-temperature water with electrolytes to calm nerve excitability and quiet autonomic tachycardia.',
+        'Take 400 mg Magnesium Glycinate at bedtime to soothe nocturnal burning feet and relax muscle tone.',
+        'Maintain 1,000 mcg sublingual Methyl-B12 daily to support remyelination and protect nerve sheaths.',
       ];
-      exactEn = '“Can you ensure my order has zero cross-contact with gluten or barley, prepared on a wiped surface?”';
-      exactEs = '“¿Puede asegurarse de que mi pedido no tenga contacto con gluten o cebada, preparado en una superficie limpia?”';
-      exactZh = '“能否确保我的餐品完全不接触麸质或大麦，并在彻底擦净的操作台面上备餐？”';
+      exactEn = 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?';
+      exactEs = 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?';
+      exactZh = '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？';
     } else if (isFoodOrEat && userPrompt) {
       const isBread = /bread|sourdough|toast|sandwich|bun|bagel|pastry|croissant/i.test(userPrompt);
       compoundName = isBread ? 'Traditional Bakery Sourdough (Wheat-Based)' : `Dietary Analysis: ${userPrompt.slice(0, 45)}`;
@@ -350,15 +401,9 @@ Language requested: ${language}.`;
         'Use a dedicated toaster or toaster bags to prevent shared bread crumb contact.',
         'Hydrate with electrolytes and rest in a quiet space to protect nerve function.',
       ];
-      exactEn = isBread 
-        ? '“Is this bread made exclusively with certified gluten-free flour and starter in a gluten-free kitchen?”'
-        : '“Is this prepared with dedicated gluten-free cookware and utensils away from flour dust?”';
-      exactEs = isBread
-        ? '“¿Este pan está elaborado exclusivamente con harina y masa madre certificadas sin gluten?”'
-        : '“¿Se prepara con utensilios y sartenes exclusivos sin gluten?”';
-      exactZh = isBread
-        ? '“请问这款面包是否使用100%认证的无麸质面粉制作，且与含麸质面包完全隔开？”'
-        : '“请问这道菜是否使用专用无麸质器具烹饪，避免接触面粉微尘？”';
+      exactEn = 'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?';
+      exactEs = 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que esta comida está hecha con ingredientes frescos en sartenes limpias sin gluten ni contacto con tostadoras o freidoras compartidas?';
+      exactZh = '我有乳糜泻和严重的神经敏感；能否请您确认这份餐点使用的是新鲜原料，并在干净无麸质的专用锅具中制作，且绝无与共用烤面包机或炸锅接触？';
     }
 
     const result = {
@@ -366,10 +411,14 @@ Language requested: ${language}.`;
       category,
       riskScore,
       riskLevel,
+      isItemSpecific,
+      showBaristaQuestion,
+      showSafeAlternatives,
       crossContaminationTraps,
       concreteCorrelation,
       clinicalMechanism,
-      safeAlternatives,
+      generalAdvice,
+      safeAlternatives: showSafeAlternatives ? safeAlternatives : [],
       exactQuestionToAsk: {
         en: exactEn,
         es: exactEs,
@@ -385,7 +434,7 @@ Language requested: ${language}.`;
       healthBoardTag: {
         name: compoundName.slice(0, 30),
         riskBadge: riskLevel,
-        notes: `Personalized evaluation for Chloe: ${crossContaminationTraps.slice(0, 90)}...`,
+        notes: `Personalized evaluation for Chloe: ${(crossContaminationTraps || generalAdvice).slice(0, 90)}...`,
       },
     };
     return res.json({ success: true, data: result, source: 'fallback-personalized' });

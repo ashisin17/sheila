@@ -7,9 +7,13 @@ export interface TriggerAnalysis {
   category: string;
   riskScore: number;
   riskLevel: 'High Risk' | 'Moderate Risk' | 'Low Risk';
-  crossContaminationTraps: string;
-  concreteCorrelation: string;
-  clinicalMechanism: string;
+  isItemSpecific?: boolean;
+  showBaristaQuestion?: boolean;
+  showSafeAlternatives?: boolean;
+  crossContaminationTraps?: string;
+  concreteCorrelation?: string;
+  clinicalMechanism?: string;
+  generalAdvice?: string;
   exactQuestionToAsk: {
     en: string;
     es: string;
