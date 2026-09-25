@@ -563,6 +563,22 @@ export const INITIAL_BODY_MOOD_LOGS: Record<string, DailyBodyMoodLog> = {
     bodyNotes: 'Day 30 Gluten-Free streak! Peripheral burning and hand tremors drastically calmed down.',
     savedAt: '8:30 PM',
   },
+  '2026-09-25': {
+    day: 25,
+    month: 8,
+    year: 2026,
+    dateKey: '2026-09-25',
+    dateStr: 'Friday, September 25, 2026',
+    sleepHours: 7.5,
+    sugarIntake: 'low',
+    mood: 'Calm',
+    burningFeet: 3,
+    handTingling: 2,
+    rapidHeartbeat: 5,
+    tremorsAtaxia: 2,
+    bodyNotes: 'Maintaining 100% strict gluten-free diet and clean oat protocol. Tingling and burning nerves steady and controlled.',
+    savedAt: '8:45 AM',
+  },
 };
 
 export const INITIAL_COLLECTIONS: UserCollection[] = [

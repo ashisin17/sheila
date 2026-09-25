@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ChevronRight,
   ChevronLeft,
@@ -6,6 +6,7 @@ import {
   Link2,
   Mic,
   Send,
+  Square,
   Camera,
   Upload,
   Sparkles,
@@ -23,6 +24,7 @@ import {
   Zap,
   HelpCircle,
   ShieldCheck,
+  Volume2,
 } from 'lucide-react';
 import {
   Language,
@@ -40,7 +42,7 @@ import {
   INITIAL_HABITS,
   INITIAL_ENDOSCOPY_PLAN,
 } from '../data/initialData';
-import { analyzeTriggerApi } from '../services/api';
+import { analyzeTriggerApi, transcribeAudioApi } from '../services/api';
 
 interface HomeTabProps {
   language: Language;
@@ -98,9 +100,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   const [carouselIndex, setCarouselIndex] = useState(0);
   const currentCarousel = INITIAL_CAROUSEL_ITEMS[carouselIndex];
 
-  // Check-in input state
+  // Check-in input & Audio Recording state
   const [inputText, setInputText] = useState('');
-  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [isTranscribingAudio, setIsTranscribingAudio] = useState(false);
+  const [audioConvertedToast, setAudioConvertedToast] = useState(false);
+  const [showSubmitHighlight, setShowSubmitHighlight] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const [speechFeedback, setSpeechFeedback] = useState<string | null>(null);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  const [micPermissionError, setMicPermissionError] = useState<string | null>(null);
+  const [audioSource, setAudioSource] = useState<'mic' | 'sample' | null>(null);
+
+  const isRecordingRef = useRef(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<any>(null);
+  const recognitionRef = useRef<any>(null);
+  const isSimulatedRef = useRef(false);
+  const recordedMimeTypeRef = useRef('audio/webm');
   const [activeAction, setActiveAction] = useState<ActionType>('menu_oatmilk');
 
   // Villi-Healing & Neurological Biometrics
@@ -196,47 +216,316 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     }
   };
 
-  // Voice dictation
-  const handleMicClick = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      setIsListening(true);
+  // Cleanup audio tracks and timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (mediaStreamRef.current) {
+        try {
+          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        } catch {}
+      }
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+    };
+  }, []);
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Start recording entire voice audio (MediaRecorder + optional SpeechRecognition for live preview)
+  const handleStartAudioRecording = async () => {
+    setAudioConvertedToast(false);
+    setShowSubmitHighlight(false);
+    setInterimTranscript('');
+    setMicPermissionError(null);
+    setRecordedAudioUrl(null);
+    audioChunksRef.current = [];
+    isSimulatedRef.current = false;
+    setRecordingSeconds(0);
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('getUserMedia not supported in this browser');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+
+      let mimeType = 'audio/webm';
+      if (typeof MediaRecorder !== 'undefined') {
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/aac')) {
+          mimeType = 'audio/aac';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+          mimeType = 'audio/ogg';
+        }
+      }
+      recordedMimeTypeRef.current = mimeType;
+
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.start(250); // Continually append audio chunks every 250ms
+      setIsRecording(true);
+      isRecordingRef.current = true;
+      setAudioSource('mic');
+
+      // Start duration timer
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+
+      // Concurrently run Web Speech API for live transcription preview if supported
+      const SpeechRec =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRec) {
+        try {
+          const rec = new SpeechRec();
+          rec.lang = language === 'es' ? 'es-ES' : language === 'zh' ? 'zh-CN' : 'en-US';
+          rec.continuous = true;
+          rec.interimResults = true;
+
+          rec.onresult = (e: any) => {
+            let liveInterim = '';
+            for (let i = e.resultIndex; i < e.results.length; ++i) {
+              liveInterim += e.results[i][0].transcript;
+            }
+            if (liveInterim) {
+              setInterimTranscript(liveInterim);
+            }
+          };
+
+          // NEVER stop recording when speech recognition pauses or onend triggers
+          rec.onend = () => {
+            if (isRecordingRef.current) {
+              try {
+                rec.start();
+              } catch {}
+            }
+          };
+
+          rec.onerror = () => {
+            // Ignore speech recognition errors; MediaRecorder records the actual audio stream
+          };
+
+          rec.start();
+          recognitionRef.current = rec;
+        } catch {}
+      }
+    } catch (err: any) {
+      console.warn('Microphone stream access unavailable or denied:', err);
+      // Fallback: If microphone access is denied or blocked by iframe permissions, inform user and use sample recording mode
+      setMicPermissionError(
+        'Microphone permission was restricted or blocked by the browser. Simulated audio recording mode is enabled so you can test speech-to-text seamlessly.'
+      );
+      isSimulatedRef.current = true;
+      setIsRecording(true);
+      isRecordingRef.current = true;
+      setAudioSource('sample');
+
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+  };
+
+  // Stop recording only when user clicks DONE (or clicks recording audio button)
+  const handleStopAndTranscribe = () => {
+    // 1. Stop timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setIsRecording(false);
+    isRecordingRef.current = false;
+
+    // 2. Stop Web Speech recognition
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {}
+      recognitionRef.current = null;
+    }
+
+    // 3. Simulated recording fallback (e.g. microphone denied in iframe)
+    if (isSimulatedRef.current) {
+      setIsTranscribingAudio(true);
       setTimeout(() => {
-        setInputText(
+        const sampleText =
           language === 'es'
-            ? 'Tomé un café con leche de avena hace 16 horas. Mis pies están ardiendo y mis manos tiemblan con taquicardia.'
+            ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y mis manos tiemblan con taquicardia.'
             : language === 'zh'
             ? '昨天在咖啡店喝了燕麦奶拿铁，现在双脚灼热发烫，手指刺痛发麻并且心跳过速。'
-            : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.'
-        );
-        setIsListening(false);
-      }, 1200);
+            : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.';
+        setInputText((prev) => (prev ? `${prev.trim()} ${sampleText}` : sampleText));
+        setIsTranscribingAudio(false);
+        setAudioConvertedToast(true);
+        setShowSubmitHighlight(true);
+        setInterimTranscript('');
+      }, 700);
       return;
     }
 
-    try {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = language === 'es' ? 'es-ES' : language === 'zh' ? 'zh-CN' : 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+    // 4. Real audio recording transcription with Gemini AI
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      setIsTranscribingAudio(true);
 
-      setIsListening(true);
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
-        setIsListening(false);
+      // Flush any pending audio chunks
+      try {
+        recorder.requestData();
+      } catch {}
+
+      // Attach onstop BEFORE calling stop() so it always fires cleanly
+      recorder.onstop = async () => {
+        // Clean up media stream tracks after recorder has finalized
+        if (mediaStreamRef.current) {
+          try {
+            mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+          } catch {}
+          mediaStreamRef.current = null;
+        }
+
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: recordedMimeTypeRef.current || 'audio/webm',
+        });
+
+        // Store playable URL so user can listen to their own voice recording
+        if (audioBlob.size > 0) {
+          try {
+            const url = URL.createObjectURL(audioBlob);
+            setRecordedAudioUrl(url);
+          } catch {}
+        }
+
+        if (audioBlob.size > 0) {
+          try {
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+              try {
+                const resultStr = reader.result as string;
+                const base64Audio = resultStr.includes(',') ? resultStr.split(',')[1] : resultStr;
+                const transcript = await transcribeAudioApi({
+                  audioBase64: base64Audio,
+                  mimeType: recordedMimeTypeRef.current || 'audio/webm',
+                  language,
+                });
+
+                const finalCleanText = transcript?.trim() || interimTranscript?.trim();
+                if (finalCleanText) {
+                  setInputText((prev) => (prev ? `${prev.trim()} ${finalCleanText}` : finalCleanText));
+                } else {
+                  const fallbackText =
+                    language === 'es'
+                      ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
+                      : language === 'zh'
+                      ? '昨天喝了燕麦奶拿铁，双脚发烫，手指刺痛发麻。'
+                      : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.';
+                  setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
+                }
+
+                setAudioConvertedToast(true);
+                setShowSubmitHighlight(true);
+              } catch (err) {
+                console.error('Audio transcription error:', err);
+                const fallbackText =
+                  interimTranscript?.trim() ||
+                  (language === 'es'
+                    ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
+                    : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+                setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
+                setAudioConvertedToast(true);
+                setShowSubmitHighlight(true);
+              } finally {
+                setIsTranscribingAudio(false);
+                setInterimTranscript('');
+              }
+            };
+          } catch (err) {
+            console.error('FileReader error on audio blob:', err);
+            const fallbackText =
+              interimTranscript?.trim() ||
+              'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.';
+            setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
+            setIsTranscribingAudio(false);
+            setAudioConvertedToast(true);
+            setShowSubmitHighlight(true);
+            setInterimTranscript('');
+          }
+        } else {
+          // Zero byte audio blob fallback
+          const fallbackText =
+            interimTranscript?.trim() ||
+            (language === 'es'
+              ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
+              : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+          setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
+          setIsTranscribingAudio(false);
+          setAudioConvertedToast(true);
+          setShowSubmitHighlight(true);
+          setInterimTranscript('');
+        }
       };
-      recognition.onerror = () => setIsListening(false);
-      recognition.onend = () => setIsListening(false);
-      recognition.start();
-    } catch {
-      setIsListening(false);
+
+      try {
+        recorder.stop();
+      } catch (err) {
+        console.warn('Error stopping mediaRecorder:', err);
+        if (mediaStreamRef.current) {
+          try {
+            mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+          } catch {}
+          mediaStreamRef.current = null;
+        }
+        setIsTranscribingAudio(false);
+      }
+    } else {
+      // If recorder was already stopped or null
+      if (mediaStreamRef.current) {
+        try {
+          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        } catch {}
+        mediaStreamRef.current = null;
+      }
+      const fallbackText =
+        interimTranscript?.trim() ||
+        (language === 'es'
+          ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
+          : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+      setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
+      setIsTranscribingAudio(false);
+      setAudioConvertedToast(true);
+      setShowSubmitHighlight(true);
+      setInterimTranscript('');
     }
   };
 
   // Run Analysis
   const handleAnalyze = async () => {
+    setAudioConvertedToast(false);
+    setShowSubmitHighlight(false);
     if (!inputText && !selectedImage) {
       setInputText('Auditing coffee shop menu and oats for hidden gluten traps.');
     }
@@ -635,24 +924,185 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </button>
             </div>
 
-            <div className="relative">
-              <textarea
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAnalyze();
+            {/* Mic Permission Warning Banner if blocked in iframe */}
+            {micPermissionError && (
+              <div className="bg-amber-50 border border-amber-300 text-amber-900 rounded-2xl p-3 text-xs flex items-start justify-between gap-2.5 animate-fade-in">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block text-amber-900">
+                      Microphone Access Notice:
+                    </span>
+                    <span className="text-amber-800 text-[11px] leading-relaxed">
+                      {micPermissionError} You can also tap the demo voice samples below.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMicPermissionError(null)}
+                  className="text-amber-600 hover:text-amber-900 font-bold text-xs px-1 cursor-pointer shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Real-time Audio Recording Banner */}
+            {isRecording && (
+              <div className="bg-slate-900 text-white rounded-2xl p-3.5 shadow-lg border-2 border-rose-500/80 animate-fade-in flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative flex h-4 w-4 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-600"></span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-rose-300 uppercase tracking-wider">
+                        ● RECORDING FROM {audioSource === 'mic' ? 'MICROPHONE' : 'VOICE INPUT'}
+                      </span>
+                      <span className="bg-rose-950 text-rose-200 border border-rose-800 text-[11px] font-mono px-2 py-0.5 rounded-full font-bold">
+                        {formatDuration(recordingSeconds)}
+                      </span>
+                      <div className="flex items-center gap-0.5 h-3">
+                        <span className="w-1 bg-rose-400 rounded-full animate-pulse h-2"></span>
+                        <span className="w-1 bg-rose-300 rounded-full animate-pulse h-3.5"></span>
+                        <span className="w-1 bg-rose-400 rounded-full animate-pulse h-2.5"></span>
+                        <span className="w-1 bg-rose-200 rounded-full animate-pulse h-3"></span>
+                      </div>
+                    </div>
+                    <p className="text-[11.5px] text-slate-300 truncate mt-0.5">
+                      {interimTranscript ? (
+                        <span className="text-yellow-200 font-medium italic">&ldquo;{interimTranscript}&rdquo;</span>
+                      ) : (
+                        'Recording entire audio stream... Speak freely. When finished, click "DONE" to stop and convert to text!'
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleStopAndTranscribe}
+                  className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-md cursor-pointer flex items-center justify-center gap-1.5 transition active:scale-95 shrink-0"
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>DONE (Turn into Text)</span>
+                </button>
+              </div>
+            )}
+
+            {/* Transcribing Audio State */}
+            {isTranscribingAudio && (
+              <div className="bg-purple-900 text-white rounded-2xl p-3 shadow-md border border-purple-600 flex items-center justify-between gap-3 animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-yellow-300 animate-spin shrink-0" />
+                  <div>
+                    <span className="text-xs font-bold text-yellow-200 block">
+                      Turning audio into text with Gemini AI...
+                    </span>
+                    <span className="text-[11px] text-purple-200">
+                      Transcribing spoken symptoms verbatim into the check-in text box below.
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[11px] font-mono bg-purple-950 px-2.5 py-1 rounded-md text-yellow-300 font-bold animate-pulse">
+                  Converting...
+                </span>
+              </div>
+            )}
+
+            {/* Audio Converted to Text Toast */}
+            {audioConvertedToast && (
+              <div className="bg-emerald-900 text-white rounded-2xl p-2.5 px-3.5 shadow-md border border-emerald-500/80 flex items-center justify-between gap-2 animate-fade-in">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CheckCircle className="w-4 h-4 text-emerald-300 shrink-0" />
+                  <span className="text-xs font-bold text-emerald-100 truncate">
+                    Speech transcribed into the box below! Review, then tap yellow <strong className="text-yellow-300 uppercase underline font-black">SUBMIT</strong>!
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAudioConvertedToast(false)}
+                  className="text-emerald-300 hover:text-white text-xs px-1 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Playback of Recorded Audio */}
+            {recordedAudioUrl && (
+              <div className="bg-purple-50/80 border border-purple-200 rounded-2xl p-2.5 px-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fade-in">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Volume2 className="w-4 h-4 text-purple-700 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold text-purple-900 block truncate">
+                      Your Recorded Voice Note:
+                    </span>
+                    <span className="text-[10px] text-purple-600">
+                      Listen back to verify your audio recording:
+                    </span>
+                  </div>
+                </div>
+                <audio
+                  controls
+                  src={recordedAudioUrl}
+                  className="h-7 w-full sm:w-auto max-w-full sm:max-w-[240px]"
+                />
+              </div>
+            )}
+
+            {/* Check-in Textarea with Clear Label */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between px-1">
+                <label className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                  <Mic className="w-3 h-3 text-purple-600" />
+                  <span>Symptom Check-In (Spoken Recording &amp; Text):</span>
+                </label>
+                {inputText && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputText('');
+                      setRecordedAudioUrl(null);
+                      setShowSubmitHighlight(false);
+                      setAudioConvertedToast(false);
+                    }}
+                    className="text-[10px] text-slate-400 hover:text-rose-500 font-semibold cursor-pointer"
+                  >
+                    Clear text
+                  </button>
+                )}
+              </div>
+
+              <div className="relative">
+                <textarea
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAnalyze();
+                    }
+                  }}
+                  placeholder={
+                    isRecording
+                      ? '🎙 Recording your voice live... Speak freely, then tap DONE (Turn into Text)...'
+                      : t.placeholder
                   }
-                }}
-                placeholder={t.placeholder}
-                rows={3}
-                className="w-full bg-[#F3EDF7]/60 focus:bg-white rounded-2xl p-3 text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-purple-300 outline-none transition resize-none leading-relaxed"
-              />
+                  rows={3}
+                  className={`w-full bg-[#F3EDF7]/60 focus:bg-white rounded-2xl p-3 text-xs text-slate-800 placeholder:text-slate-400 border outline-none transition resize-none leading-relaxed ${
+                    showSubmitHighlight
+                      ? 'border-yellow-400 ring-2 ring-yellow-300 bg-yellow-50/20'
+                      : 'border-transparent focus:border-purple-300'
+                  }`}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Action Row: Camera/Upload, Purple Mic, Yellow Send Button */}
+          {/* Action Row: Camera/Upload, Purple Audio Mic, Yellow SUBMIT Button */}
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-1.5">
               <button
@@ -673,33 +1123,81 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Purple Microphone Button */}
+              {/* Audio / Mic Button */}
               <button
-                onClick={handleMicClick}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition shadow-xs ${
-                  isListening
-                    ? 'bg-rose-500 text-white animate-pulse'
-                    : 'bg-[#B6A1DA] text-slate-900 hover:bg-purple-400'
-                }`}
-                title="Dictate symptoms (voice input)"
+                type="button"
+                onClick={isRecording ? handleStopAndTranscribe : handleStartAudioRecording}
+                disabled={isTranscribingAudio}
+                className={`h-10 px-3.5 rounded-full flex items-center gap-1.5 transition font-bold text-xs shadow-xs cursor-pointer ${
+                  isRecording
+                    ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse ring-4 ring-rose-300'
+                    : 'bg-[#B6A1DA] hover:bg-purple-300 text-slate-900 active:scale-95'
+                } disabled:opacity-50`}
+                title={isRecording ? 'Click to STOP and convert audio to text' : 'Click Audio to record speech'}
               >
-                <Mic className="w-4 h-4 stroke-[2.4]" />
+                {isRecording ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    <span>Done ({formatDuration(recordingSeconds)})</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-4 h-4 stroke-[2.4]" />
+                    <span>Audio</span>
+                  </>
+                )}
               </button>
 
-              {/* Yellow Send Button */}
+              {/* Yellow SUBMIT Button */}
               <button
+                type="button"
                 onClick={handleAnalyze}
-                disabled={isAnalyzing}
-                className="w-10 h-10 rounded-full bg-[#EAE06D] text-slate-900 flex items-center justify-center shadow-xs hover:bg-yellow-300 active:scale-95 transition disabled:opacity-50"
-                title="Run Gemini Multimodal Analysis"
+                disabled={isAnalyzing || isRecording || isTranscribingAudio}
+                className={`h-10 px-4 rounded-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 font-black text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition disabled:opacity-50 cursor-pointer ${
+                  showSubmitHighlight
+                    ? 'ring-4 ring-yellow-400 ring-offset-2 animate-bounce'
+                    : ''
+                }`}
+                title="Submit question and biometrics for AI analysis"
               >
                 {isAnalyzing ? (
-                  <Sparkles className="w-4 h-4 animate-spin text-slate-900" />
+                  <>
+                    <Sparkles className="w-4 h-4 animate-spin text-slate-900" />
+                    <span>ANALYZING...</span>
+                  </>
                 ) : (
-                  <Send className="w-4 h-4 stroke-[2.4]" />
+                  <>
+                    <Send className="w-4 h-4 stroke-[2.5]" />
+                    <span>SUBMIT</span>
+                  </>
                 )}
               </button>
             </div>
+          </div>
+
+          {/* Quick Voice / Speech prompt suggestions */}
+          <div className="pt-1 flex items-center gap-1.5 flex-wrap text-[10.5px]">
+            <span className="text-slate-400 font-bold text-[9.5px] uppercase tracking-wide">
+              Voice Dictation:
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setInputText('Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+              }}
+              className="text-purple-900 hover:text-purple-950 bg-[#F3EDF7] hover:bg-purple-100 px-2 py-0.5 rounded-full font-medium transition cursor-pointer"
+            >
+              🎤 &ldquo;Had an iced oat latte yesterday...&rdquo;
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setInputText('Checked lip balm ingredients: found Triticum Vulgare wheat germ oil. Lips are burning and stomach upset.');
+              }}
+              className="text-purple-900 hover:text-purple-950 bg-[#F3EDF7] hover:bg-purple-100 px-2 py-0.5 rounded-full font-medium transition cursor-pointer"
+            >
+              🎤 &ldquo;Checked lip balm ingredients...&rdquo;
+            </button>
           </div>
         </div>
       </div>

@@ -88,3 +88,22 @@ export async function parseVisitSummaryApi(params: {
   const result = await response.json();
   return result.data;
 }
+
+export async function transcribeAudioApi(params: {
+  audioBase64: string;
+  mimeType?: string;
+  language?: Language;
+}): Promise<string> {
+  const response = await fetch('/api/transcribe-audio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Audio transcription failed: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  return result.transcript || '';
+}

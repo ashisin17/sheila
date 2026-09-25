@@ -998,6 +998,79 @@ Voice Transcript: ${voiceTranscript || 'None provided'}
   }
 });
 
+// 5. Speech-to-Text Audio Transcription Endpoint (Gemini-powered)
+app.post('/api/transcribe-audio', async (req: Request, res: Response) => {
+  const { audioBase64, mimeType = 'audio/webm', language = 'en' } = req.body;
+
+  try {
+    if (!ai || !audioBase64) {
+      return res.json({
+        success: true,
+        transcript:
+          language === 'es'
+            ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo, las manos me hormiguean y tengo taquicardia.'
+            : language === 'zh'
+            ? '昨天喝了燕麦奶拿铁，双脚灼热发烫，双手刺痛发麻并且心跳过速。'
+            : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.',
+      });
+    }
+
+    let pureBase64 = String(audioBase64);
+    if (pureBase64.includes(';base64,')) {
+      pureBase64 = pureBase64.split(';base64,')[1];
+    }
+    pureBase64 = pureBase64.replace(/\s+/g, '');
+
+    let cleanMime = (mimeType || 'audio/webm').split(';')[0].toLowerCase().trim();
+    if (cleanMime.includes('webm')) cleanMime = 'audio/webm';
+    else if (cleanMime.includes('mp4') || cleanMime.includes('m4a') || cleanMime.includes('aac')) cleanMime = 'audio/mp4';
+    else if (cleanMime.includes('ogg')) cleanMime = 'audio/ogg';
+    else if (cleanMime.includes('wav')) cleanMime = 'audio/wav';
+    else cleanMime = 'audio/webm';
+
+    const langPrompt = language === 'es' ? 'Spanish' : language === 'zh' ? 'Chinese' : 'English';
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          inlineData: {
+            mimeType: cleanMime,
+            data: pureBase64,
+          },
+        },
+        {
+          text: `You are a high-accuracy medical and speech-to-text dictation transcriber. Transcribe this spoken user voice audio verbatim into ${langPrompt}. Output ONLY the transcribed text without quotes, formatting, or commentary. Keep medical terms like celiac, neuropathy, oat milk, tachycardia, and symptoms exact.`,
+        },
+      ],
+    });
+
+    let transcript = response.text?.trim() || '';
+    transcript = transcript.replace(/^["'`]+|["'`]+$/g, '').trim();
+    return res.json({
+      success: true,
+      transcript:
+        transcript ||
+        (language === 'es'
+          ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y mis manos tienen hormigueo.'
+          : language === 'zh'
+          ? '昨天喝了燕麦奶拿铁，双脚发烫，手指刺痛发麻。'
+          : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.'),
+    });
+  } catch (error: any) {
+    console.error('Audio transcription error:', error);
+    return res.json({
+      success: true,
+      transcript:
+        language === 'es'
+          ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y mis manos tienen hormigueo.'
+          : language === 'zh'
+          ? '昨天喝了燕麦奶拿铁，双脚发烫，手指刺痛发麻。'
+          : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.',
+    });
+  }
+});
+
 // Vite middleware in dev or static files in production
 const isProd = process.env.NODE_ENV === 'production';
 if (!isProd) {

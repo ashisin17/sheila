@@ -22,6 +22,7 @@ import {
   Compass,
   Check,
   Edit3,
+  Sliders,
 } from 'lucide-react';
 import { Language, MarkedDay, EndoscopyPlan, FoodLogEntry, DailyBodyMoodLog } from '../types';
 import { TRANSLATIONS, INITIAL_ENDOSCOPY_PLAN, INITIAL_FOOD_LOGS, INITIAL_BODY_MOOD_LOGS } from '../data/initialData';
@@ -49,16 +50,21 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 }) => {
   const t = TRANSLATIONS[language].calendar;
 
-  // Real today's date information
+  // Real today's date information (e.g. September 25, 2026)
   const realNow = new Date();
   const realTodayYear = realNow.getFullYear();
-  const realTodayMonth = realNow.getMonth(); // 0-indexed
-  const realTodayDay = realNow.getDate();
+  const realTodayMonth = realNow.getMonth(); // 0-indexed (e.g. 8 for September)
+  const realTodayDay = realNow.getDate(); // e.g. 25
 
-  // Calendar month/year navigation state (defaults to June 2025 clinic timeline, fully navigable to today)
-  const [viewYear, setViewYear] = useState<number>(2025);
-  const [viewMonth, setViewMonth] = useState<number>(5); // 5 = June
-  const [selectedDayNumber, setSelectedDayNumber] = useState<number | null>(12);
+  // Calendar month/year navigation state - DEFAULT TO TODAY'S REAL DATE
+  const [viewYear, setViewYear] = useState<number>(realTodayYear);
+  const [viewMonth, setViewMonth] = useState<number>(realTodayMonth);
+  const [selectedDayNumber, setSelectedDayNumber] = useState<number | null>(realTodayDay);
+
+  // Section Collapsible / Toggle States (allows toggling all cards on or off)
+  const [showBodyMoodHub, setShowBodyMoodHub] = useState<boolean>(true);
+  const [showAppointmentDetails, setShowAppointmentDetails] = useState<boolean>(false);
+  const [showJourney, setShowJourney] = useState<boolean>(false);
 
   // Consolidated Logging Hub State underneath White Calendar
   const [loggingTab, setLoggingTab] = useState<'body_mood' | 'food' | 'summary'>('body_mood');
@@ -67,15 +73,18 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   const [dailyBodyLogs, setDailyBodyLogs] = useState<Record<string, DailyBodyMoodLog>>(INITIAL_BODY_MOOD_LOGS);
   const [isEditingBodyLog, setIsEditingBodyLog] = useState<boolean>(false);
 
-  // Active form inputs (synced with selected day)
-  const [sleepHours, setSleepHours] = useState<number>(6);
-  const [sugarIntake, setSugarIntake] = useState<'none' | 'low' | 'high'>('low');
-  const [mood, setMood] = useState<'Calm' | 'Focused' | 'Fatigued' | 'Brain Fog' | 'Anxious'>('Calm');
-  const [burningFeet, setBurningFeet] = useState<number>(7);
-  const [handTingling, setHandTingling] = useState<number>(8);
-  const [rapidHeartbeat, setRapidHeartbeat] = useState<number>(7);
-  const [tremorsAtaxia, setTremorsAtaxia] = useState<number>(5);
-  const [bodyNotes, setBodyNotes] = useState<string>('');
+  // Initial form inputs (synced with today)
+  const todayDateKey = `${realTodayYear}-${String(realTodayMonth + 1).padStart(2, '0')}-${String(realTodayDay).padStart(2, '0')}`;
+  const initialTodayLog = INITIAL_BODY_MOOD_LOGS[todayDateKey];
+
+  const [sleepHours, setSleepHours] = useState<number>(initialTodayLog?.sleepHours ?? 7.5);
+  const [sugarIntake, setSugarIntake] = useState<'none' | 'low' | 'high'>(initialTodayLog?.sugarIntake ?? 'low');
+  const [mood, setMood] = useState<'Calm' | 'Focused' | 'Fatigued' | 'Brain Fog' | 'Anxious'>(initialTodayLog?.mood ?? 'Calm');
+  const [burningFeet, setBurningFeet] = useState<number>(initialTodayLog?.burningFeet ?? 3);
+  const [handTingling, setHandTingling] = useState<number>(initialTodayLog?.handTingling ?? 2);
+  const [rapidHeartbeat, setRapidHeartbeat] = useState<number>(initialTodayLog?.rapidHeartbeat ?? 5);
+  const [tremorsAtaxia, setTremorsAtaxia] = useState<number>(initialTodayLog?.tremorsAtaxia ?? 2);
+  const [bodyNotes, setBodyNotes] = useState<string>(initialTodayLog?.bodyNotes ?? '');
   const [bodySavedToast, setBodySavedToast] = useState<boolean>(false);
 
   // Food Logging State
@@ -86,12 +95,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   const [foodNotes, setFoodNotes] = useState<string>('');
   const [foodSavedToast, setFoodSavedToast] = useState<boolean>(false);
 
-  // Appointment & Journey Collapsible States
-  const [showAppointmentDetails, setShowAppointmentDetails] = useState<boolean>(false);
-  const [showJourney, setShowJourney] = useState<boolean>(false);
-
   // Selected date calculations
-  const activeDay = selectedDayNumber || (viewYear === 2025 && viewMonth === 5 ? 12 : (viewYear === realTodayYear && viewMonth === realTodayMonth ? realTodayDay : 1));
+  const activeDay = selectedDayNumber || (viewYear === realTodayYear && viewMonth === realTodayMonth ? realTodayDay : (viewYear === 2025 && viewMonth === 5 ? 12 : 1));
   const selectedDateObj = new Date(viewYear, viewMonth, activeDay);
   const selectedDateStr = selectedDateObj.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -461,34 +466,124 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
         </div>
       </div>
 
-      {/* 3. CONSOLIDATED DAILY LOGGING HUB */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-purple-100/80 space-y-4">
-        {/* Hub Header & Navigation Tabs */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center text-purple-900 shrink-0">
-                <HeartPulse className="w-4 h-4 text-purple-700" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 block">
-                  Daily Logging Hub · {selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-                <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
-                  Daily Body &amp; Mood or Food
-                </h3>
-              </div>
-            </div>
+      {/* Quick Section Toggles Bar (Toggle all sections on or off) */}
+      <div className="bg-purple-50/80 px-3.5 py-2.5 rounded-2xl border border-purple-200/60 text-xs flex items-center justify-between flex-wrap gap-2 shadow-2xs">
+        <div className="flex items-center gap-1.5 text-purple-900 font-extrabold text-[11px]">
+          <Sliders className="w-3.5 h-3.5 text-purple-700" />
+          <span>Section Toggles:</span>
+        </div>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setShowBodyMoodHub((v) => !v)}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold transition cursor-pointer border flex items-center gap-1 ${
+              showBodyMoodHub
+                ? 'bg-purple-800 text-white border-purple-800 shadow-2xs'
+                : 'bg-white text-purple-900 border-purple-200 hover:bg-purple-100'
+            }`}
+          >
+            <span>Body &amp; Mood</span>
+            <span>{showBodyMoodHub ? '▲' : '▼'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAppointmentDetails((v) => !v)}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold transition cursor-pointer border flex items-center gap-1 ${
+              showAppointmentDetails
+                ? 'bg-purple-800 text-white border-purple-800 shadow-2xs'
+                : 'bg-white text-purple-900 border-purple-200 hover:bg-purple-100'
+            }`}
+          >
+            <span>Wellness Check-in</span>
+            <span>{showAppointmentDetails ? '▲' : '▼'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowJourney((v) => !v)}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold transition cursor-pointer border flex items-center gap-1 ${
+              showJourney
+                ? 'bg-purple-800 text-white border-purple-800 shadow-2xs'
+                : 'bg-white text-purple-900 border-purple-200 hover:bg-purple-100'
+            }`}
+          >
+            <span>Endoscopy</span>
+            <span>{showJourney ? '▲' : '▼'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const allOpen = showBodyMoodHub && showAppointmentDetails && showJourney;
+              setShowBodyMoodHub(!allOpen);
+              setShowAppointmentDetails(!allOpen);
+              setShowJourney(!allOpen);
+            }}
+            className="text-[10px] font-black text-purple-800 hover:text-purple-950 underline px-1.5 cursor-pointer ml-1"
+          >
+            {showBodyMoodHub && showAppointmentDetails && showJourney ? 'Collapse all' : 'Toggle on all'}
+          </button>
+        </div>
+      </div>
 
+      {/* 3. CONSOLIDATED DAILY LOGGING HUB WITH EXPAND/COLLAPSE TOGGLE */}
+      <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-purple-100/80 space-y-3 transition-all">
+        {/* Toggleable Hub Header */}
+        <button
+          type="button"
+          onClick={() => setShowBodyMoodHub(!showBodyMoodHub)}
+          className="w-full text-left flex items-center justify-between gap-3 cursor-pointer group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[#E8DFF2] flex items-center justify-center text-purple-900 shadow-xs shrink-0 group-hover:scale-105 transition">
+              <HeartPulse className="w-5 h-5 text-purple-800" />
+            </div>
+            <div>
+              <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-purple-700 block">
+                Daily Logging Hub · {selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+              <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
+                Daily Body &amp; Mood or Food
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {currentSavedLog && !showBodyMoodHub && (
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-black bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full">
+                ✓ Logged
+              </span>
+            )}
             {(isSelectedRealToday || isSelectedJune12) && (
               <span className="text-[9px] font-black bg-[#EAE06D] text-slate-900 px-2 py-0.5 rounded-full border border-yellow-400">
                 Today
               </span>
             )}
+            <div className="flex items-center gap-1 bg-[#F3EDF7] hover:bg-purple-100 text-purple-950 px-2.5 py-1 rounded-full text-[11px] font-bold transition">
+              <span>{showBodyMoodHub ? 'Hide Logging' : 'Open Logging'}</span>
+              {showBodyMoodHub ? (
+                <ChevronUp className="w-3.5 h-3.5 text-purple-900" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5 text-purple-900" />
+              )}
+            </div>
           </div>
+        </button>
 
-          {/* Segmented Control Tabs */}
-          <div className="grid grid-cols-3 gap-1 bg-[#F3EDF7]/80 p-1 rounded-2xl text-xs font-bold">
+        {/* Collapsed Teaser Snapshot if a log exists */}
+        {!showBodyMoodHub && currentSavedLog && (
+          <div className="bg-[#F3EDF7]/50 rounded-2xl p-2.5 text-[11px] text-slate-700 flex items-center justify-between flex-wrap gap-2 border border-purple-100/60 animate-fade-in">
+            <span className="font-bold flex items-center gap-1.5 text-purple-950">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Status: {currentSavedLog.mood} · {currentSavedLog.sleepHours}h Sleep · {currentSavedLog.sugarIntake} added sugar</span>
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Tap &apos;Open Logging&apos; to view or edit</span>
+          </div>
+        )}
+
+        {/* EXPANDABLE BODY & MOOD CONTENT */}
+        {showBodyMoodHub && (
+          <div className="space-y-4 pt-1 border-t border-purple-100 animate-fade-in">
+            {/* Segmented Control Tabs */}
+            <div className="grid grid-cols-3 gap-1 bg-[#F3EDF7]/80 p-1 rounded-2xl text-xs font-bold">
             <button
               onClick={() => setLoggingTab('body_mood')}
               className={`py-1.5 px-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -525,7 +620,6 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               <span className="text-[11px]">Day Summary</span>
             </button>
           </div>
-        </div>
 
         {/* TAB 1: BODY & MOOD */}
         {loggingTab === 'body_mood' && (
@@ -1003,6 +1097,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             </div>
           </div>
         )}
+          </div>
+        )}
       </div>
 
       {/* 4. DAY SNAPSHOT DRAWER (when clicked from calendar) */}
@@ -1087,14 +1183,18 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           className="w-full text-left flex items-center justify-between gap-3 cursor-pointer group"
         >
           <div className="flex items-center gap-3">
-            {/* Yellow Square Badge "12" */}
+            {/* Dynamic Date Badge */}
             <div className="w-11 h-11 rounded-2xl bg-[#EAE06D] flex items-center justify-center font-black text-lg text-slate-900 shadow-xs shrink-0 group-hover:scale-105 transition">
-              12
+              {viewYear === 2025 && viewMonth === 5 ? 12 : activeDay}
             </div>
 
             <div>
               <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-purple-950/80 block">
-                {t.nextMarkedDay} · 10:30 AM
+                {viewYear === 2025 && viewMonth === 5
+                  ? 'June 12 · 10:30 AM'
+                  : isSelectedRealToday
+                  ? `Today, ${selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · 10:30 AM`
+                  : `${selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · 10:30 AM`}
               </span>
               <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
                 {t.wellnessCheckin}
@@ -1173,11 +1273,11 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => onOpenDayView?.(12)}
+                onClick={() => onOpenDayView?.(viewYear === 2025 && viewMonth === 5 ? 12 : activeDay)}
                 className="w-full bg-white hover:bg-slate-50 text-purple-950 text-xs font-black py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
               >
                 <CalendarCheck className="w-4 h-4 text-purple-700" />
-                <span>Open Day View (June 12)</span>
+                <span>Open Day View ({viewYear === 2025 && viewMonth === 5 ? 'June 12' : selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})</span>
               </button>
 
               <button
