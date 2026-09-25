@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Pill, CheckCircle2, X, ShieldAlert, FileCheck, Sparkles, Upload } from 'lucide-react';
+import { Pill, Phone } from 'lucide-react';
 import { Provider, Language, BillAuditResult } from '../types';
-import { INITIAL_PROVIDERS, DEMO_ASSETS } from '../data/initialData';
-import { auditBillApi } from '../services/api';
+import { INITIAL_PROVIDERS } from '../data/initialData';
 
 interface ProvidersTabProps {
   language: Language;
@@ -13,58 +12,53 @@ interface ProvidersTabProps {
   onClearCptFilter?: () => void;
 }
 
+const PROVIDER_PHONES: Record<string, string> = {
+  'dr-jordan-lee': '(555) 234-8901',
+  'dr-priya-shah': '(555) 482-1920',
+  'dr-elena-ruiz': '(555) 619-3382',
+  'dr-marcus-chen': '(555) 792-8811',
+};
+const PHARMACY_PHONE = '(555) 321-7654';
+
+const toTelHref = (phone: string) => `tel:${phone.replace(/[^0-9+]/g, '')}`;
+
+// Yellow circular call button shared by every card
+const CallButton: React.FC<{ phone: string; label: string }> = ({ phone, label }) => (
+  <a
+    href={toTelHref(phone)}
+    onClick={(e) => e.stopPropagation()}
+    className="w-12 h-12 rounded-full bg-[#E5DA7A] hover:bg-[#DCCF66] text-[#231A2F] flex items-center justify-center transition-all active:scale-95 shrink-0 ml-3"
+    title={`Call ${label}: ${phone}`}
+    aria-label={`Call ${label}`}
+  >
+    <Phone className="w-5 h-5" strokeWidth={1.9} />
+  </a>
+);
+
 export const ProvidersTab: React.FC<ProvidersTabProps> = ({
-  language,
-  onOpenBookingModal,
-  onOpenSoapModal,
-  onOpenBillAuditModal,
   selectedCptFilter,
   onClearCptFilter,
 }) => {
-  // Pharmacy refill state
-  const [refillSuccess, setRefillSuccess] = useState(false);
   const [pharmacyName, setPharmacyName] = useState('[Pharmacy name]');
   const [isEditingPharmacy, setIsEditingPharmacy] = useState(false);
-  const [isAuditingBill, setIsAuditingBill] = useState(false);
 
   // Providers data
   const primaryDoctor = INITIAL_PROVIDERS.find((p) => p.isPrimary) || INITIAL_PROVIDERS[0];
   const recommendedDoctors = INITIAL_PROVIDERS.filter((p) => !p.isPrimary);
 
-  const handleRefillClick = () => {
-    setRefillSuccess(true);
-    setTimeout(() => {
-      setRefillSuccess(false);
-    }, 4500);
-  };
-
-  const handleRunBillAudit = async (useDemo = true) => {
-    if (!onOpenBillAuditModal) return;
-    setIsAuditingBill(true);
-    try {
-      const res = await auditBillApi({
-        billText: useDemo
-          ? 'Metro Pathology Lab - CPT 83516 tTG-IgA 80.00, CPT 82306 25-OH Vitamin D 10.00. Denial code CO-50 Non-covered investigational test.'
-          : 'Patient request itemized billing review with CMS cash rates',
-        billImageBase64: useDemo ? DEMO_ASSETS.medicalBill : undefined,
-        language,
-      });
-      onOpenBillAuditModal(res);
-    } catch (e) {
-      console.error('Error auditing bill:', e);
-    } finally {
-      setIsAuditingBill(false);
-    }
-  };
+  const cardClass =
+    'bg-white rounded-[28px] px-4 py-4 flex items-center justify-between shadow-[0_2px_10px_rgba(35,26,47,0.05)]';
+  const sectionLabelClass =
+    'text-[13px] font-bold tracking-[0.14em] text-[#7A7185] uppercase px-0.5';
 
   return (
-    <div className="space-y-6 px-4 pt-4 pb-8 max-w-[420px] mx-auto text-slate-900">
+    <div className="space-y-7 px-4 pt-8 pb-10 max-w-[420px] mx-auto text-slate-900">
       {/* 1. TOP HEADER */}
       <div className="space-y-1">
-        <span className="text-[11px] font-extrabold tracking-[0.1em] text-[#6E6377] uppercase block">
+        <span className="text-[13px] font-bold tracking-[0.14em] text-[#7A7185] uppercase block">
           YOUR CARE TEAM
         </span>
-        <h1 className="text-[32px] font-black text-[#231A2F] tracking-tight leading-tight">
+        <h1 className="text-[34px] font-extrabold text-[#3F3850] tracking-tight leading-tight">
           Providers
         </h1>
       </div>
@@ -85,106 +79,80 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
       )}
 
       {/* 2. SECTION: YOUR PROVIDERS */}
-      <div className="space-y-2.5">
-        <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase px-0.5">
-          YOUR PROVIDERS
-        </h2>
+      <div className="space-y-3">
+        <h2 className={sectionLabelClass}>YOUR PROVIDERS</h2>
 
-        {/* Primary Doctor Card (Dr. Jordan Lee) */}
-        <div className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80">
-          <div className="flex items-center gap-3.5">
-            {/* Avatar Circle with Initials JL */}
-            <div className="w-12 h-12 rounded-full bg-[#FCE881] flex items-center justify-center font-bold text-slate-900 text-sm shrink-0 shadow-2xs">
+        <div className={cardClass}>
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-12 h-12 rounded-full bg-[#FCF3B8] flex items-center justify-center font-bold text-[#4A4358] text-[15px] shrink-0">
               {primaryDoctor.initials}
             </div>
-
-            <div>
-              <h3 className="text-[15px] font-bold text-[#231A2F] leading-tight">
+            <div className="min-w-0">
+              <h3 className="text-[17px] font-bold text-[#3F3850] leading-tight">
                 {primaryDoctor.name}
               </h3>
-              <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
+              <p className="text-[14px] text-[#6B6376] mt-0.5 leading-snug">
                 {primaryDoctor.specialty} · {primaryDoctor.subspecialty}
               </p>
-              <p className="text-[12px] text-[#7E7487] font-normal mt-0.5 leading-snug">
+              <p className="text-[13.5px] text-[#8A8295] mt-0.5 leading-snug">
                 Next visit: {primaryDoctor.nextVisit || 'June 12'}
               </p>
             </div>
           </div>
-
-          {/* Message Button */}
-          <button
-            onClick={onOpenSoapModal}
-            className="rounded-full border border-slate-300/90 bg-white hover:bg-slate-50 text-[#231A2F] font-semibold text-[13px] px-5 py-2 transition-all active:scale-95 shadow-xs shrink-0"
-          >
-            Message
-          </button>
+          {PROVIDER_PHONES[primaryDoctor.id] && (
+            <CallButton phone={PROVIDER_PHONES[primaryDoctor.id]} label={primaryDoctor.name} />
+          )}
         </div>
       </div>
 
       {/* 3. SECTION: RECOMMENDED PROVIDERS */}
-      <div className="space-y-2.5">
-        <div className="flex items-baseline justify-between px-0.5">
-          <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase">
+      <div className="space-y-3">
+        <div className="flex items-baseline justify-between gap-2 px-0.5">
+          <h2 className="text-[13px] font-bold tracking-[0.14em] text-[#7A7185] uppercase">
             RECOMMENDED PROVIDERS
           </h2>
-          <span className="text-[12.5px] font-medium text-[#6E6377]">
+          <span className="text-[13.5px] text-[#7A7185] whitespace-nowrap">
             Dermatology near you
           </span>
         </div>
 
-        {/* List of recommended dermatologists */}
         <div className="space-y-3">
           {recommendedDoctors.map((doc) => (
-            <div
-              key={doc.id}
-              className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80 transition-shadow hover:shadow-sm"
-            >
-              <div className="flex items-center gap-3.5">
-                {/* Purple Avatar Circle */}
-                <div className="w-12 h-12 rounded-full bg-[#EADDFF] flex items-center justify-center font-bold text-[#21005D] text-sm shrink-0 shadow-2xs">
+            <div key={doc.id} className={cardClass}>
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-12 h-12 rounded-full bg-[#ECE4F7] flex items-center justify-center font-bold text-[#4A4358] text-[15px] shrink-0">
                   {doc.initials}
                 </div>
-
-                <div>
-                  <h3 className="text-[15px] font-bold text-[#231A2F] leading-tight">
+                <div className="min-w-0">
+                  <h3 className="text-[17px] font-bold text-[#3F3850] leading-tight">
                     {doc.name}
                   </h3>
-                  <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
+                  <p className="text-[14px] text-[#6B6376] mt-0.5 leading-snug">
                     {doc.specialty} · {doc.subspecialty}
                   </p>
-                  <p className="text-[12px] text-[#7E7487] font-normal mt-0.5 leading-snug">
+                  <p className="text-[13.5px] text-[#8A8295] mt-0.5 leading-snug">
                     {doc.distance} · {doc.visitType}
                   </p>
                 </div>
               </div>
-
-              {/* Book Button */}
-              <button
-                onClick={() => onOpenBookingModal(doc)}
-                className="rounded-full bg-[#F1E56B] hover:bg-[#E5D95C] text-[#231A2F] font-bold text-[13px] px-6 py-2 transition-all active:scale-95 shadow-xs shrink-0"
-              >
-                Book
-              </button>
+              {PROVIDER_PHONES[doc.id] && (
+                <CallButton phone={PROVIDER_PHONES[doc.id]} label={doc.name} />
+              )}
             </div>
           ))}
         </div>
       </div>
 
       {/* 4. SECTION: YOUR PHARMACIES */}
-      <div className="space-y-2.5">
-        <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase px-0.5">
-          YOUR PHARMACIES
-        </h2>
+      <div className="space-y-3">
+        <h2 className={sectionLabelClass}>YOUR PHARMACIES</h2>
 
-        {/* Pharmacy Card */}
-        <div className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80">
-          <div className="flex items-center gap-3.5">
-            {/* Yellow Avatar Circle with Capsule Pill Icon */}
-            <div className="w-12 h-12 rounded-full bg-[#FCE881] flex items-center justify-center text-slate-800 shrink-0 shadow-2xs">
-              <Pill className="w-5 h-5 -rotate-45 text-slate-900" strokeWidth={2.3} />
+        <div className={cardClass}>
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-12 h-12 rounded-full bg-[#FCF3B8] flex items-center justify-center text-[#4A4358] shrink-0">
+              <Pill className="w-5 h-5" strokeWidth={1.9} />
             </div>
-
-            <div>
+            <div className="min-w-0">
               {isEditingPharmacy ? (
                 <div className="flex items-center gap-1.5">
                   <input
@@ -193,7 +161,7 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
                     onChange={(e) => setPharmacyName(e.target.value)}
                     onBlur={() => setIsEditingPharmacy(false)}
                     autoFocus
-                    className="text-[15px] font-bold text-[#231A2F] border-b border-purple-400 outline-none w-36"
+                    className="text-[17px] font-bold text-[#3F3850] border-b border-purple-400 outline-none w-36"
                   />
                   <button
                     onClick={() => setIsEditingPharmacy(false)}
@@ -205,91 +173,23 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
               ) : (
                 <h3
                   onClick={() => setIsEditingPharmacy(true)}
-                  className="text-[15px] font-bold text-[#231A2F] leading-tight cursor-pointer hover:underline"
+                  className="text-[17px] font-bold text-[#3F3850] leading-tight cursor-pointer hover:underline"
                   title="Click to rename pharmacy"
                 >
                   {pharmacyName}
                 </h3>
               )}
-              <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
+              <p className="text-[14px] text-[#6B6376] mt-0.5 leading-snug">
                 Birth control · Vitamin D
               </p>
-              <p className="text-[12px] text-[#7E7487] font-normal mt-0.5 leading-snug">
+              <p className="text-[13.5px] text-[#8A8295] mt-0.5 leading-snug">
                 0.8 mi · Open until 9 PM
               </p>
             </div>
           </div>
-
-          {/* Refill Button */}
-          <button
-            onClick={handleRefillClick}
-            className="rounded-full bg-[#F1E56B] hover:bg-[#E5D95C] text-[#231A2F] font-bold text-[13px] px-5 py-2 transition-all active:scale-95 shadow-xs shrink-0"
-          >
-            Refill
-          </button>
+          <CallButton phone={PHARMACY_PHONE} label={pharmacyName} />
         </div>
       </div>
-
-      {/* Refill Confirmation Banner */}
-      {refillSuccess && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl p-3 flex items-center justify-between text-xs font-semibold shadow-sm animate-fade-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Refill requested for Birth control & Vitamin D! Ready by 4:00 PM.</span>
-          </div>
-          <button
-            onClick={() => setRefillSuccess(false)}
-            className="text-emerald-700 hover:text-emerald-900 p-1"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
-
-      {/* 5. SECTION: SURPRISE LAB BILL DEFENDER */}
-      {onOpenBillAuditModal && (
-        <div className="bg-[#B6A1DA] rounded-3xl p-5 text-slate-900 shadow-sm space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#EAE06D] flex items-center justify-center text-slate-900 shrink-0 shadow-xs">
-              <ShieldAlert className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <div className="flex-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-900/80 block">
-                Massive Blood Panel Lab Bill Defender
-              </span>
-              <h3 className="font-extrabold text-base text-slate-900 leading-snug">
-                Hit with an $800+ Surprise Lab Bill?
-              </h3>
-              <p className="text-xs text-slate-800/90 mt-1 leading-relaxed">
-                Insurers routinely deny Vitamin D (CPT 82306) and specialized antibody tests as &quot;investigational&quot;. We generate a 1-click dispute letter and CMS fair cash benchmark comparison.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            <button
-              onClick={() => handleRunBillAudit(true)}
-              disabled={isAuditingBill}
-              className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
-            >
-              {isAuditingBill ? (
-                <Sparkles className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <FileCheck className="w-3.5 h-3.5" />
-              )}
-              <span>Demo: Audit $1,180 Massive Blood Panel Bill</span>
-            </button>
-            <button
-              onClick={() => handleRunBillAudit(false)}
-              disabled={isAuditingBill}
-              className="bg-white/90 hover:bg-white text-slate-900 text-xs font-bold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
-            >
-              <Upload className="w-3.5 h-3.5 text-purple-700" />
-              <span>Upload Bill Photo / EOB</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
