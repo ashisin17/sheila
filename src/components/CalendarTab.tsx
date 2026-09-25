@@ -14,9 +14,11 @@ import {
   CalendarCheck,
   Stethoscope,
   Info,
+  Utensils,
+  Plus,
 } from 'lucide-react';
-import { Language, MarkedDay, EndoscopyPlan } from '../types';
-import { TRANSLATIONS, INITIAL_ENDOSCOPY_PLAN } from '../data/initialData';
+import { Language, MarkedDay, EndoscopyPlan, FoodLogEntry } from '../types';
+import { TRANSLATIONS, INITIAL_ENDOSCOPY_PLAN, INITIAL_FOOD_LOGS } from '../data/initialData';
 
 interface CalendarTabProps {
   language: Language;
@@ -24,6 +26,8 @@ interface CalendarTabProps {
   onOpenSoapModal: () => void;
   onNavigateToProviders: (cptCodeFilter?: string) => void;
   endoscopyPlan?: EndoscopyPlan;
+  onOpenDayView?: (dayNumber: number) => void;
+  foodLogs?: FoodLogEntry[];
 }
 
 export const CalendarTab: React.FC<CalendarTabProps> = ({
@@ -32,6 +36,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   onOpenSoapModal,
   onNavigateToProviders,
   endoscopyPlan = INITIAL_ENDOSCOPY_PLAN,
+  onOpenDayView,
+  foodLogs = INITIAL_FOOD_LOGS,
 }) => {
   const t = TRANSLATIONS[language].calendar;
 
@@ -46,6 +52,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   });
 
   const selectedDayData = selectedDayNumber ? markedMap.get(selectedDayNumber) : null;
+  const selectedDayFoods = selectedDayNumber ? foodLogs.filter((f) => f.day === selectedDayNumber) : [];
 
   // Check if cluster detected
   const hasNeurologicalCluster = markedDays.some((d) => d.isNeurologicalCluster);
@@ -220,6 +227,53 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Logged Foods for this Day */}
+          {selectedDayFoods.length > 0 && (
+            <div className="bg-white/80 rounded-2xl p-2.5 border border-purple-200/80 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+                <span className="flex items-center gap-1 text-purple-900">
+                  <Utensils className="w-3 h-3 text-purple-700" />
+                  <span>Logged Food &amp; Drinks</span>
+                </span>
+                <span className="text-[9px] bg-purple-100 text-purple-900 font-bold px-1.5 py-0.2 rounded-full">
+                  {selectedDayFoods.length} items
+                </span>
+              </div>
+              <div className="space-y-1">
+                {selectedDayFoods.map((f) => (
+                  <div
+                    key={f.id}
+                    className={`p-1.5 rounded-xl border text-[11px] flex items-start justify-between gap-1.5 ${
+                      f.suspectedTrigger
+                        ? 'bg-amber-50/90 border-amber-300 text-amber-950'
+                        : 'bg-white/90 border-purple-100 text-slate-800'
+                    }`}
+                  >
+                    <div>
+                      <span className="font-extrabold text-slate-900">{f.time} · {f.item}</span>
+                      {f.location && <span className="text-slate-500 text-[10px]"> ({f.location})</span>}
+                      {f.notes && <p className="text-[10px] text-slate-600 mt-0.5">{f.notes}</p>}
+                    </div>
+                    {f.suspectedTrigger && (
+                      <span className="text-[8px] font-black bg-amber-200 text-amber-950 px-1 py-0.5 rounded shrink-0">
+                        Hidden Gluten
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Action to Open Day View & Log Meals */}
+          <button
+            onClick={() => onOpenDayView?.(selectedDayNumber || 12)}
+            className="w-full bg-white hover:bg-slate-50 text-purple-950 text-xs font-bold py-2 rounded-xl border border-purple-200 shadow-2xs flex items-center justify-center gap-1.5 transition active:scale-98 cursor-pointer"
+          >
+            <Utensils className="w-3.5 h-3.5 text-purple-700" />
+            <span>Open Day View &amp; Log What I Ate</span>
+          </button>
         </div>
       )}
 
@@ -246,14 +300,40 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           </div>
         </div>
 
+        {/* Day 12 Food Log Highlight */}
+        <div className="bg-white/60 rounded-2xl p-2.5 border border-purple-300/40 text-xs space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-black uppercase text-purple-950">
+            <span className="flex items-center gap-1">
+              <Utensils className="w-3 h-3 text-purple-800" />
+              <span>Logged on June 12:</span>
+            </span>
+            <span className="bg-[#EAE06D] text-slate-900 px-1.5 py-0.2 rounded font-extrabold text-[9px]">
+              Caramel Drizzle Latte
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-800 leading-tight">
+            11:00 AM at Campus Cafe · Did not know caramel syrup contains barley malt gluten.
+          </p>
+        </div>
+
         {/* 1-Click "8-Doctor-Proof" SOAP Memo Button */}
-        <button
-          onClick={onOpenSoapModal}
-          className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-3 px-4 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 active:scale-98"
-        >
-          <Sparkles className="w-4 h-4 text-slate-900" />
-          <span>{t.generateSoapBtn}</span>
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <button
+            onClick={() => onOpenDayView?.(12)}
+            className="w-full bg-white hover:bg-slate-50 text-purple-950 text-xs font-black py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+          >
+            <CalendarCheck className="w-4 h-4 text-purple-700" />
+            <span>Open Day View (June 12)</span>
+          </button>
+
+          <button
+            onClick={onOpenSoapModal}
+            className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-black py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-slate-900" />
+            <span>Doctor Visit Prep</span>
+          </button>
+        </div>
       </div>
 
       {/* 5. THE 4-MONTH ENDOSCOPY WAIT & "GLUTEN CHALLENGE" SMART PLANNER */}

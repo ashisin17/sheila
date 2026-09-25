@@ -79,33 +79,34 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
         }
       },
       syrup_sauce: {
-        compoundName: 'Barley Malt Extract & Caramel Color (Hidden Gluten)',
+        compoundName: 'Caramel Drizzle & Syrup (Hidden Barley Malt Gluten)',
         category: 'gluten',
-        riskScore: 9.4,
+        riskScore: 9.2,
         riskLevel: 'High Risk',
-        crossContaminationTraps: 'Artisan caramel syrups, mocha drizzles, and savory gravies frequently use barley malt syrup or wheat starch as thickening agents without explicit allergen disclosure.',
-        concreteCorrelation: 'Logged 4 times before acute hand tremors and ataxia episodes. Directly damages duodenal brush-border enzymes.',
-        clinicalMechanism: 'Hordein proteins in barley malt bind to HLA-DQ2/DQ8 receptors, accelerating small intestinal mucosal blunting and blocking vitamin B12 absorption in the distal ileum.',
+        crossContaminationTraps: 'Many café caramel syrups and drizzles use barley malt extract or coloring. Barley has gluten, which triggers severe nerve tingling and brain fog even if you do not have stomach pain.',
+        concreteCorrelation: 'Cross-checking what you logged today at 11:00 AM: You had an Iced Latte with caramel drizzle. Caramel syrup commonly contains barley malt (hidden gluten), which irritates nerves and triggers shaky hands, tremors, and brain fog within 2 to 6 hours.',
+        clinicalMechanism: 'Barley malt has gluten. For celiac, gluten causes an immune response that irritates small nerve endings and blocks nutrient absorption, leading to shaky fingers and brain fog.',
         exactQuestionToAsk: {
-          en: '“Does this caramel sauce or flavoring syrup contain any barley malt, malt syrup, or wheat-derived starch?”',
-          es: '“¿Este sirope de caramelo o aderezo contiene extracto de malta de cebada, jarabe de malta o almidón de trigo?”',
-          zh: '“请问这款焦糖风味糖浆或酱汁中，是否含有大麦芽提取物（Barley Malt）、麦芽糖浆或任何小麦淀粉？”'
+          en: '“Does this caramel sauce or flavoring syrup contain any barley malt, malt syrup, or wheat ingredients?”',
+          es: '“¿Este sirope o salsa de caramelo contiene extracto de malta de cebada o trigo?”',
+          zh: '“请问这款焦糖糖浆或酱汁中，是否含有大麦芽提取物（Barley Malt）或小麦成分？”'
         },
         recommendations: [
-          'Choose pure organic maple syrup or certified gluten-free vanilla extract.',
-          'Inspect commercial sauce bottles for "maltodextrin (wheat)" or "barley flavoring".',
-          'Document flare in June Calendar for Dr. Priya Shah review.'
+          'Safe Swap: Order pure vanilla syrup or pure maple syrup instead of caramel drizzle.',
+          'Drink 16 oz water with electrolytes to calm nerve inflammation.',
+          'Take your sublingual B12 to soothe nerve tingling and rest quietly.',
+          'Ask the barista: “Could you please rinse the pitcher and shaker before making my drink?”'
         ],
         calendarEventSuggestion: {
-          title: 'Barley Malt Exposure: Hand Tremors & Ataxia',
-          date: 'June 8, 2025',
-          severity: 9,
-          notes: 'Artisan caramel syrup contained hidden barley malt; severe tingling and unsteadiness.'
+          title: 'Hidden Gluten Flare: Caramel Drizzle Syrup',
+          date: 'June 12, 2025',
+          severity: 8.5,
+          notes: 'Caramel drizzle contained barley malt; caused finger tremors, brain fog, and hand tingling.'
         },
         healthBoardTag: {
-          name: 'Barley Malt & Caramel Sauces',
-          riskBadge: 'Strict Gluten Trap',
-          notes: 'Contains hordein prolamins that destroy intestinal villi and trigger peripheral neuropathy.'
+          name: 'Caramel Drizzle & Syrups',
+          riskBadge: 'Hidden Gluten Trap',
+          notes: 'Often contains barley malt extract; causes shaky finger tremors and nerve tingling.'
         }
       },
       checkin: {
@@ -155,9 +156,12 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
       });
     }
 
-    const systemInstruction = `You are a clinical Celiac & Neuro-Immunology specialist assisting Sheila (age 28), who has Atypical Celiac Disease, Intestinal Villous Atrophy, and Severe Peripheral Small Fiber Neuropathy (Burning Feet, Hand Tingling, Tremors/Ataxia, Rapid Heartbeat).
-Current biometrics: Hours Slept (${hoursSlept}h), Sugar (${sugarIntake}), Alcohol (${alcoholDrinks} drinks). Symptoms: Burning Feet (${burningFeet}/10), Hand Tingling (${handTingling}/10), Tremors/Ataxia (${tremorsAtaxia}/10), Heartbeat (${rapidHeartbeat}/10), Joint Pain (${jointPain}/10).
-Analyze the coffee shop menu, oat milk carton, sauce, or meal photo for hidden gluten and cross-contamination (shared lines, shared steam wands, barley malt, modified wheat starch). Provide an exact 1-sentence question for the barista/waiter in English, Spanish, and Simplified Chinese. Explain the exact neurological mechanism.
+    const systemInstruction = `You are Sheila, a warm, caring, and knowledgeable AI health advocate helping Chloe (age 22), who has Celiac Disease with nerve symptoms (hand tingling, finger tremors, burning feet, rapid heartbeat, and brain fog).
+Current check-in: Hours Slept (${hoursSlept}h), Sugar (${sugarIntake}), Alcohol (${alcoholDrinks} drinks). Symptoms: Burning Feet (${burningFeet}/10), Hand Tingling (${handTingling}/10), Tremors/Shaky Hands (${tremorsAtaxia}/10), Heartbeat (${rapidHeartbeat}/10).
+Analyze the coffee shop item, menu, syrup, food, or check-in. Keep your explanation CLEAN, EMPATHETIC, AND SIMPLE (no overly dense or confusing medical jargon; use clear words like "barley malt gluten", "small intestine healing", "nerve tingling", "calm inflammation").
+If the user asks if they can try a syrup/food, give direct guidance and safe alternatives (like pure vanilla or maple syrup).
+If the user describes feeling shaky tremors or brain fog today, explain how items like caramel syrup/drizzle often hide barley malt gluten that triggers nerve flares within hours, and give immediate soothing steps (hydrate, take B12, rest).
+Provide an exact 1-sentence question for the barista/waiter in English, Spanish, and Simplified Chinese.
 Language requested: ${language}.`;
 
     const contents = parts.length > 0 
