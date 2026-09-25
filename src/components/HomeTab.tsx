@@ -342,7 +342,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         `Heart Rate: ${rapidHeartbeat > 7 ? 'Tachycardia' : 'Elevated'}`,
       ],
       imageUrl: selectedImage || undefined,
-      notes: analysisResult.concreteCorrelation,
+      notes: analysisResult.concreteCorrelation || analysisResult.generalAdvice || '',
       isNeurologicalCluster: true,
     };
     onPinToCalendar(newDay);
@@ -356,7 +356,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       name: analysisResult.healthBoardTag.name || analysisResult.compoundName,
       category: 'cross_contamination',
       riskBadge: analysisResult.healthBoardTag.riskBadge || `${analysisResult.riskLevel} (${analysisResult.riskScore}/10)`,
-      notes: analysisResult.healthBoardTag.notes || analysisResult.concreteCorrelation,
+      notes: analysisResult.healthBoardTag.notes || analysisResult.concreteCorrelation || analysisResult.generalAdvice || '',
       dateAdded: 'Today',
     };
     onAddToHealthBoard(newTrigger);
@@ -580,24 +580,40 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 className="text-[10px] font-bold bg-[#EAE06D]/70 hover:bg-[#EAE06D] text-slate-900 px-3 py-1.5 rounded-full transition border border-yellow-300 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95"
               >
                 <span>☕</span>
-                <span>&ldquo;Can I try this syrup?&rdquo; (Get Safe Recommendations)</span>
+                <span>&ldquo;Can I try this syrup? What safe alternatives do you recommend?&rdquo;</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
                   handleQuickQuestion(
-                    "I'm experiencing shaky hand tremors and severe brain fog today. Could anything that I ate or drank earlier have caused this?",
-                    'syrup_sauce',
-                    DEMO_ASSETS.caramelSauce,
-                    'Iced_Latte_Caramel_Drizzle.jpg',
-                    { tremors: 8, tingling: 8, feet: 7, heart: 8 }
+                    "I'm having burning feet, tingling hands, and heart racing right now. What should I do?",
+                    'checkin',
+                    undefined,
+                    undefined,
+                    { tremors: 8, tingling: 8, feet: 8, heart: 8 }
                   );
                 }}
                 className="text-[10px] font-bold bg-[#E8DFF2] hover:bg-purple-200 text-purple-950 px-3 py-1.5 rounded-full transition border border-purple-300/80 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95"
               >
-                <span>❓</span>
-                <span>&ldquo;Feeling tremors &amp; brain fog TODAY... could something I ate cause this?&rdquo;</span>
+                <span>⚡</span>
+                <span>&ldquo;Having burning feet &amp; tremors right now... what should I do?&rdquo;</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleQuickQuestion(
+                    "Ordering an oat latte at café — what should I ask the barista?",
+                    'menu_oatmilk',
+                    DEMO_ASSETS.oatMilkMenu,
+                    'Barista_Oat_Milk_Menu_Scan.jpg'
+                  );
+                }}
+                className="text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-950 px-3 py-1.5 rounded-full transition border border-amber-300 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95"
+              >
+                <span>💬</span>
+                <span>&ldquo;Ordering oat latte — what to ask barista?&rdquo;</span>
               </button>
 
               <button
@@ -692,156 +708,241 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       )}
 
-      {/* 3. INSTANT ACTIONABLE AI OUTPUT ("HIDDEN GLUTEN & CROSS-CONTAMINATION TRAP CARD") */}
-      {analysisResult && (
-        <div className="bg-white rounded-3xl p-5 shadow-md border-2 border-[#B6A1DA] space-y-3 transition-all duration-300">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2 border-b border-purple-100 pb-3">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase font-extrabold tracking-wider bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
-                  {t.actionCardTitle}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
-                  {analysisResult.riskLevel} ({analysisResult.riskScore}/10)
-                </span>
-              </div>
-              <h3 className="font-black text-base text-slate-900 mt-1">
-                {analysisResult.compoundName}
-              </h3>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-[#EAE06D] flex items-center justify-center text-slate-900 shrink-0">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
+      {/* 3. INSTANT ACTIONABLE AI OUTPUT */}
+      {analysisResult && (() => {
+        const queryLower = (inputText || '').toLowerCase();
 
-          {/* EXACT QUESTION TO ASK BARISTA / WAITER CALLOUT */}
-          <div className="bg-[#EAE06D]/30 border-2 border-[#EAE06D] rounded-2xl p-3.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-black tracking-wider text-slate-800 flex items-center gap-1">
-                <HelpCircle className="w-3.5 h-3.5 text-purple-800" />
-                <span>{t.questionToAsk}</span>
-              </span>
+        // Is user asking about a symptom rather than a specific item?
+        const isPureSymptomQuery =
+          (queryLower.includes('symptom') ||
+            queryLower.includes('what to do') ||
+            queryLower.includes('what should i do') ||
+            queryLower.includes('having this') ||
+            queryLower.includes('feel') ||
+            queryLower.includes('flare') ||
+            queryLower.includes('hurts') ||
+            queryLower.includes('burning') ||
+            queryLower.includes('tingling')) &&
+          !selectedImage &&
+          !queryLower.includes('syrup') &&
+          !queryLower.includes('oat') &&
+          !queryLower.includes('bread') &&
+          !queryLower.includes('caramel') &&
+          !queryLower.includes('milk') &&
+          !queryLower.includes('latte') &&
+          !queryLower.includes('barista');
+
+        // Card 1: What to know about this item
+        // "What to know about this item --> only pull up if someone is ASKING abotu the item, otherwise have LLM use the adfice and just genratle things. 
+        // ex: if someoe asks having this symypl what to do? DONT pull up food informaiton"
+        const showItemCard =
+          analysisResult.isItemSpecific !== false &&
+          !isPureSymptomQuery &&
+          Boolean(analysisResult.crossContaminationTraps && analysisResult.crossContaminationTraps.trim().length > 0);
+
+        // Card 2: WHAT TO ASK THE BARISTA OR SERVER
+        // Only pull up if asking about dining out / café / barista / server / ordering / meal
+        const showBaristaCard =
+          analysisResult.showBaristaQuestion ??
+          (!isPureSymptomQuery &&
+            (queryLower.includes('barista') ||
+              queryLower.includes('server') ||
+              queryLower.includes('waiter') ||
+              queryLower.includes('chef') ||
+              queryLower.includes('order') ||
+              queryLower.includes('café') ||
+              queryLower.includes('restaurant') ||
+              queryLower.includes('menu') ||
+              queryLower.includes('latte') ||
+              queryLower.includes('ask') ||
+              activeAction === 'menu_oatmilk' ||
+              activeAction === 'syrup_sauce' ||
+              activeAction === 'dish_restaurant'));
+
+        // Card 3: SAFE ALTERNATIVES TO ORDER INSTEAD
+        // "SAFE ALTERNATIVES TO ORDER INSTEAD -> only need with food if ASKING for altneratives! want this to be SMART LLM"
+        const asksAlternatives =
+          analysisResult.showSafeAlternatives ??
+          (queryLower.includes('alternative') ||
+            queryLower.includes('instead') ||
+            queryLower.includes('swap') ||
+            queryLower.includes('substitute') ||
+            queryLower.includes('recommend'));
+
+        const showSafeAlternativesCard =
+          asksAlternatives &&
+          !isPureSymptomQuery &&
+          Boolean(analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0);
+
+        // Advocacy question text
+        const questionText =
+          analysisResult.exactQuestionToAsk?.[language] ||
+          analysisResult.exactQuestionToAsk?.en ||
+          'I have Celiac Disease and severe nerve sensitivity; can you confirm this meal is made with fresh ingredients in clean pans with zero gluten or shared toaster/fryer contact?';
+
+        // Comforting advice / general guidance
+        const clinicalAdvice =
+          analysisResult.generalAdvice ||
+          (isPureSymptomQuery
+            ? 'Avoid processed GF snack foods or takeout fryers today; even trace gluten or hidden malt extract can worsen intestinal inflammation and prolong your nerve flare. Your nervous system is overly sensitized and needs gentle, steady energy and mineral replenishment.'
+            : analysisResult.clinicalMechanism);
+
+        return (
+          <div className="bg-white rounded-3xl p-5 shadow-md border-2 border-[#B6A1DA] space-y-3 transition-all duration-300">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2 border-b border-purple-100 pb-3">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
+                    {isPureSymptomQuery ? 'CLINICAL GUIDANCE' : t.actionCardTitle}
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
+                    {analysisResult.riskLevel} ({analysisResult.riskScore}/10)
+                  </span>
+                </div>
+                <h3 className="font-black text-base text-slate-900 mt-1">
+                  {analysisResult.compoundName}
+                </h3>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#EAE06D] flex items-center justify-center text-slate-900 shrink-0">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            </div>
+
+            {/* CARD: WHAT TO ASK THE BARISTA OR SERVER */}
+            {showBaristaCard && (
+              <div className="bg-[#EAE06D]/30 border-2 border-[#EAE06D] rounded-2xl p-3.5 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-black tracking-wider text-slate-800 flex items-center gap-1">
+                    <HelpCircle className="w-3.5 h-3.5 text-purple-800" />
+                    <span>WHAT TO ASK THE BARISTA OR SERVER:</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(questionText);
+                      setCopiedQuestion(true);
+                      setTimeout(() => setCopiedQuestion(false), 2000);
+                    }}
+                    className="bg-white text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full border border-yellow-300 shadow-2xs hover:bg-yellow-50 flex items-center gap-1 transition cursor-pointer active:scale-95"
+                  >
+                    {copiedQuestion ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedQuestion ? 'Copied!' : 'Copy'}</span>
+                  </button>
+                </div>
+                <p className="text-xs text-slate-900 font-bold font-serif italic leading-relaxed">
+                  {questionText}
+                </p>
+              </div>
+            )}
+
+            {/* CARD: What to know about this item (ONLY when asking about the item, NEVER for symptom queries) */}
+            {showItemCard && (
+              <div className="bg-[#F3EDF7] rounded-2xl p-3 border border-purple-200/70 space-y-1">
+                <span className="text-[10px] font-extrabold uppercase text-purple-900 block">
+                  What to know about this item
+                </span>
+                <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                  {analysisResult.crossContaminationTraps}
+                </p>
+              </div>
+            )}
+
+            {/* Note: "Sheila's Food Log Cross-Check" card has been completely removed as requested! */}
+
+            {/* CARD: Clinical Guidance & Recovery Advice (General LLM advice for symptom relief or context) */}
+            {clinicalAdvice && (
+              <div className="bg-[#F3EDF7] rounded-2xl p-3.5 border border-purple-200/80 space-y-1.5">
+                <div className="text-[10px] font-extrabold uppercase text-purple-950 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-700" />
+                  <span>Clinical Guidance &amp; Recovery Advice</span>
+                </div>
+                <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                  {clinicalAdvice}
+                </p>
+              </div>
+            )}
+
+            {/* CARD: SAFE ALTERNATIVES TO ORDER INSTEAD (ONLY when food-related AND asking for alternatives) */}
+            {showSafeAlternativesCard && analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0 && (
+              <div className="bg-emerald-50/90 rounded-2xl p-3.5 border border-emerald-300 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
+                  </span>
+                  <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+                    100% Gluten-Free
+                  </span>
+                </div>
+                <ul className="text-xs text-slate-800 space-y-2 font-medium pl-0.5">
+                  {analysisResult.safeAlternatives.map((alt, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                        {i + 1}
+                      </span>
+                      <span className="leading-snug">{alt}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* CARD: Steps to feel better right now */}
+            {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
+              <div className="bg-slate-50/90 rounded-2xl p-3.5 border border-slate-200/70 space-y-1.5">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 block">
+                  Steps to feel better right now
+                </span>
+                <ul className="text-xs text-slate-800 space-y-1.5">
+                  {analysisResult.recommendations.map((rec, i) => (
+                    <li key={i} className="flex items-start gap-1.5 leading-snug">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 2 One-Click Action Buttons */}
+            <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
-                onClick={handleCopyQuestion}
-                className="bg-white text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full border border-yellow-300 shadow-2xs hover:bg-yellow-50 flex items-center gap-1 transition"
+                onClick={handlePinCalendar}
+                disabled={pinnedToCal}
+                className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                  pinnedToCal
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : 'bg-[#B6A1DA] hover:bg-purple-300 text-slate-900 active:scale-98'
+                }`}
               >
-                {copiedQuestion ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedQuestion ? 'Copied!' : t.copyQuestion}</span>
+                <CalendarPlus className="w-4 h-4" />
+                <span>
+                  {pinnedToCal
+                    ? '✓ Pinned to Calendar'
+                    : '+ Pin to Calendar'}
+                </span>
+              </button>
+
+              <button
+                onClick={handleAddToBoard}
+                disabled={addedToBoard}
+                className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                  addedToBoard
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : 'bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 active:scale-98'
+                }`}
+              >
+                <BookmarkPlus className="w-4 h-4" />
+                <span>
+                  {addedToBoard
+                    ? '✓ Saved to Health Board'
+                    : '+ Save Safe Swap to Board'}
+                </span>
               </button>
             </div>
-            <p className="text-xs text-slate-900 font-bold font-serif italic leading-relaxed">
-              {analysisResult.exactQuestionToAsk[language] || analysisResult.exactQuestionToAsk.en}
-            </p>
           </div>
-
-          {/* Cross Contamination Traps */}
-          <div className="bg-[#F3EDF7] rounded-2xl p-3 border border-purple-200/70 space-y-1">
-            <span className="text-[10px] font-extrabold uppercase text-purple-900 block">
-              What to know about this item
-            </span>
-            <p className="text-xs text-slate-800 leading-relaxed font-medium">
-              {analysisResult.crossContaminationTraps}
-            </p>
-          </div>
-
-          {/* Concrete Correlation Callout */}
-          <div className="bg-white rounded-2xl p-3 border border-purple-100 space-y-1">
-            <div className="text-[11px] font-extrabold uppercase text-slate-900 flex items-center gap-1">
-              <Activity className="w-3.5 h-3.5 text-rose-600" />
-              <span>Sheila&apos;s Food Log Cross-Check</span>
-            </div>
-            <p className="text-xs text-slate-800 leading-relaxed font-medium">
-              {analysisResult.concreteCorrelation}
-            </p>
-          </div>
-
-          {/* SAFE ALTERNATIVES TO ORDER INSTEAD - DYNAMIC FROM LLM */}
-          {((analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0) || true) && (
-            <div className="bg-emerald-50/90 rounded-2xl p-3.5 border border-emerald-300 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
-                </span>
-                <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
-                  100% Gluten-Free
-                </span>
-              </div>
-              <ul className="text-xs text-slate-800 space-y-2 font-medium pl-0.5">
-                {(analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0
-                  ? analysisResult.safeAlternatives
-                  : [
-                      'Ask for certified 100% gluten-free preparation in a clean, dedicated pan or toaster.',
-                      'Choose naturally gluten-free whole food options with clean, simple ingredients.',
-                    ]
-                ).map((alt, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                      {i + 1}
-                    </span>
-                    <span className="leading-snug">{alt}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Recommendations / Steps to feel better */}
-          {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
-            <div className="bg-slate-50/80 rounded-2xl p-3 border border-slate-200/70 space-y-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-                Steps to feel better right now
-              </span>
-              <ul className="text-xs text-slate-800 space-y-1.5">
-                {analysisResult.recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-1.5 leading-snug">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>{rec}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* 2 One-Click Action Buttons */}
-          <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              onClick={handlePinCalendar}
-              disabled={pinnedToCal}
-              className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
-                pinnedToCal
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                  : 'bg-[#B6A1DA] hover:bg-purple-300 text-slate-900 active:scale-98'
-              }`}
-            >
-              <CalendarPlus className="w-4 h-4" />
-              <span>
-                {pinnedToCal
-                  ? '✓ Pinned to Calendar'
-                  : '+ Pin to Calendar'}
-              </span>
-            </button>
-
-            <button
-              onClick={handleAddToBoard}
-              disabled={addedToBoard}
-              className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
-                addedToBoard
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                  : 'bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 active:scale-98'
-              }`}
-            >
-              <BookmarkPlus className="w-4 h-4" />
-              <span>
-                {addedToBoard
-                  ? '✓ Saved to Health Board'
-                  : '+ Save Safe Swap to Board'}
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
