@@ -1,6 +1,8 @@
 {
-  "name": "AuraHealth - AI Health Advocacy & Flare Navigator",
+  "name": "Remix AuraHealth - AI Health Advocacy \u0026 Flare Navigator",
   "description": "Mobile-first AI health advocate for chronic and autoimmune flare tracking, multimodal trigger detection, clinical SOAP note generation, and transparent medical bill defense.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
