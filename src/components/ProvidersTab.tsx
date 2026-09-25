@@ -39,7 +39,7 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
   selectedCptFilter,
   onClearCptFilter,
 }) => {
-  const [pharmacyName, setPharmacyName] = useState('[Pharmacy name]');
+  const [pharmacyName, setPharmacyName] = useState('Lakeview Pharmacy');
   const [isEditingPharmacy, setIsEditingPharmacy] = useState(false);
 
   // Providers data
