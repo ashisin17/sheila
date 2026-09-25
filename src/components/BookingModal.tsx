@@ -137,8 +137,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span className="font-black text-sm text-slate-900">${provider.cashVisitPrice}</span>
               </div>
               <div className="bg-white/70 p-2 rounded-xl">
-                <span className="text-[10px] text-slate-500 block">CPT 86038 ANA Lab</span>
-                <span className="font-black text-sm text-slate-900">${provider.anaLabPrice}</span>
+                <span className="text-[10px] text-slate-500 block">CPT 83516 Celiac Panel</span>
+                <span className="font-black text-sm text-slate-900">${provider.celiacPanelPrice}</span>
               </div>
             </div>
             {provider.slidingScale && (
@@ -216,7 +216,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             />
             <label htmlFor="attachSoap" className="cursor-pointer text-xs space-y-0.5">
               <span className="font-extrabold text-purple-950 block">
-                Attach Maya's 1-Page June Clinical SOAP Memo
+                Attach Sheila's 1-Page June Clinical SOAP Memo
               </span>
               <span className="text-[11px] text-slate-600 block leading-tight">
                 Automatically pre-loads your logged Methylisothiazolinone skincare flares, June marked calendar dates, and suggested CPT 86038 ANA code so {provider.name} is fully briefed before the visit.

@@ -40,7 +40,7 @@ export const EditInfoModal: React.FC<EditInfoModalProps> = ({
       updatedTriggers.push({
         id: `trig-${Date.now()}`,
         name: newTriggerName.trim(),
-        category: 'skincare',
+        category: 'cross_contamination',
         riskBadge: 'User Added',
         notes: 'Manually entered into Health Board.',
         dateAdded: 'Today',

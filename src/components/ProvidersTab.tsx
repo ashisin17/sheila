@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Pill, CheckCircle2, X, Search, Star, Clock } from 'lucide-react';
+import { Pill, CheckCircle2, X, Search, Star, Clock, ShieldAlert, FileCheck, Sparkles, Upload } from 'lucide-react';
 import { Provider, Language, BillAuditResult } from '../types';
-import { INITIAL_PROVIDERS } from '../data/initialData';
+import { INITIAL_PROVIDERS, DEMO_ASSETS } from '../data/initialData';
+import { auditBillApi } from '../services/api';
 
 interface ProvidersTabProps {
   language: Language;
@@ -24,6 +25,7 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
   const [refillSuccess, setRefillSuccess] = useState(false);
   const [pharmacyName, setPharmacyName] = useState('[Pharmacy name]');
   const [isEditingPharmacy, setIsEditingPharmacy] = useState(false);
+  const [isAuditingBill, setIsAuditingBill] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,6 +58,25 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
     setTimeout(() => {
       setRefillSuccess(false);
     }, 4500);
+  };
+
+  const handleRunBillAudit = async (useDemo = true) => {
+    if (!onOpenBillAuditModal) return;
+    setIsAuditingBill(true);
+    try {
+      const res = await auditBillApi({
+        billText: useDemo
+          ? 'Metro Pathology Lab - CPT 83516 tTG-IgA $480.00, CPT 82306 25-OH Vitamin D $410.00. Denial code CO-50 Non-covered investigational test.'
+          : 'Patient request itemized billing review with CMS cash rates',
+        billImageBase64: useDemo ? DEMO_ASSETS.medicalBill : undefined,
+        language,
+      });
+      onOpenBillAuditModal(res);
+    } catch (e) {
+      console.error('Error auditing bill:', e);
+    } finally {
+      setIsAuditingBill(false);
+    }
   };
 
   return (
@@ -286,6 +307,51 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
           >
             <X className="w-3.5 h-3.5" />
           </button>
+        </div>
+      )}
+
+      {/* 5. SECTION: SURPRISE LAB BILL DEFENDER */}
+      {onOpenBillAuditModal && (
+        <div className="bg-[#B6A1DA] rounded-3xl p-5 text-slate-900 shadow-sm space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#EAE06D] flex items-center justify-center text-slate-900 shrink-0 shadow-xs">
+              <ShieldAlert className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div className="flex-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-900/80 block">
+                Massive Blood Panel Lab Bill Defender
+              </span>
+              <h3 className="font-extrabold text-base text-slate-900 leading-snug">
+                Hit with an $800+ Surprise Lab Bill?
+              </h3>
+              <p className="text-xs text-slate-800/90 mt-1 leading-relaxed">
+                Insurers routinely deny Vitamin D (CPT 82306) and specialized antibody tests as &quot;investigational&quot;. We generate a 1-click dispute letter and CMS fair cash benchmark comparison.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            <button
+              onClick={() => handleRunBillAudit(true)}
+              disabled={isAuditingBill}
+              className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+            >
+              {isAuditingBill ? (
+                <Sparkles className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileCheck className="w-3.5 h-3.5" />
+              )}
+              <span>Demo: Audit $890 Blood Panel</span>
+            </button>
+            <button
+              onClick={() => handleRunBillAudit(false)}
+              disabled={isAuditingBill}
+              className="bg-white/90 hover:bg-white text-slate-900 text-xs font-bold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95"
+            >
+              <Upload className="w-3.5 h-3.5 text-purple-700" />
+              <span>Upload Lab Bill / EOB</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

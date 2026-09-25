@@ -156,21 +156,21 @@ Price Transparency Rights: Protected under CMS Hospital Price Transparency Rule 
             {/* June 2025 Flare Timeline Summary */}
             <div className="bg-white/80 p-3 rounded-2xl border border-purple-100 space-y-1.5">
               <div className="flex items-center justify-between text-[10px] uppercase font-bold text-purple-900">
-                <span>June 2025 Flare Timeline</span>
-                <span>{markedDays.length} Marked Episodes</span>
+                <span>June 2025 Recovery Timeline</span>
+                <span>{userProfile.villiRecoveryDays} Days Villi Healing Streak</span>
               </div>
               <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
-                Recurrent photosensitive butterfly erythema and morning joint stiffness. Peak severity logged on June 7 (8.5/10) following Methylisothiazolinone exposure.
+                Documented neurological cluster (burning feet, hand tingling, post-gluten tachycardia 118 bpm, tremors/ataxia) after barista oat milk and barley malt caramel exposures. Significant recovery on 100% strict gluten elimination and sublingual B12.
               </p>
             </div>
 
             {/* Diagnostic Directives & Fair Pricing Rights */}
             <div className="bg-[#EAE06D]/40 p-3 rounded-2xl border border-yellow-300 space-y-1 text-[11px] text-slate-900">
               <span className="font-extrabold uppercase text-[10px] tracking-wider block text-slate-800">
-                Statutory Rights & Fair Market Target Pricing
+                Statutory Rights & Missing Celiac Blood Panel Requisitions
               </span>
               <p className="leading-relaxed">
-                Patient is requesting cash benchmark pricing: <strong>CPT 86038 ANA Panel ($35)</strong> and <strong>CPT 86140 CRP ($25)</strong>. Under CMS Hospital Price Transparency rules (45 CFR § 180) and IRC § 501(r), patient exercises right to itemized cash settlement before any collection proceedings.
+                Patient is requesting the specific missing Celiac & Malabsorption panel: <strong>CPT 83516 tTG-IgA ($45)</strong>, <strong>CPT 82784 Total Serum IgA ($25)</strong>, <strong>CPT 82607 Vitamin B12 ($20)</strong>, <strong>CPT 82306 Vitamin D ($30)</strong>, and <strong>CPT 82728 Ferritin ($22)</strong>. Protected under CMS Hospital Price Transparency rules (45 CFR § 180) against inflated laboratory charges.
               </p>
             </div>
 

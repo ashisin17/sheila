@@ -11,6 +11,8 @@ import {
   FileText,
   DollarSign,
   AlertTriangle,
+  HeartPulse,
+  Scale,
 } from 'lucide-react';
 import { SoapNote, Language, MarkedDay } from '../types';
 import { generateSoapApi } from '../services/api';
@@ -46,7 +48,7 @@ export const SoapNoteModal: React.FC<SoapNoteModalProps> = ({
       const data = await generateSoapApi({
         markedDays,
         language,
-        patientName: 'Maya',
+        patientName: 'Sheila',
         age: 28,
       });
       setSoapData(data);
@@ -59,25 +61,28 @@ export const SoapNoteModal: React.FC<SoapNoteModalProps> = ({
 
   const handleCopy = () => {
     if (!soapData) return;
-    const text = `CLINICAL SOAP MEMO
+    const text = `8-DOCTOR-PROOF CLINICAL SOAP MEMO
 Patient: ${soapData.patientInfo.name} (${soapData.patientInfo.age} yo female)
 Generated: ${soapData.patientInfo.dateGenerated}
-Upcoming Visit: ${soapData.patientInfo.upcomingVisit}
+Upcoming Appointment: ${soapData.patientInfo.upcomingVisit}
 
-[SUBJECTIVE]
+[SUBJECTIVE - ANTI-GASLIGHTING PATIENT TIMELINE]
 ${soapData.subjective.summary}
 
-[OBJECTIVE]
+[OBJECTIVE - NEUROLOGICAL & VILLI RECOVERY TIMELINE]
 Vitals: ${soapData.objective.vitalsSummary}
-Flares Logged in June 2025: ${soapData.objective.loggedFlaresCount}
-${soapData.objective.flareLogBreakdown.map(f => `- ${f.date}: ${f.event} (Trigger: ${f.trigger})`).join('\n')}
+Villi Healing Streak: ${soapData.objective.villiRecoveryDays} Days 100% Gluten-Free
+Marked Episodes in June:
+${soapData.objective.flareLogBreakdown.map(f => `- ${f.date}: ${f.event} (Symptoms: ${f.clusterSymptoms})`).join('\n')}
 
-[ASSESSMENT]
+[ASSESSMENT & GASLIGHTING DEFENSE]
 ${soapData.assessment.primaryImpression}
-Risk Factors: ${soapData.assessment.riskFactors}
+Anti-Anxiety Defense:
+${soapData.assessment.gaslightingDefenseNote}
 
-[PLAN & RECOMMENDED CPT CODES]
-${soapData.plan.recommendedCptCodes.map(c => `${c.code}: ${c.name} (Fair Cash: ${c.typicalCashRate} | Hospital Avg: ${c.hospitalBilledAvg})`).join('\n')}
+[PLAN - MISSING BLOOD PANEL CODES DOCTORS FORGET TO ORDER]
+${soapData.plan.recommendedCptCodes.map(c => `[${c.panelCategory}] ${c.code} ${c.name} | Fair Cash: ${c.typicalCashRate} (Hosp: ${c.hospitalBilledAvg}) - ${c.rationale}`).join('\n')}
+
 Directives:
 ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
 
@@ -99,14 +104,14 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
         <div className="bg-[#B6A1DA] px-5 py-4 flex items-center justify-between text-slate-900 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-[#EAE06D] flex items-center justify-center text-slate-900 shadow-xs">
-              <FileText className="w-4 h-4 stroke-[2.4]" />
+              <ShieldCheck className="w-4 h-4 stroke-[2.4]" />
             </div>
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-800">
-                Clinical Packet · 1-Page Summary
+                Anti-Gaslighting Clinical Packet · 1-Page Summary
               </span>
               <h3 className="font-extrabold text-base leading-tight">
-                Doctor SOAP Memo (June 2025)
+                "8-Doctor-Proof" SOAP Memo
               </h3>
             </div>
           </div>
@@ -140,8 +145,8 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
           {loading && (
             <div className="py-12 text-center space-y-2">
               <Sparkles className="w-8 h-8 text-purple-700 animate-spin mx-auto" />
-              <p className="font-bold text-slate-700">Synthesizing Maya's June Marked Days into SOAP Note...</p>
-              <p className="text-[11px] text-slate-500">Cross-referencing CPT 86038 ANA & CPT 86140 CRP benchmarks</p>
+              <p className="font-bold text-slate-700">Synthesizing Sheila's Neurological Flare Logs into SOAP Note...</p>
+              <p className="text-[11px] text-slate-500">Cross-referencing CPT 83516 Celiac, CPT 82784 Total IgA, and B12/Ferritin Malabsorption</p>
             </div>
           )}
 
@@ -159,19 +164,24 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                 </div>
               </div>
 
-              {/* S - SUBJECTIVE */}
+              {/* S - SUBJECTIVE (Anti-Gaslighting Narrative) */}
               <div className="border border-slate-200 rounded-2xl p-3.5 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs">
-                  <span className="w-5 h-5 rounded-md bg-[#B6A1DA] text-slate-900 flex items-center justify-center text-[10px] font-black">
-                    S
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs">
+                    <span className="w-5 h-5 rounded-md bg-[#B6A1DA] text-slate-900 flex items-center justify-center text-[10px] font-black">
+                      S
+                    </span>
+                    <span>SUBJECTIVE (Stopping the "It's Just Anxiety" Gaslighting)</span>
+                  </div>
+                  <span className="text-[9px] bg-rose-100 text-rose-800 font-black px-2 py-0.5 rounded-full">
+                    8 Previous Clinicians Dismissed
                   </span>
-                  <span>SUBJECTIVE (Patient Narrative & Timeline)</span>
                 </div>
                 <p className="text-slate-700 leading-relaxed font-medium">
                   {soapData.subjective.summary}
                 </p>
                 {soapData.subjective.patientQuotes && (
-                  <div className="bg-slate-50 rounded-xl p-2 space-y-1 border-l-2 border-purple-400 text-[11px] italic text-slate-600">
+                  <div className="bg-slate-50 rounded-xl p-2.5 space-y-1 border-l-2 border-purple-400 text-[11px] italic text-slate-600">
                     {soapData.subjective.patientQuotes.map((q, i) => (
                       <p key={i}>"{q}"</p>
                     ))}
@@ -179,13 +189,18 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                 )}
               </div>
 
-              {/* O - OBJECTIVE */}
+              {/* O - OBJECTIVE (Neurological Cluster Timeline) */}
               <div className="border border-slate-200 rounded-2xl p-3.5 space-y-2">
-                <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs">
-                  <span className="w-5 h-5 rounded-md bg-[#B6A1DA] text-slate-900 flex items-center justify-center text-[10px] font-black">
-                    O
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs">
+                    <span className="w-5 h-5 rounded-md bg-[#B6A1DA] text-slate-900 flex items-center justify-center text-[10px] font-black">
+                      O
+                    </span>
+                    <span>OBJECTIVE (Villi Recovery & Neuropathy Spikes)</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {soapData.objective.villiRecoveryDays} Days 100% Gluten-Free
                   </span>
-                  <span>OBJECTIVE (Chronological Flare Log & Photos)</span>
                 </div>
                 <div className="text-[11px] text-slate-600 font-medium">
                   {soapData.objective.vitalsSummary}
@@ -195,8 +210,8 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                 <div className="border border-slate-200 rounded-xl overflow-hidden">
                   <div className="bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold uppercase text-slate-600 grid grid-cols-12">
                     <span className="col-span-3">Date</span>
-                    <span className="col-span-5">Logged Symptom / Event</span>
-                    <span className="col-span-4">Offending Trigger</span>
+                    <span className="col-span-5">Trigger / Event</span>
+                    <span className="col-span-4">Neurological Metrics</span>
                   </div>
                   {soapData.objective.flareLogBreakdown.map((log, i) => (
                     <div
@@ -204,44 +219,45 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                       className="px-2.5 py-1.5 text-[11px] border-t border-slate-100 grid grid-cols-12 items-center hover:bg-purple-50/50"
                     >
                       <span className="col-span-3 font-bold text-purple-900">{log.date.replace(', 2025', '')}</span>
-                      <span className="col-span-5 text-slate-800">{log.event}</span>
-                      <span className="col-span-4 text-slate-600 text-[10px] font-semibold">{log.trigger}</span>
+                      <span className="col-span-5 text-slate-800 leading-tight pr-1">{log.event}</span>
+                      <span className="col-span-4 text-slate-600 text-[10px] font-semibold">{log.clusterSymptoms}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* A - ASSESSMENT */}
-              <div className="border border-slate-200 rounded-2xl p-3.5 space-y-1.5">
+              {/* A - ASSESSMENT & GASLIGHTING DEFENSE NOTE */}
+              <div className="border border-slate-200 rounded-2xl p-3.5 space-y-2">
                 <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs">
                   <span className="w-5 h-5 rounded-md bg-[#B6A1DA] text-slate-900 flex items-center justify-center text-[10px] font-black">
                     A
                   </span>
-                  <span>ASSESSMENT (Trigger Correlation & Differential)</span>
+                  <span>ASSESSMENT & DOCTOR-DEFENSE TALKING POINTS</span>
                 </div>
                 <p className="text-slate-800 whitespace-pre-line leading-relaxed font-medium">
                   {soapData.assessment.primaryImpression}
                 </p>
-                <div className="text-[11px] text-purple-900 font-semibold bg-[#E8DFF2] p-2 rounded-xl">
-                  {soapData.assessment.riskFactors}
+                <div className="bg-purple-50 p-2.5 rounded-xl border border-purple-200 text-[11px] text-purple-950 font-medium leading-relaxed">
+                  <strong className="text-purple-900 block mb-0.5">🛡️ Anti-Gaslighting Clinical Directives:</strong>
+                  {soapData.assessment.gaslightingDefenseNote}
                 </div>
               </div>
 
-              {/* P - PLAN & CPT CODES */}
+              {/* P - PLAN & MISSING BLOOD PANEL CODES */}
               <div className="border-2 border-[#B6A1DA] rounded-2xl p-3.5 space-y-2.5 bg-purple-50/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs">
                     <span className="w-5 h-5 rounded-md bg-[#EAE06D] text-slate-900 flex items-center justify-center text-[10px] font-black">
                       P
                     </span>
-                    <span>PLAN & DIAGNOSTIC CPT REQUISITIONS</span>
+                    <span>MISSING BLOOD PANEL CODES DOCTORS FORGET</span>
                   </div>
                   <span className="text-[10px] uppercase font-bold text-purple-800">
-                    Price Transparency Enabled
+                    Celiac + Malabsorption
                   </span>
                 </div>
 
-                {/* CPT Codes Cards */}
+                {/* CPT Codes Breakdown */}
                 <div className="space-y-1.5">
                   {soapData.plan.recommendedCptCodes.map((cpt, i) => (
                     <div
@@ -249,9 +265,14 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                       className="bg-white rounded-xl p-2.5 border border-purple-200 shadow-2xs space-y-1"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-slate-900 text-xs">
-                          {cpt.code}: {cpt.name}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#E8DFF2] text-purple-950">
+                            {cpt.panelCategory}
+                          </span>
+                          <span className="font-extrabold text-slate-900 text-xs">
+                            {cpt.code}: {cpt.name}
+                          </span>
+                        </div>
                         <div className="text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                           Fair Cash: {cpt.typicalCashRate}
                         </div>
@@ -267,7 +288,7 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                 {/* Directives */}
                 <div className="space-y-1 text-slate-700 text-xs pt-1">
                   <span className="text-[10px] font-bold uppercase text-slate-400 block">
-                    Directives for Patient
+                    Villi Healing Directives
                   </span>
                   <ul className="list-disc list-inside space-y-0.5 text-[11px]">
                     {soapData.plan.clinicalDirectives.map((d, idx) => (
@@ -277,16 +298,16 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                 </div>
               </div>
 
-              {/* Action Button: Shop Affordable Labs & Dermatologists for These Codes */}
+              {/* Action Button: Shop Massive Blood Panel Cash Prices */}
               <div className="pt-2">
                 <button
                   onClick={() => {
                     onClose();
-                    onNavigateToProviders('CPT 86038 ANA Panel');
+                    onNavigateToProviders('Celiac Panel CPT 83516');
                   }}
                   className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 font-extrabold py-3 px-4 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 text-xs active:scale-98"
                 >
-                  <span>Shop Affordable Labs & Dermatologists for These Codes</span>
+                  <span>Shop Massive Blood Panel Cash Prices ($45 vs $1,500+)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

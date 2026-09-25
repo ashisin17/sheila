@@ -17,7 +17,14 @@ import {
   Activity,
   Flame,
   X,
-  FileText,
+  Copy,
+  Check,
+  Coffee,
+  HeartPulse,
+  Zap,
+  Moon,
+  Wine,
+  HelpCircle,
 } from 'lucide-react';
 import { Language, ActionType, TriggerAnalysis, MarkedDay, HealthBoardTrigger } from '../types';
 import { INITIAL_CAROUSEL_ITEMS, DEMO_ASSETS, TRANSLATIONS } from '../data/initialData';
@@ -42,20 +49,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 }) => {
   const t = TRANSLATIONS[language].home;
 
-  // Carousel state (1 to 5)
+  // Carousel state (1 to 5 villi malabsorption nutrients)
   const [carouselIndex, setCarouselIndex] = useState(0);
   const currentCarousel = INITIAL_CAROUSEL_ITEMS[carouselIndex];
 
   // Check-in input state
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [activeAction, setActiveAction] = useState<ActionType>('skincare');
-  const [showSliders, setShowSliders] = useState(false);
+  const [activeAction, setActiveAction] = useState<ActionType>('menu_oatmilk');
+  const [showSensors, setShowSensors] = useState(true);
 
-  // Sliders: 1 - 10
-  const [jointPain, setJointPain] = useState(6);
-  const [skinRedness, setSkinRedness] = useState(8);
-  const [fatigue, setFatigue] = useState(7);
+  // Villi-Healing & Neurological Biometrics
+  const [hoursSlept, setHoursSlept] = useState<number>(5);
+  const [sugarIntake, setSugarIntake] = useState<'none' | 'low' | 'high'>('low');
+  const [alcoholDrinks, setAlcoholDrinks] = useState<number>(1);
+
+  // Neurological symptoms (1-10)
+  const [burningFeet, setBurningFeet] = useState<number>(7);
+  const [handTingling, setHandTingling] = useState<number>(8);
+  const [tremorsAtaxia, setTremorsAtaxia] = useState<number>(6);
+  const [rapidHeartbeat, setRapidHeartbeat] = useState<number>(8);
+  const [jointPain, setJointPain] = useState<number>(5);
 
   // Image Upload / Preview state
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -67,6 +81,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   const [analysisResult, setAnalysisResult] = useState<TriggerAnalysis | null>(null);
   const [pinnedToCal, setPinnedToCal] = useState(false);
   const [addedToBoard, setAddedToBoard] = useState(false);
+  const [copiedQuestion, setCopiedQuestion] = useState(false);
 
   // Carousel navigation
   const nextCarousel = () => {
@@ -76,18 +91,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     setCarouselIndex((prev) => (prev - 1 + INITIAL_CAROUSEL_ITEMS.length) % INITIAL_CAROUSEL_ITEMS.length);
   };
 
-  // Handle Carousel Card Action
   const handleCarouselAction = () => {
-    if (currentCarousel.id === 1) {
-      onIncrementStreak();
-    } else if (currentCarousel.id === 5) {
+    if (currentCarousel.id === 5) {
       onOpenSoapModal();
-    } else if (currentCarousel.id === 2) {
-      loadDemoSample('skincare');
-    } else if (currentCarousel.id === 3) {
-      loadDemoSample('meal');
     } else {
-      setShowSliders(true);
+      onIncrementStreak();
     }
   };
 
@@ -110,42 +118,51 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     setPinnedToCal(false);
     setAddedToBoard(false);
 
-    if (type === 'skincare') {
-      setSelectedImage(DEMO_ASSETS.serumBottle);
-      setImageName('CeraGlow_Facial_Serum_Label.jpg');
-      setInputText('Applied 4 drops of new CeraGlow facial serum last night. Woke up with burning cheek erythema.');
-      setSkinRedness(9);
-      setJointPain(3);
-      setFatigue(5);
-    } else if (type === 'meal') {
-      setSelectedImage(DEMO_ASSETS.pastaBowl);
-      setImageName('Arrabbiata_Nightshade_Pasta.jpg');
-      setInputText('Had spicy tomato arrabbiata pasta with roasted chili peppers. Morning knuckles feel stiff and swollen.');
-      setSkinRedness(5);
+    if (type === 'menu_oatmilk') {
+      setSelectedImage(DEMO_ASSETS.oatMilkMenu);
+      setImageName('Barista_Oat_Milk_Menu_Scan.jpg');
+      setInputText('Had an iced oat milk latte at local café 16h ago. Woke up with intense burning feet and rapid heart rate.');
+      setBurningFeet(8);
+      setHandTingling(8);
+      setRapidHeartbeat(9);
+      setTremorsAtaxia(6);
+      setHoursSlept(5);
+    } else if (type === 'syrup_sauce') {
+      setSelectedImage(DEMO_ASSETS.caramelSauce);
+      setImageName('Artisan_Caramel_Syrup_Bottle.jpg');
+      setInputText('Asked for caramel drizzle. Now experiencing finger tremors, ataxia, and severe brain fog.');
+      setBurningFeet(6);
+      setHandTingling(9);
+      setTremorsAtaxia(8);
+      setRapidHeartbeat(7);
+      setSugarIntake('high');
+    } else if (type === 'dish_restaurant') {
+      setSelectedImage(DEMO_ASSETS.oatMilkMenu);
+      setImageName('Restaurant_Sauce_Plate.jpg');
+      setInputText('Ordered grilled salmon, but sauce tasted sweet like soy/teriyaki reduction. Knuckles and wrists throbbing.');
       setJointPain(8);
-      setFatigue(7);
-    } else if (type === 'flare') {
-      setSelectedImage(DEMO_ASSETS.cheekFlare);
-      setImageName('Cheek_Malar_Erythema_Photo.jpg');
-      setInputText('Facial malar rash flare with hot burning sensation sparing nasolabial fold.');
-      setSkinRedness(9);
-      setJointPain(6);
-      setFatigue(8);
+      setBurningFeet(7);
+      setHandTingling(6);
+    } else if (type === 'supplement_cosmetic') {
+      setSelectedImage(DEMO_ASSETS.burningFeet);
+      setImageName('Lip_Balm_Wheat_Germ_Label.jpg');
+      setInputText('Checked lip balm ingredient list: found Triticum Vulgare (Wheat) Germ Oil. Burning lips and nausea.');
+      setBurningFeet(5);
+      setHandTingling(5);
     }
   };
 
-  // Voice dictation simulation / Speech API
+  // Voice dictation
   const handleMicClick = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      // High fidelity simulation if browser speech recognition not available in sandbox
       setIsListening(true);
       setTimeout(() => {
         setInputText(
           language === 'es'
-            ? 'Siento las mejillas muy calientes y ardorosas tras usar el sérum facial ayer.'
+            ? 'Tomé un café con leche de avena hace 16 horas. Mis pies están ardiendo y mis manos tiemblan con taquicardia.'
             : language === 'zh'
-            ? '昨天晚上用了新买的抗敏精华液，今天两颊有灼烧感并且泛红严重。'
-            : 'My cheeks have a hot burning sensation and bilateral redness 20 hours after using the facial serum.'
+            ? '昨天在咖啡店喝了燕麦奶拿铁，现在双脚灼热发烫，手指刺痛发麻并且心跳过速。'
+            : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.'
         );
         setIsListening(false);
       }, 1200);
@@ -166,22 +183,18 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         setIsListening(false);
       };
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
-      recognition.onend = () => {
-        setIsListening(false);
-      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
       recognition.start();
     } catch {
       setIsListening(false);
     }
   };
 
-  // Execute Analysis
+  // Run Analysis
   const handleAnalyze = async () => {
     if (!inputText && !selectedImage) {
-      setInputText('Checking in on daily symptoms and skin status.');
+      setInputText('Auditing coffee shop menu and oats for hidden gluten traps.');
     }
     setIsAnalyzing(true);
     setAnalysisResult(null);
@@ -193,9 +206,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         prompt: inputText,
         actionType: activeAction,
         imageBase64: selectedImage || undefined,
+        hoursSlept,
+        sugarIntake,
+        alcoholDrinks,
+        burningFeet,
+        handTingling,
+        tremorsAtaxia,
+        rapidHeartbeat,
         jointPain,
-        skinRedness,
-        fatigue,
         language,
       });
       setAnalysisResult(data);
@@ -206,35 +224,42 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     }
   };
 
-  // Pin Trigger & Flare to Calendar
+  const handleCopyQuestion = () => {
+    if (!analysisResult) return;
+    const q = analysisResult.exactQuestionToAsk[language] || analysisResult.exactQuestionToAsk.en;
+    navigator.clipboard.writeText(q);
+    setCopiedQuestion(true);
+    setTimeout(() => setCopiedQuestion(false), 2000);
+  };
+
   const handlePinCalendar = () => {
     if (!analysisResult) return;
     const newDay: MarkedDay = {
-      day: Math.floor(Math.random() * 20) + 9, // dynamic date in June
-      dateStr: analysisResult.calendarEventSuggestion.date || 'June 10, 2025',
-      title: analysisResult.calendarEventSuggestion.title || 'AI Logged Flare Event',
+      day: Math.floor(Math.random() * 20) + 9,
+      dateStr: analysisResult.calendarEventSuggestion.date || 'June 9, 2025',
+      title: analysisResult.calendarEventSuggestion.title || 'Hidden Gluten Flare',
       severity: analysisResult.riskScore || 8,
-      type: 'flare',
+      type: 'gluten_exposure',
       triggerDetails: analysisResult.compoundName,
       symptoms: [
-        `Skin Redness: ${skinRedness}/10`,
-        `Joint Pain: ${jointPain}/10`,
-        `Fatigue: ${fatigue}/10`,
+        `Burning Feet: ${burningFeet}/10`,
+        `Hand Tingling: ${handTingling}/10`,
+        `Heart Rate: ${rapidHeartbeat > 7 ? 'Tachycardia' : 'Elevated'}`,
       ],
       imageUrl: selectedImage || undefined,
       notes: analysisResult.concreteCorrelation,
+      isNeurologicalCluster: true,
     };
     onPinToCalendar(newDay);
     setPinnedToCal(true);
   };
 
-  // Add Trigger to Health Board
   const handleAddToBoard = () => {
     if (!analysisResult) return;
     const newTrigger: HealthBoardTrigger = {
       id: `trig-${Date.now()}`,
       name: analysisResult.healthBoardTag.name || analysisResult.compoundName,
-      category: activeAction === 'meal' ? 'food' : 'skincare',
+      category: 'cross_contamination',
       riskBadge: analysisResult.healthBoardTag.riskBadge || `${analysisResult.riskLevel} (${analysisResult.riskScore}/10)`,
       notes: analysisResult.healthBoardTag.notes || analysisResult.concreteCorrelation,
       dateAdded: 'Today',
@@ -245,7 +270,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   return (
     <div className="space-y-4 px-4 py-3">
-      {/* 1. TOP CAROUSEL CARD ("TODAY 1 of 5") */}
+      {/* 1. TOP CAROUSEL: 5 VILLI MALABSORPTION NUTRIENT CARDS */}
       <div>
         <div className="flex items-center justify-between text-xs font-bold text-slate-500 mb-2 px-1">
           <div className="flex items-center gap-1.5 uppercase tracking-wider">
@@ -256,13 +281,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <button
             onClick={() => onOpenSoapModal()}
             className="w-7 h-7 rounded-full bg-white shadow-xs border border-purple-200/60 flex items-center justify-center text-purple-700 hover:bg-purple-50 transition"
-            title="Clinical Message & SOAP Notes"
+            title="Clinical Message & 8-Doctor-Proof SOAP Packet"
           >
             <MessageCircle className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Purple Carousel Card */}
+        {/* Purple Carousel Card matching mockup */}
         <div className="relative bg-[#B6A1DA] rounded-3xl p-5 text-slate-900 shadow-sm transition-all duration-300">
           <div className="flex items-start justify-between gap-3">
             {/* Yellow Circle Icon */}
@@ -327,7 +352,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       </div>
 
-      {/* 2. "CHECK IN" SECTION */}
+      {/* 2. "DAILY CHECK-IN & HIDDEN GLUTEN SCANNER" */}
       <div>
         <div className="mb-2 px-1">
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
@@ -340,55 +365,69 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         {/* Actionable Check-in Container Card */}
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-purple-100/70 space-y-3">
-          {/* Multimodal Action Pills with 1-Tap Load Demos */}
+          {/* Multimodal 1-Tap Coffee Shop & Menu Risk Scanner Pills */}
           <div>
             <div className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center justify-between">
-              <span>MULTIMODAL SENSORS:</span>
+              <span>1-TAP MENU & RISK SCANNERS:</span>
               <span className="text-purple-700 font-semibold text-[10px]">
-                Tap to load live demo
+                Tap for instant demo
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 text-xs font-semibold">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs font-semibold">
               <button
-                onClick={() => loadDemoSample('skincare')}
-                className={`py-2 px-1.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
-                  activeAction === 'skincare'
+                onClick={() => loadDemoSample('menu_oatmilk')}
+                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
+                  activeAction === 'menu_oatmilk'
                     ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
                     : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
                 }`}
               >
                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
-                  🔬
+                  ☕
                 </div>
-                <span className="text-[10px] leading-tight">Scan Skincare</span>
+                <span className="text-[10px] leading-tight">Menu & Oat Milk</span>
               </button>
 
               <button
-                onClick={() => loadDemoSample('meal')}
-                className={`py-2 px-1.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
-                  activeAction === 'meal'
+                onClick={() => loadDemoSample('syrup_sauce')}
+                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
+                  activeAction === 'syrup_sauce'
                     ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
                     : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
                 }`}
               >
                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
-                  🥗
+                  🍯
                 </div>
-                <span className="text-[10px] leading-tight">Snap Meal</span>
+                <span className="text-[10px] leading-tight">Syrups & Sauces</span>
               </button>
 
               <button
-                onClick={() => loadDemoSample('flare')}
-                className={`py-2 px-1.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
-                  activeAction === 'flare'
+                onClick={() => loadDemoSample('dish_restaurant')}
+                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
+                  activeAction === 'dish_restaurant'
                     ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
                     : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
                 }`}
               >
                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
-                  📸
+                  🍽️
                 </div>
-                <span className="text-[10px] leading-tight">Log Skin Flare</span>
+                <span className="text-[10px] leading-tight">Restaurant Dish</span>
+              </button>
+
+              <button
+                onClick={() => loadDemoSample('supplement_cosmetic')}
+                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
+                  activeAction === 'supplement_cosmetic'
+                    ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
+                    : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
+                }`}
+              >
+                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
+                  💄
+                </div>
+                <span className="text-[10px] leading-tight">Balm / Supplement</span>
               </button>
             </div>
           </div>
@@ -406,9 +445,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   Target Sample Attached
                 </span>
                 <p className="text-xs font-semibold text-slate-800 truncate">
-                  {imageName || 'Multimodal Image'}
+                  {imageName || 'Target Item Photo'}
                 </p>
-                <span className="text-[10px] text-slate-500">Ready for Gemini Vision OCR</span>
+                <span className="text-[10px] text-slate-500">Ready for Hidden Gluten & Cross-Contamination OCR</span>
               </div>
               <button
                 onClick={() => {
@@ -422,7 +461,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </div>
           )}
 
-          {/* Real File Upload Input (hidden trigger) */}
+          {/* Hidden File Input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -442,69 +481,157 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             />
           </div>
 
-          {/* Collapsible Symptom Severity Sliders */}
-          <div className="border-t border-purple-100 pt-2">
+          {/* Inflammation & Villi-Healing Tracker (Sleep, Alcohol, Sugar + Neurological Symptoms) */}
+          <div className="border-t border-purple-100 pt-2 space-y-2.5">
             <button
-              onClick={() => setShowSliders(!showSliders)}
-              className="flex items-center justify-between w-full text-xs font-bold text-slate-700 py-1"
+              onClick={() => setShowSensors(!showSensors)}
+              className="flex items-center justify-between w-full text-xs font-bold text-slate-700 py-0.5"
             >
               <div className="flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-purple-700" />
-                <span>Symptom Severity Biometrics (1-10)</span>
+                <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
+                <span>Inflammation & Neurological Villi Sensors</span>
               </div>
               <span className="text-[11px] text-purple-700 font-semibold">
-                {showSliders ? 'Hide Sliders ▲' : 'Adjust Sliders ▼'}
+                {showSensors ? 'Hide Sensors ▲' : 'Adjust Toggles ▼'}
               </span>
             </button>
 
-            {showSliders && (
-              <div className="space-y-2.5 pt-2 pb-1 text-xs">
-                {/* Skin Redness */}
-                <div>
-                  <div className="flex justify-between font-bold text-[11px] text-slate-600 mb-1">
-                    <span>{t.skinRedness}</span>
-                    <span className="text-purple-900 font-extrabold">{skinRedness}/10</span>
+            {showSensors && (
+              <div className="bg-[#F3EDF7]/70 rounded-2xl p-3 space-y-3 text-xs">
+                {/* 1-Tap Metabolic Toggles: Sleep, Sugar, Alcohol */}
+                <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
+                  {/* Hours Slept */}
+                  <div className="bg-white p-2 rounded-xl border border-purple-100">
+                    <span className="text-slate-400 block mb-1 flex items-center justify-center gap-0.5">
+                      <Moon className="w-2.5 h-2.5 text-purple-600" />
+                      <span>Sleep</span>
+                    </span>
+                    <div className="flex justify-center gap-1">
+                      {[4.5, 6, 8].map((h) => (
+                        <button
+                          key={h}
+                          onClick={() => setHoursSlept(h)}
+                          className={`px-1.5 py-0.5 rounded-md ${
+                            hoursSlept === h
+                              ? 'bg-purple-800 text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {h}h
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={skinRedness}
-                    onChange={(e) => setSkinRedness(Number(e.target.value))}
-                    className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-700"
-                  />
+
+                  {/* Sugar Intake */}
+                  <div className="bg-white p-2 rounded-xl border border-purple-100">
+                    <span className="text-slate-400 block mb-1">Sugar</span>
+                    <div className="flex justify-center gap-1">
+                      {(['none', 'low', 'high'] as const).map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setSugarIntake(s)}
+                          className={`px-1.5 py-0.5 rounded-md uppercase text-[9px] ${
+                            sugarIntake === s
+                              ? 'bg-purple-800 text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Alcohol */}
+                  <div className="bg-white p-2 rounded-xl border border-purple-100">
+                    <span className="text-slate-400 block mb-1 flex items-center justify-center gap-0.5">
+                      <Wine className="w-2.5 h-2.5 text-rose-600" />
+                      <span>Alcohol</span>
+                    </span>
+                    <div className="flex justify-center gap-1">
+                      {[0, 1, 2].map((a) => (
+                        <button
+                          key={a}
+                          onClick={() => setAlcoholDrinks(a)}
+                          className={`px-1.5 py-0.5 rounded-md ${
+                            alcoholDrinks === a
+                              ? 'bg-rose-700 text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {a}dr
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Joint Pain */}
-                <div>
-                  <div className="flex justify-between font-bold text-[11px] text-slate-600 mb-1">
-                    <span>{t.jointPain}</span>
-                    <span className="text-purple-900 font-extrabold">{jointPain}/10</span>
+                {/* Neurological Symptom Sliders */}
+                <div className="space-y-2 pt-1 border-t border-purple-200/60 text-[11px]">
+                  {/* Burning Feet */}
+                  <div>
+                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
+                      <span>Burning Feet (Small Fiber Neuropathy)</span>
+                      <span className="text-rose-700 font-extrabold">{burningFeet}/10</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={burningFeet}
+                      onChange={(e) => setBurningFeet(Number(e.target.value))}
+                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-rose-600"
+                    />
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={jointPain}
-                    onChange={(e) => setJointPain(Number(e.target.value))}
-                    className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-700"
-                  />
-                </div>
 
-                {/* Fatigue */}
-                <div>
-                  <div className="flex justify-between font-bold text-[11px] text-slate-600 mb-1">
-                    <span>{t.fatigue}</span>
-                    <span className="text-purple-900 font-extrabold">{fatigue}/10</span>
+                  {/* Hand Tingling */}
+                  <div>
+                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
+                      <span>Hand Tingling & Numbness</span>
+                      <span className="text-purple-950 font-extrabold">{handTingling}/10</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={handTingling}
+                      onChange={(e) => setHandTingling(Number(e.target.value))}
+                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-800"
+                    />
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={fatigue}
-                    onChange={(e) => setFatigue(Number(e.target.value))}
-                    className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-700"
-                  />
+
+                  {/* Rapid Heartbeat */}
+                  <div>
+                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
+                      <span>Rapid Heartbeat (Post-Gluten Tachycardia)</span>
+                      <span className="text-rose-700 font-extrabold">{rapidHeartbeat > 7 ? '115+ bpm (Spike)' : `${rapidHeartbeat}/10`}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={rapidHeartbeat}
+                      onChange={(e) => setRapidHeartbeat(Number(e.target.value))}
+                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-rose-600"
+                    />
+                  </div>
+
+                  {/* Tremors / Ataxia */}
+                  <div>
+                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
+                      <span>Tremors / Motor Ataxia</span>
+                      <span className="text-purple-950 font-extrabold">{tremorsAtaxia}/10</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={tremorsAtaxia}
+                      onChange={(e) => setTremorsAtaxia(Number(e.target.value))}
+                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-800"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -516,15 +643,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-[#F3EDF7] hover:bg-purple-100 px-2.5 py-1.5 rounded-full transition"
-                title="Upload real photo"
+                title="Upload real menu / item photo"
               >
                 <Camera className="w-3.5 h-3.5 text-purple-700" />
                 <span>Upload</span>
               </button>
 
               <button
-                onClick={() => loadDemoSample('skincare')}
-                className="text-[11px] font-bold text-purple-800 bg-[#E8DFF2] hover:bg-purple-200 px-2.5 py-1.5 rounded-full transition"
+                onClick={() => loadDemoSample('menu_oatmilk')}
+                className="text-[11px] font-bold text-purple-900 bg-[#E8DFF2] hover:bg-purple-200 px-2.5 py-1.5 rounded-full transition"
               >
                 {t.demoButton}
               </button>
@@ -570,12 +697,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
           <h4 className="font-extrabold text-sm text-purple-950">{t.analyzing}</h4>
           <p className="text-xs text-purple-800 mt-0.5">
-            Cross-referencing cosmetic allergens, dietary solanine, and malar rash history.
+            Cross-referencing shared mill lines, steam wand froth, and small fiber neuropathy markers.
           </p>
         </div>
       )}
 
-      {/* 3. INSTANT ACTIONABLE AI OUTPUT ("TRIGGER & FLARE ACTION CARD") */}
+      {/* 3. INSTANT ACTIONABLE AI OUTPUT ("HIDDEN GLUTEN & CROSS-CONTAMINATION TRAP CARD") */}
       {analysisResult && (
         <div className="bg-white rounded-3xl p-5 shadow-md border-2 border-[#B6A1DA] space-y-3 transition-all duration-300">
           {/* Header */}
@@ -598,30 +725,52 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </div>
           </div>
 
+          {/* EXACT QUESTION TO ASK BARISTA / WAITER CALLOUT */}
+          <div className="bg-[#EAE06D]/30 border-2 border-[#EAE06D] rounded-2xl p-3.5 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-black tracking-wider text-slate-800 flex items-center gap-1">
+                <HelpCircle className="w-3.5 h-3.5 text-purple-800" />
+                <span>{t.questionToAsk}</span>
+              </span>
+              <button
+                onClick={handleCopyQuestion}
+                className="bg-white text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full border border-yellow-300 shadow-2xs hover:bg-yellow-50 flex items-center gap-1 transition"
+              >
+                {copiedQuestion ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedQuestion ? 'Copied!' : t.copyQuestion}</span>
+              </button>
+            </div>
+            <p className="text-xs text-slate-900 font-bold font-serif italic leading-relaxed">
+              {analysisResult.exactQuestionToAsk[language] || analysisResult.exactQuestionToAsk.en}
+            </p>
+          </div>
+
+          {/* Cross Contamination Traps */}
+          <div className="bg-[#F3EDF7] rounded-2xl p-3 border border-purple-200/70 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase text-purple-900 block">
+              Cross-Contamination & Hidden Trap Mechanics
+            </span>
+            <p className="text-xs text-slate-800 leading-relaxed font-medium">
+              {analysisResult.crossContaminationTraps}
+            </p>
+          </div>
+
           {/* Concrete Correlation Callout */}
-          <div className="bg-[#F3EDF7] rounded-2xl p-3 border border-purple-200/70">
-            <div className="text-[11px] font-extrabold uppercase text-purple-900 flex items-center gap-1 mb-1">
-              <Activity className="w-3.5 h-3.5 text-purple-700" />
-              <span>Concrete Flare Correlation</span>
+          <div className="bg-white rounded-2xl p-3 border border-purple-100 space-y-1">
+            <div className="text-[11px] font-extrabold uppercase text-slate-900 flex items-center gap-1">
+              <Activity className="w-3.5 h-3.5 text-rose-600" />
+              <span>Neurological Correlation Alert</span>
             </div>
             <p className="text-xs text-slate-800 leading-relaxed font-medium">
               {analysisResult.concreteCorrelation}
             </p>
           </div>
 
-          {/* Clinical Mechanism */}
-          <div className="text-xs text-slate-700 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Clinical Mechanism
-            </span>
-            <p className="leading-relaxed">{analysisResult.clinicalMechanism}</p>
-          </div>
-
-          {/* Clinical Directives */}
+          {/* Recommendations List */}
           {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
             <div className="space-y-1 pt-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Action Directives
+                Immediate Villi-Protection Directives
               </span>
               <ul className="text-xs text-slate-800 space-y-1">
                 {analysisResult.recommendations.map((rec, i) => (
@@ -636,7 +785,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
           {/* 2 One-Click Action Buttons */}
           <div className="pt-2 grid grid-cols-1 gap-2">
-            {/* 1) Pin Flare & Trigger to June Calendar */}
             <button
               onClick={handlePinCalendar}
               disabled={pinnedToCal}
@@ -654,7 +802,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </span>
             </button>
 
-            {/* 2) Add Flagged Ingredient to My Health Board */}
             <button
               onClick={handleAddToBoard}
               disabled={addedToBoard}

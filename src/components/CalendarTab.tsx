@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import {
   Calendar as CalendarIcon,
   Sparkles,
-  FileSpreadsheet,
   AlertCircle,
   Eye,
   ChevronRight,
   Clock,
   Video,
   X,
-  Plus,
+  ShieldAlert,
+  HeartPulse,
+  Zap,
 } from 'lucide-react';
 import { Language, MarkedDay } from '../types';
 import { TRANSLATIONS } from '../data/initialData';
@@ -19,7 +20,6 @@ interface CalendarTabProps {
   markedDays: MarkedDay[];
   onOpenSoapModal: () => void;
   onNavigateToProviders: (cptCodeFilter?: string) => void;
-  onAddManualDay?: (day: MarkedDay) => void;
 }
 
 export const CalendarTab: React.FC<CalendarTabProps> = ({
@@ -41,22 +41,23 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
 
   const selectedDayData = selectedDayNumber ? markedMap.get(selectedDayNumber) : null;
 
+  // Check if cluster detected
+  const hasNeurologicalCluster = markedDays.some((d) => d.isNeurologicalCluster);
+
   // Calendar dates generation for June 2025 (June 1 is Sunday, 30 days)
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const calendarCells: Array<{ day: number; inMonth: boolean }> = [];
 
-  // June 1, 2025 starts on Sunday (index 0)
   for (let i = 1; i <= 30; i++) {
     calendarCells.push({ day: i, inMonth: true });
   }
-  // Fill remaining cells for grid balance
   while (calendarCells.length % 7 !== 0) {
     calendarCells.push({ day: calendarCells.length - 29, inMonth: false });
   }
 
   return (
     <div className="space-y-4 px-4 py-3">
-      {/* 1. Header matching mockup */}
+      {/* 1. Header */}
       <div className="flex items-center justify-between px-1">
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
@@ -72,6 +73,21 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           <CalendarIcon className="w-5 h-5 stroke-[2.2]" />
         </div>
       </div>
+
+      {/* NEUROLOGICAL SYMPTOM CLUSTER ALERT (Stops "It's Just Anxiety") */}
+      {hasNeurologicalCluster && (
+        <div className="bg-rose-50 border-2 border-rose-300 rounded-3xl p-4 shadow-xs space-y-1.5 animate-fade-in">
+          <div className="flex items-center gap-2 text-rose-950 font-black text-xs">
+            <div className="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-3.5 h-3.5" />
+            </div>
+            <span>{t.clusterAlert}</span>
+          </div>
+          <p className="text-xs text-rose-900 leading-relaxed font-medium pl-8">
+            {t.clusterSub}
+          </p>
+        </div>
+      )}
 
       {/* 2. White Calendar Card */}
       <div className="bg-white rounded-3xl p-5 shadow-sm border border-purple-100/70 space-y-4">
@@ -119,7 +135,9 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                     isJune12
                       ? 'border-2 border-purple-700 bg-[#E8DFF2] text-purple-950 font-black ring-2 ring-purple-300 ring-offset-1'
                       : isMarked
-                      ? 'border-2 border-purple-400 bg-purple-50 text-slate-900 font-extrabold hover:bg-purple-100'
+                      ? markedItem?.type === 'villi_recovery'
+                        ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-extrabold'
+                        : 'border-2 border-purple-400 bg-purple-50 text-slate-900 font-extrabold hover:bg-purple-100'
                       : isSelected
                       ? 'bg-slate-200 text-slate-900'
                       : 'text-slate-700 hover:bg-slate-100'
@@ -127,7 +145,11 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                 >
                   {cell.day}
                   {isMarked && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 ring-1 ring-white" />
+                    <span
+                      className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-white ${
+                        markedItem?.type === 'villi_recovery' ? 'bg-emerald-600' : 'bg-rose-500'
+                      }`}
+                    />
                   )}
                 </button>
               </div>
@@ -171,16 +193,18 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               />
             )}
             <div className="flex-1 text-xs space-y-1">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-extrabold text-[11px] text-slate-900">
                   Severity:
                 </span>
                 <span className="px-1.5 py-0.2 rounded-md bg-rose-100 text-rose-800 font-bold text-[10px]">
                   {selectedDayData.severity}/10
                 </span>
-                <span className="text-[10px] text-slate-500 uppercase font-semibold">
-                  ({selectedDayData.type})
-                </span>
+                {selectedDayData.isNeurologicalCluster && (
+                  <span className="text-[9px] bg-rose-200 text-rose-900 font-black px-1.5 py-0.5 rounded-full">
+                    Neuropathy Cluster
+                  </span>
+                )}
               </div>
               <p className="text-slate-800 text-[11px] font-medium leading-relaxed">
                 <strong className="text-slate-900">Trigger:</strong> {selectedDayData.triggerDetails}
@@ -206,7 +230,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           </div>
 
           <div className="flex-1">
-            <h4 className="font-bold text-sm text-slate-900">
+            <h4 className="font-bold text-sm text-slate-900 leading-snug">
               {t.wellnessCheckin}
             </h4>
             <div className="flex items-center gap-1 text-xs text-slate-800/80 mt-0.5 font-medium">
@@ -216,7 +240,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           </div>
         </div>
 
-        {/* Yellow Action Button: "Generate 1-Page Doctor SOAP Memo" */}
+        {/* 1-Click "8-Doctor-Proof" SOAP Memo Button */}
         <button
           onClick={onOpenSoapModal}
           className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-3 px-4 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 active:scale-98"

@@ -5,9 +5,14 @@ export async function analyzeTriggerApi(params: {
   actionType: ActionType;
   imageBase64?: string;
   imageMimeType?: string;
-  jointPain: number;
-  skinRedness: number;
-  fatigue: number;
+  hoursSlept?: number;
+  sugarIntake?: 'none' | 'low' | 'high';
+  alcoholDrinks?: number;
+  burningFeet?: number;
+  handTingling?: number;
+  tremorsAtaxia?: number;
+  rapidHeartbeat?: number;
+  jointPain?: number;
   language: Language;
 }): Promise<TriggerAnalysis> {
   const response = await fetch('/api/analyze-trigger', {
