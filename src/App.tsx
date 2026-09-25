@@ -52,6 +52,10 @@ export default function App() {
   const [activeDemoView, setActiveDemoView] = useState<'onboarding' | 'main'>('main');
   const [selectedPreset, setSelectedPreset] = useState<ConditionPreset>('celiac');
 
+  // Presentation Top Bar States
+  const [activeDemoView, setActiveDemoView] = useState<'onboarding' | 'main'>('main');
+  const [selectedPreset, setSelectedPreset] = useState<ConditionPreset>('celiac');
+
   // Application Data States
   const [markedDays, setMarkedDays] = useState<MarkedDay[]>(INITIAL_MARKED_DAYS);
   const [userProfile, setUserProfile] = useState<UserProfile>(INITIAL_USER_PROFILE);
@@ -310,7 +314,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F3EDF7] font-['Plus_Jakarta_Sans',sans-serif] text-slate-800 antialiased selection:bg-purple-200">
-      {/* Global App Header */}
+      {/* Global App Header with Hackathon Top Demo Bar */}
       <Header
         language={language}
         onLanguageChange={setLanguage}

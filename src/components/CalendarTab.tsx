@@ -459,6 +459,104 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           <span>Shop Endoscopy Cash Pricing: ${endoscopyPlan.facilityCashPrice} vs ${endoscopyPlan.hospitalBilledAvg} Hospital</span>
         </button>
       </div>
+
+      {/* 5. THE 4-MONTH ENDOSCOPY WAIT & "GLUTEN CHALLENGE" SMART PLANNER */}
+      <div className="bg-linear-to-b from-[#F3EDF7] to-white rounded-3xl p-4 sm:p-5 border-2 border-purple-200/90 shadow-sm space-y-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-[#EAE06D] flex items-center justify-center text-slate-900 shadow-xs shrink-0">
+              <CalendarCheck className="w-5 h-5 text-slate-900 stroke-[2.2]" />
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-900 block">
+                The 4-Month Endoscopy Wait &amp; Smart Calendar Planner
+              </span>
+              <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
+                {endoscopyPlan.procedureName}
+              </h3>
+            </div>
+          </div>
+          <span className="text-[10px] font-black bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full border border-purple-300">
+            {endoscopyPlan.cptCode}
+          </span>
+        </div>
+
+        {/* Catch-22 Clinical Context Callout */}
+        <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-3 space-y-1 text-slate-800">
+          <div className="flex items-center gap-1.5 text-amber-900 font-extrabold text-xs">
+            <Info className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+            <span>The Celiac Clinical Catch-22 Solved</span>
+          </div>
+          <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
+            When your endoscopy is booked 4 months out ({endoscopyPlan.scheduledDate}), you need to stop gluten immediately to function in school and work. However, for an accurate mucosal biopsy, you must eat gluten for 14 days right before the procedure. Sheila automatically structures your calendar into two distinct clinical phases:
+          </p>
+        </div>
+
+        {/* Phase 1 Card */}
+        <div className="bg-white rounded-2xl p-3.5 border-2 border-emerald-300 shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                Phase 1 · Active Now (Months 1–3.5)
+              </span>
+            </div>
+            <span className="text-[9px] bg-emerald-100 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+              Heal &amp; Function Now
+            </span>
+          </div>
+          <h4 className="font-extrabold text-xs text-slate-900">
+            {endoscopyPlan.phase1.title}
+          </h4>
+          <ul className="text-[11px] text-slate-700 space-y-1 font-medium pl-1">
+            {endoscopyPlan.phase1.rules.map((rule, idx) => (
+              <li key={idx} className="flex items-start gap-1.5">
+                <span className="text-emerald-600 font-bold">✓</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[10px] text-slate-500 italic pt-0.5">
+            {endoscopyPlan.phase1.purpose}
+          </p>
+        </div>
+
+        {/* Phase 2 Card */}
+        <div className="bg-white rounded-2xl p-3.5 border-2 border-purple-300 shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-600" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-900">
+                Phase 2 · Starts October 10, 2025 (14 Days Pre-Op)
+              </span>
+            </div>
+            <span className="text-[9px] bg-purple-100 text-purple-900 font-extrabold px-2 py-0.5 rounded-full">
+              Pre-Endoscopy Alert
+            </span>
+          </div>
+          <h4 className="font-extrabold text-xs text-slate-900">
+            {endoscopyPlan.phase2.title}
+          </h4>
+          <p className="text-[11px] text-slate-700 font-medium leading-relaxed">
+            <strong>Protocol:</strong> {endoscopyPlan.phase2.protocol}
+          </p>
+          <div className="bg-purple-50 rounded-xl p-2.5 border border-purple-200 text-[10px] text-purple-950 font-medium space-y-1">
+            <span className="font-bold block text-purple-900">
+              Why this is necessary:
+            </span>
+            <p>{endoscopyPlan.phase2.rationale}</p>
+          </div>
+        </div>
+
+        {/* Link to Providers Transparent Pricing */}
+        <button
+          onClick={() => onNavigateToProviders(endoscopyPlan.cptCode)}
+          className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95"
+        >
+          <Stethoscope className="w-3.5 h-3.5 text-slate-900" />
+          <span>Shop Endoscopy Cash Pricing: ${endoscopyPlan.facilityCashPrice} vs ${endoscopyPlan.hospitalBilledAvg} Hospital</span>
+        </button>
+      </div>
     </div>
   );
 };

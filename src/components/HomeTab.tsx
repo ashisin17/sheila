@@ -553,7 +553,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 <Moon className="w-3 h-3" />
                 <span>8h+ Sleep</span>
               </button>
+            </div>
+          </div>
 
+          {/* 1-Tap Daily Recovery Toggles */}
+          <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+              1-Tap Daily Recovery Habits (Villi Regeneration)
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               <button
                 onClick={() => toggleHabit('zeroAlcohol')}
                 className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
