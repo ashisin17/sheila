@@ -413,6 +413,7 @@ export default function App() {
                     endoscopyPlan={endoscopyPlan}
                     onOpenDayView={(_day) => setActiveSubView('day_view')}
                     foodLogs={foodLogs}
+                    onAddFoodLog={handleAddFoodLog}
                   />
                 )
               )}
