@@ -273,7 +273,7 @@ Language requested: ${language}.`;
 });
 
 // 2. 1-Page "8-Doctor-Proof" Clinical SOAP Note Generator Endpoint
-function getFallbackSoap(patientName = 'Sheila', age = 28) {
+function getFallbackSoap(patientName = 'Chloe', age = 22) {
   return {
     patientInfo: {
       name: patientName,
@@ -688,8 +688,8 @@ Language preference: ${language}.`;
 // 4. Gemini Multimodal After-Visit Summary & Voice Intake Extraction
 app.post('/api/parse-visit-summary', async (req: Request, res: Response) => {
   const fallbackSummary = {
-    patientName: 'Maya',
-    patientAge: 28,
+    patientName: 'Chloe',
+    patientAge: 22,
     primaryDiagnosis: 'Suspected Atypical Celiac Disease (Marsh III Enteropathy with Gluten Neuropathy & Autonomic Reactivity)',
     dismissalHistory: 'Patient experienced 14 months of medical gaslighting across 8 clinicians who dismissed peripheral neuropathy, tremors, and tachycardia as "anxiety and frat flu" due to absence of classic stomach cramping.',
     symptoms: [
@@ -795,7 +795,7 @@ app.post('/api/parse-visit-summary', async (req: Request, res: Response) => {
     const promptText = `You are "Sheila", an expert patient advocacy AI and clinical navigator.
 A patient has provided their hospital After-Visit Summary (AVS), medical discharge paper, or a 10-second spoken transcript.
 Extract their clinical status into structured JSON:
-1. Patient name (default "Chloe" if unspecified) and age (24).
+1. Patient name (default "Chloe" if unspecified) and age (22).
 2. Primary suspected diagnosis (e.g. Atypical Celiac Disease with Gluten Neuropathy).
 3. The history of diagnostic delay / gaslighting (e.g. 8 doctors dismissing symptoms as anxiety because classic GI cramps were absent).
 4. Auto-detected symptoms:

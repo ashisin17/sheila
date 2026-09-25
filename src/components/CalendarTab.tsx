@@ -105,13 +105,29 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       {/* 2. White Calendar Card */}
       <div className="bg-white rounded-3xl p-5 shadow-sm border border-purple-100/70 space-y-4">
         {/* Month Header & Legend */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-extrabold text-slate-900">
-            June 2025
-          </h3>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
-            <span className="w-3.5 h-3.5 rounded-full border-2 border-purple-500 bg-purple-50 inline-block" />
-            <span>{t.marked}</span>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-extrabold text-slate-900">
+              June 2025
+            </h3>
+            <button
+              onClick={() => setSelectedDayNumber(12)}
+              className="inline-flex items-center gap-1.5 text-[10px] font-black bg-[#EAE06D] text-slate-900 px-2.5 py-0.5 rounded-full border border-yellow-400 shadow-2xs hover:bg-yellow-300 transition cursor-pointer"
+              title="Jump to Today (June 12)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-700 animate-pulse" />
+              <span>Today: Jun 12</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-2.5 text-xs font-bold text-slate-500">
+            <div className="flex items-center gap-1">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-purple-800 bg-[#E8DFF2] inline-block shadow-2xs" />
+              <span className="text-[11px] font-black text-purple-900">Today</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-purple-500 bg-purple-50 inline-block" />
+              <span className="text-[11px]">{t.marked}</span>
+            </div>
           </div>
         </div>
 
@@ -141,18 +157,18 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             const isJune12 = cell.day === 12;
 
             return (
-              <div key={idx} className="flex justify-center items-center">
+              <div key={idx} className="flex flex-col justify-center items-center py-0.5">
                 <button
                   onClick={() => setSelectedDayNumber(cell.day)}
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition text-xs font-bold relative ${
                     isJune12
-                      ? 'border-2 border-purple-700 bg-[#E8DFF2] text-purple-950 font-black ring-2 ring-purple-300 ring-offset-1'
+                      ? 'border-2 border-purple-900 bg-[#E8DFF2] text-purple-950 font-black ring-2 ring-purple-400/80 shadow-xs'
                       : isMarked
                       ? markedItem?.type === 'villi_recovery'
                         ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-extrabold'
                         : 'border-2 border-purple-400 bg-purple-50 text-slate-900 font-extrabold hover:bg-purple-100'
                       : isSelected
-                      ? 'bg-slate-200 text-slate-900'
+                      ? 'bg-slate-200 text-slate-900 font-bold'
                       : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -165,6 +181,11 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                     />
                   )}
                 </button>
+                {isJune12 && (
+                  <span className="text-[7.5px] font-black uppercase tracking-tight bg-[#EAE06D] text-slate-900 px-1 rounded-full shadow-2xs border border-yellow-400 leading-none mt-0.5">
+                    TODAY
+                  </span>
+                )}
               </div>
             );
           })}
@@ -180,8 +201,13 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                 {selectedDayData.day}
               </span>
               <div>
-                <span className="text-[10px] font-extrabold uppercase text-purple-900">
-                  {selectedDayData.dateStr}
+                <span className="text-[10px] font-extrabold uppercase text-purple-900 flex items-center gap-1.5">
+                  <span>{selectedDayData.dateStr}</span>
+                  {selectedDayData.day === 12 && (
+                    <span className="bg-[#EAE06D] text-slate-900 text-[8px] font-black px-1.5 py-0.2 rounded-full border border-yellow-400">
+                      ★ TODAY
+                    </span>
+                  )}
                 </span>
                 <h4 className="font-bold text-sm text-slate-900 leading-tight">
                   {selectedDayData.title}

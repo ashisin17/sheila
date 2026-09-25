@@ -108,9 +108,14 @@ export const DayView: React.FC<DayViewProps> = ({
 
       {/* Title */}
       <div>
-        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-          YOUR DAY
-        </span>
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+            YOUR DAY
+          </span>
+          <span className="text-[9px] font-black uppercase bg-[#EAE06D] text-slate-900 px-2 py-0.5 rounded-full border border-yellow-400 shadow-2xs">
+            TODAY
+          </span>
+        </div>
         <h2 className="text-2xl font-black tracking-tight text-slate-900">
           Thursday, June 12
         </h2>

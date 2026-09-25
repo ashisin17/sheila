@@ -63,10 +63,10 @@ export const YouTab: React.FC<YouTabProps> = ({
       {/* 1. Header */}
       <div className="px-1">
         <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-          YOUR HEALTH BOARD
+          {t.healthBoard || "Chloe's health board"}
         </span>
         <h2 className="text-2xl font-black tracking-tight text-slate-900">
-          {userProfile.name}, {userProfile.age}
+          {userProfile.name || 'Chloe'}, {userProfile.age || 22}
         </h2>
       </div>
 
