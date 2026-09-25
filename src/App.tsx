@@ -9,6 +9,9 @@ import {
   SymptomToggle,
   EndoscopyPlan,
   DailyRecoveryHabits,
+  FoodLogEntry,
+  UserCollection,
+  CollectionCard,
 } from './types';
 import {
   INITIAL_MARKED_DAYS,
@@ -16,6 +19,8 @@ import {
   INITIAL_SYMPTOMS,
   INITIAL_ENDOSCOPY_PLAN,
   INITIAL_HABITS,
+  INITIAL_FOOD_LOGS,
+  INITIAL_COLLECTIONS,
   TRANSLATIONS,
 } from './data/initialData';
 import { Header, ConditionPreset } from './components/Header';
@@ -24,6 +29,8 @@ import { HomeTab } from './components/HomeTab';
 import { CalendarTab } from './components/CalendarTab';
 import { ProvidersTab } from './components/ProvidersTab';
 import { YouTab } from './components/YouTab';
+import { DayView } from './components/DayView';
+import { CollectionDetailView } from './components/CollectionDetailView';
 import { SoapNoteModal } from './components/SoapNoteModal';
 import { BillAuditModal } from './components/BillAuditModal';
 import { BookingModal } from './components/BookingModal';
@@ -38,6 +45,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [language, setLanguage] = useState<Language>('en');
   const [viewMode, setViewMode] = useState<'simulator' | 'showcase'>('simulator');
+  const [activeSubView, setActiveSubView] = useState<'none' | 'day_view' | 'collection_detail'>('none');
+  const [selectedCollection, setSelectedCollection] = useState<UserCollection | null>(null);
+
+  // Presentation Top Bar States
+  const [activeDemoView, setActiveDemoView] = useState<'onboarding' | 'main'>('main');
+  const [selectedPreset, setSelectedPreset] = useState<ConditionPreset>('celiac');
 
   // Presentation Top Bar States
   const [activeDemoView, setActiveDemoView] = useState<'onboarding' | 'main'>('main');
@@ -50,6 +63,8 @@ export default function App() {
   const [selectedCptFilter, setSelectedCptFilter] = useState<string | undefined>();
   const [endoscopyPlan, setEndoscopyPlan] = useState<EndoscopyPlan>(INITIAL_ENDOSCOPY_PLAN);
   const [recoveryHabits, setRecoveryHabits] = useState<DailyRecoveryHabits>(INITIAL_HABITS);
+  const [foodLogs, setFoodLogs] = useState<FoodLogEntry[]>(INITIAL_FOOD_LOGS);
+  const [collections, setCollections] = useState<UserCollection[]>(INITIAL_COLLECTIONS);
 
   // Modals
   const [isSoapModalOpen, setIsSoapModalOpen] = useState(false);
@@ -66,6 +81,68 @@ export default function App() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Food log handler
+  const handleAddFoodLog = (entry: Omit<FoodLogEntry, 'id'>) => {
+    const newEntry: FoodLogEntry = {
+      ...entry,
+      id: `food-${Date.now()}`,
+    };
+    setFoodLogs((prev) => [newEntry, ...prev]);
+    showToast(`✓ Logged: ${entry.item} (${entry.time})`);
+  };
+
+  // Add to collection
+  const handleAddToCollection = (collectionId: string, dayLabel: string, content: string, type: string) => {
+    setCollections((prev) =>
+      prev.map((col) => {
+        if (col.id === collectionId) {
+          const newCard: CollectionCard = {
+            id: `card-${Date.now()}`,
+            dayLabel,
+            type,
+            content,
+            cardBg: 'yellow',
+            meta: '1 note',
+          };
+          return {
+            ...col,
+            daysSaved: col.daysSaved + 1,
+            cards: [newCard, ...col.cards],
+          };
+        }
+        return col;
+      })
+    );
+    showToast('✓ Saved to collection!');
+  };
+
+  // Add card to collection
+  const handleAddCardToCollection = (collectionId: string, newCard: Omit<CollectionCard, 'id'>) => {
+    setCollections((prev) =>
+      prev.map((col) => {
+        if (col.id === collectionId) {
+          return {
+            ...col,
+            daysSaved: col.daysSaved + 1,
+            cards: [{ ...newCard, id: `card-${Date.now()}` }, ...col.cards],
+          };
+        }
+        return col;
+      })
+    );
+    showToast('✓ Card added to collection!');
+  };
+
+  // Subview navigation
+  const handleOpenDayView = (dayNumber: number = 12) => {
+    setActiveSubView('day_view');
+  };
+
+  const handleSelectCollection = (col: UserCollection) => {
+    setSelectedCollection(col);
+    setActiveSubView('collection_detail');
   };
 
   // Condition preset handler
@@ -225,13 +302,14 @@ export default function App() {
     setRecoveryHabits(data.habits);
     setUserProfile((prev) => ({
       ...prev,
-      name: data.patientName || 'Maya',
+      name: data.patientName || 'Chloe',
+      age: 22,
       endoscopyPlan: data.endoscopyPlan,
       activeSymptoms: data.symptoms,
       recoveryHabits: data.habits,
     }));
     setActiveDemoView('main');
-    showToast(`✓ Welcome ${data.patientName || 'Maya'}! 4-Tab Action Plan populated.`);
+    showToast(`✓ Welcome ${data.patientName || 'Chloe'}! 4-Tab Action Plan populated.`);
   };
 
   return (
@@ -242,11 +320,6 @@ export default function App() {
         onLanguageChange={setLanguage}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        streakCount={streakCount}
-        activeDemoView={activeDemoView}
-        onDemoViewChange={setActiveDemoView}
-        selectedPreset={selectedPreset}
-        onSelectPreset={handleSelectPreset}
       />
 
       {/* Toast Notification */}
@@ -277,6 +350,22 @@ export default function App() {
             onNavigateToProviders={handleNavigateToProviders}
             selectedCptFilter={selectedCptFilter}
             onClearCptFilter={() => setSelectedCptFilter(undefined)}
+            foodLogs={foodLogs}
+            onAddFoodLog={handleAddFoodLog}
+            collections={collections}
+            onAddToCollection={handleAddToCollection}
+            onAddCardToCollection={handleAddCardToCollection}
+            onOpenDayView={(_day) => {
+              setActiveTab('calendar');
+              setActiveSubView('day_view');
+              setViewMode('simulator');
+            }}
+            onSelectCollection={(col) => {
+              setSelectedCollection(col);
+              setActiveTab('you');
+              setActiveSubView('collection_detail');
+              setViewMode('simulator');
+            }}
           />
         ) : (
           /* Mobile Phone Simulator Container */
@@ -310,13 +399,26 @@ export default function App() {
               )}
 
               {activeTab === 'calendar' && (
-                <CalendarTab
-                  language={language}
-                  markedDays={markedDays}
-                  onOpenSoapModal={() => setIsSoapModalOpen(true)}
-                  onNavigateToProviders={handleNavigateToProviders}
-                  endoscopyPlan={endoscopyPlan}
-                />
+                activeSubView === 'day_view' ? (
+                  <DayView
+                    onBackToCalendar={() => setActiveSubView('none')}
+                    foodLogs={foodLogs}
+                    onAddFoodLog={handleAddFoodLog}
+                    onOpenSoapModal={() => setIsSoapModalOpen(true)}
+                    collections={collections}
+                    onAddToCollection={handleAddToCollection}
+                  />
+                ) : (
+                  <CalendarTab
+                    language={language}
+                    markedDays={markedDays}
+                    onOpenSoapModal={() => setIsSoapModalOpen(true)}
+                    onNavigateToProviders={handleNavigateToProviders}
+                    endoscopyPlan={endoscopyPlan}
+                    onOpenDayView={(_day) => setActiveSubView('day_view')}
+                    foodLogs={foodLogs}
+                  />
+                )
               )}
 
               {activeTab === 'providers' && (
@@ -331,15 +433,28 @@ export default function App() {
               )}
 
               {activeTab === 'you' && (
-                <YouTab
-                  language={language}
-                  userProfile={userProfile}
-                  onOpenSoapModal={() => setIsSoapModalOpen(true)}
-                  onOpenEditModal={() => setIsEditModalOpen(true)}
-                  onOpenPassportModal={() => setIsPassportModalOpen(true)}
-                  streakCount={streakCount}
-                  onIncrementStreak={handleIncrementStreak}
-                />
+                activeSubView === 'collection_detail' && selectedCollection ? (
+                  <CollectionDetailView
+                    collection={selectedCollection}
+                    onBackToYou={() => setActiveSubView('none')}
+                    onAddCard={handleAddCardToCollection}
+                  />
+                ) : (
+                  <YouTab
+                    language={language}
+                    userProfile={userProfile}
+                    onOpenSoapModal={() => setIsSoapModalOpen(true)}
+                    onOpenEditModal={() => setIsEditModalOpen(true)}
+                    onOpenPassportModal={() => setIsPassportModalOpen(true)}
+                    streakCount={streakCount}
+                    onIncrementStreak={handleIncrementStreak}
+                    collections={collections}
+                    onSelectCollection={(col) => {
+                      setSelectedCollection(col);
+                      setActiveSubView('collection_detail');
+                    }}
+                  />
+                )
               )}
             </div>
 
@@ -347,7 +462,10 @@ export default function App() {
             <div className="sticky bottom-0 z-30">
               <BottomNav
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={(tab) => {
+                  setActiveTab(tab);
+                  setActiveSubView('none');
+                }}
                 language={language}
               />
             </div>

@@ -14,9 +14,11 @@ import {
   CalendarCheck,
   Stethoscope,
   Info,
+  Utensils,
+  Plus,
 } from 'lucide-react';
-import { Language, MarkedDay, EndoscopyPlan } from '../types';
-import { TRANSLATIONS, INITIAL_ENDOSCOPY_PLAN } from '../data/initialData';
+import { Language, MarkedDay, EndoscopyPlan, FoodLogEntry } from '../types';
+import { TRANSLATIONS, INITIAL_ENDOSCOPY_PLAN, INITIAL_FOOD_LOGS } from '../data/initialData';
 
 interface CalendarTabProps {
   language: Language;
@@ -24,6 +26,8 @@ interface CalendarTabProps {
   onOpenSoapModal: () => void;
   onNavigateToProviders: (cptCodeFilter?: string) => void;
   endoscopyPlan?: EndoscopyPlan;
+  onOpenDayView?: (dayNumber: number) => void;
+  foodLogs?: FoodLogEntry[];
 }
 
 export const CalendarTab: React.FC<CalendarTabProps> = ({
@@ -32,6 +36,8 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   onOpenSoapModal,
   onNavigateToProviders,
   endoscopyPlan = INITIAL_ENDOSCOPY_PLAN,
+  onOpenDayView,
+  foodLogs = INITIAL_FOOD_LOGS,
 }) => {
   const t = TRANSLATIONS[language].calendar;
 
@@ -46,6 +52,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
   });
 
   const selectedDayData = selectedDayNumber ? markedMap.get(selectedDayNumber) : null;
+  const selectedDayFoods = selectedDayNumber ? foodLogs.filter((f) => f.day === selectedDayNumber) : [];
 
   // Check if cluster detected
   const hasNeurologicalCluster = markedDays.some((d) => d.isNeurologicalCluster);
@@ -98,13 +105,29 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
       {/* 2. White Calendar Card */}
       <div className="bg-white rounded-3xl p-5 shadow-sm border border-purple-100/70 space-y-4">
         {/* Month Header & Legend */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-extrabold text-slate-900">
-            June 2025
-          </h3>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
-            <span className="w-3.5 h-3.5 rounded-full border-2 border-purple-500 bg-purple-50 inline-block" />
-            <span>{t.marked}</span>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-extrabold text-slate-900">
+              June 2025
+            </h3>
+            <button
+              onClick={() => setSelectedDayNumber(12)}
+              className="inline-flex items-center gap-1.5 text-[10px] font-black bg-[#EAE06D] text-slate-900 px-2.5 py-0.5 rounded-full border border-yellow-400 shadow-2xs hover:bg-yellow-300 transition cursor-pointer"
+              title="Jump to Today (June 12)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-700 animate-pulse" />
+              <span>Today: Jun 12</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-2.5 text-xs font-bold text-slate-500">
+            <div className="flex items-center gap-1">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-purple-800 bg-[#E8DFF2] inline-block shadow-2xs" />
+              <span className="text-[11px] font-black text-purple-900">Today</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-purple-500 bg-purple-50 inline-block" />
+              <span className="text-[11px]">{t.marked}</span>
+            </div>
           </div>
         </div>
 
@@ -134,18 +157,18 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
             const isJune12 = cell.day === 12;
 
             return (
-              <div key={idx} className="flex justify-center items-center">
+              <div key={idx} className="flex flex-col justify-center items-center py-0.5">
                 <button
                   onClick={() => setSelectedDayNumber(cell.day)}
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition text-xs font-bold relative ${
                     isJune12
-                      ? 'border-2 border-purple-700 bg-[#E8DFF2] text-purple-950 font-black ring-2 ring-purple-300 ring-offset-1'
+                      ? 'border-2 border-purple-900 bg-[#E8DFF2] text-purple-950 font-black ring-2 ring-purple-400/80 shadow-xs'
                       : isMarked
                       ? markedItem?.type === 'villi_recovery'
                         ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-extrabold'
                         : 'border-2 border-purple-400 bg-purple-50 text-slate-900 font-extrabold hover:bg-purple-100'
                       : isSelected
-                      ? 'bg-slate-200 text-slate-900'
+                      ? 'bg-slate-200 text-slate-900 font-bold'
                       : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -158,6 +181,11 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                     />
                   )}
                 </button>
+                {isJune12 && (
+                  <span className="text-[7.5px] font-black uppercase tracking-tight bg-[#EAE06D] text-slate-900 px-1 rounded-full shadow-2xs border border-yellow-400 leading-none mt-0.5">
+                    TODAY
+                  </span>
+                )}
               </div>
             );
           })}
@@ -173,8 +201,13 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
                 {selectedDayData.day}
               </span>
               <div>
-                <span className="text-[10px] font-extrabold uppercase text-purple-900">
-                  {selectedDayData.dateStr}
+                <span className="text-[10px] font-extrabold uppercase text-purple-900 flex items-center gap-1.5">
+                  <span>{selectedDayData.dateStr}</span>
+                  {selectedDayData.day === 12 && (
+                    <span className="bg-[#EAE06D] text-slate-900 text-[8px] font-black px-1.5 py-0.2 rounded-full border border-yellow-400">
+                      ★ TODAY
+                    </span>
+                  )}
                 </span>
                 <h4 className="font-bold text-sm text-slate-900 leading-tight">
                   {selectedDayData.title}
@@ -220,6 +253,53 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Logged Foods for this Day */}
+          {selectedDayFoods.length > 0 && (
+            <div className="bg-white/80 rounded-2xl p-2.5 border border-purple-200/80 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-500">
+                <span className="flex items-center gap-1 text-purple-900">
+                  <Utensils className="w-3 h-3 text-purple-700" />
+                  <span>Logged Food &amp; Drinks</span>
+                </span>
+                <span className="text-[9px] bg-purple-100 text-purple-900 font-bold px-1.5 py-0.2 rounded-full">
+                  {selectedDayFoods.length} items
+                </span>
+              </div>
+              <div className="space-y-1">
+                {selectedDayFoods.map((f) => (
+                  <div
+                    key={f.id}
+                    className={`p-1.5 rounded-xl border text-[11px] flex items-start justify-between gap-1.5 ${
+                      f.suspectedTrigger
+                        ? 'bg-amber-50/90 border-amber-300 text-amber-950'
+                        : 'bg-white/90 border-purple-100 text-slate-800'
+                    }`}
+                  >
+                    <div>
+                      <span className="font-extrabold text-slate-900">{f.time} · {f.item}</span>
+                      {f.location && <span className="text-slate-500 text-[10px]"> ({f.location})</span>}
+                      {f.notes && <p className="text-[10px] text-slate-600 mt-0.5">{f.notes}</p>}
+                    </div>
+                    {f.suspectedTrigger && (
+                      <span className="text-[8px] font-black bg-amber-200 text-amber-950 px-1 py-0.5 rounded shrink-0">
+                        Hidden Gluten
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Action to Open Day View & Log Meals */}
+          <button
+            onClick={() => onOpenDayView?.(selectedDayNumber || 12)}
+            className="w-full bg-white hover:bg-slate-50 text-purple-950 text-xs font-bold py-2 rounded-xl border border-purple-200 shadow-2xs flex items-center justify-center gap-1.5 transition active:scale-98 cursor-pointer"
+          >
+            <Utensils className="w-3.5 h-3.5 text-purple-700" />
+            <span>Open Day View &amp; Log What I Ate</span>
+          </button>
         </div>
       )}
 
@@ -246,13 +326,137 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({
           </div>
         </div>
 
+        {/* Day 12 Food Log Highlight */}
+        <div className="bg-white/60 rounded-2xl p-2.5 border border-purple-300/40 text-xs space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-black uppercase text-purple-950">
+            <span className="flex items-center gap-1">
+              <Utensils className="w-3 h-3 text-purple-800" />
+              <span>Logged on June 12:</span>
+            </span>
+            <span className="bg-[#EAE06D] text-slate-900 px-1.5 py-0.2 rounded font-extrabold text-[9px]">
+              Caramel Drizzle Latte
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-800 leading-tight">
+            11:00 AM at Campus Cafe · Did not know caramel syrup contains barley malt gluten.
+          </p>
+        </div>
+
         {/* 1-Click "8-Doctor-Proof" SOAP Memo Button */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <button
+            onClick={() => onOpenDayView?.(12)}
+            className="w-full bg-white hover:bg-slate-50 text-purple-950 text-xs font-black py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+          >
+            <CalendarCheck className="w-4 h-4 text-purple-700" />
+            <span>Open Day View (June 12)</span>
+          </button>
+
+          <button
+            onClick={onOpenSoapModal}
+            className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-black py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-slate-900" />
+            <span>Doctor Visit Prep</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 5. THE 4-MONTH ENDOSCOPY WAIT & "GLUTEN CHALLENGE" SMART PLANNER */}
+      <div className="bg-linear-to-b from-[#F3EDF7] to-white rounded-3xl p-4 sm:p-5 border-2 border-purple-200/90 shadow-sm space-y-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-[#EAE06D] flex items-center justify-center text-slate-900 shadow-xs shrink-0">
+              <CalendarCheck className="w-5 h-5 text-slate-900 stroke-[2.2]" />
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-900 block">
+                The 4-Month Endoscopy Wait &amp; Smart Calendar Planner
+              </span>
+              <h3 className="font-extrabold text-sm text-slate-900 leading-tight">
+                {endoscopyPlan.procedureName}
+              </h3>
+            </div>
+          </div>
+          <span className="text-[10px] font-black bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full border border-purple-300">
+            {endoscopyPlan.cptCode}
+          </span>
+        </div>
+
+        {/* Catch-22 Clinical Context Callout */}
+        <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-3 space-y-1 text-slate-800">
+          <div className="flex items-center gap-1.5 text-amber-900 font-extrabold text-xs">
+            <Info className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+            <span>The Celiac Clinical Catch-22 Solved</span>
+          </div>
+          <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
+            When your endoscopy is booked 4 months out ({endoscopyPlan.scheduledDate}), you need to stop gluten immediately to function in school and work. However, for an accurate mucosal biopsy, you must eat gluten for 14 days right before the procedure. Sheila automatically structures your calendar into two distinct clinical phases:
+          </p>
+        </div>
+
+        {/* Phase 1 Card */}
+        <div className="bg-white rounded-2xl p-3.5 border-2 border-emerald-300 shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                Phase 1 · Active Now (Months 1–3.5)
+              </span>
+            </div>
+            <span className="text-[9px] bg-emerald-100 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+              Heal &amp; Function Now
+            </span>
+          </div>
+          <h4 className="font-extrabold text-xs text-slate-900">
+            {endoscopyPlan.phase1.title}
+          </h4>
+          <ul className="text-[11px] text-slate-700 space-y-1 font-medium pl-1">
+            {endoscopyPlan.phase1.rules.map((rule, idx) => (
+              <li key={idx} className="flex items-start gap-1.5">
+                <span className="text-emerald-600 font-bold">✓</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[10px] text-slate-500 italic pt-0.5">
+            {endoscopyPlan.phase1.purpose}
+          </p>
+        </div>
+
+        {/* Phase 2 Card */}
+        <div className="bg-white rounded-2xl p-3.5 border-2 border-purple-300 shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-600" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-900">
+                Phase 2 · Starts October 10, 2025 (14 Days Pre-Op)
+              </span>
+            </div>
+            <span className="text-[9px] bg-purple-100 text-purple-900 font-extrabold px-2 py-0.5 rounded-full">
+              Pre-Endoscopy Alert
+            </span>
+          </div>
+          <h4 className="font-extrabold text-xs text-slate-900">
+            {endoscopyPlan.phase2.title}
+          </h4>
+          <p className="text-[11px] text-slate-700 font-medium leading-relaxed">
+            <strong>Protocol:</strong> {endoscopyPlan.phase2.protocol}
+          </p>
+          <div className="bg-purple-50 rounded-xl p-2.5 border border-purple-200 text-[10px] text-purple-950 font-medium space-y-1">
+            <span className="font-bold block text-purple-900">
+              Why this is necessary:
+            </span>
+            <p>{endoscopyPlan.phase2.rationale}</p>
+          </div>
+        </div>
+
+        {/* Link to Providers Transparent Pricing */}
         <button
-          onClick={onOpenSoapModal}
-          className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-3 px-4 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 active:scale-98"
+          onClick={() => onNavigateToProviders(endoscopyPlan.cptCode)}
+          className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95"
         >
-          <Sparkles className="w-4 h-4 text-slate-900" />
-          <span>{t.generateSoapBtn}</span>
+          <Stethoscope className="w-3.5 h-3.5 text-slate-900" />
+          <span>Shop Endoscopy Cash Pricing: ${endoscopyPlan.facilityCashPrice} vs ${endoscopyPlan.hospitalBilledAvg} Hospital</span>
         </button>
       </div>
 
