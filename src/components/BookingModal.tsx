@@ -94,17 +94,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
           </div>
 
-          {/* CMS Pricing Transparency Breakdown */}
+          {/* Standard Pricing Breakdown */}
           <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 space-y-1">
             <div className="flex items-center justify-between text-emerald-950 font-extrabold text-xs">
-              <span>CMS Published Cash Pricing:</span>
+              <span>Standard Evaluation &amp; Panel Fee Schedule:</span>
               <span className="text-[10px] bg-emerald-200/60 px-2 py-0.5 rounded-full">
                 Tier {provider.priceTier}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-emerald-900">
               <div className="bg-white/70 p-2 rounded-xl">
-                <span className="text-[10px] text-slate-500 block">Cash Evaluation</span>
+                <span className="text-[10px] text-slate-500 block">Initial Evaluation</span>
                 <span className="font-black text-sm text-slate-900">${provider.cashVisitPrice}</span>
               </div>
               <div className="bg-white/70 p-2 rounded-xl">

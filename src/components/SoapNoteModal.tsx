@@ -81,7 +81,7 @@ Anti-Anxiety Defense:
 ${soapData.assessment.gaslightingDefenseNote}
 
 [PLAN - MISSING BLOOD PANEL CODES DOCTORS FORGET TO ORDER]
-${soapData.plan.recommendedCptCodes.map(c => `[${c.panelCategory}] ${c.code} ${c.name} | Fair Cash: ${c.typicalCashRate} (Hosp: ${c.hospitalBilledAvg}) - ${c.rationale}`).join('\n')}
+${soapData.plan.recommendedCptCodes.map(c => `[${c.panelCategory}] ${c.code} ${c.name} | Benchmark: ${c.typicalCashRate} (Hosp: ${c.hospitalBilledAvg}) - ${c.rationale}`).join('\n')}
 
 Directives:
 ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
@@ -274,7 +274,7 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                           </span>
                         </div>
                         <div className="text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                          Fair Cash: {cpt.typicalCashRate}
+                          Fair Rate: {cpt.typicalCashRate}
                         </div>
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-slate-500">
@@ -298,7 +298,7 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                 </div>
               </div>
 
-              {/* Action Button: Shop Massive Blood Panel Cash Prices */}
+              {/* Action Button: Shop Blood Panel */}
               <div className="pt-2">
                 <button
                   onClick={() => {
@@ -307,7 +307,7 @@ ${soapData.plan.clinicalDirectives.map(d => `- ${d}`).join('\n')}`;
                   }}
                   className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 font-extrabold py-3 px-4 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 text-xs active:scale-98"
                 >
-                  <span>Shop Massive Blood Panel Cash Prices ($45 vs $1,500+)</span>
+                  <span>Find In-Network Labs &amp; Blood Panel Coverage</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

@@ -106,7 +106,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   // Villi-Healing & Neurological Biometrics
   const [hoursSlept, setHoursSlept] = useState<number>(5);
   const [sugarIntake, setSugarIntake] = useState<'none' | 'low' | 'high'>('low');
-  const [alcoholDrinks, setAlcoholDrinks] = useState<number>(1);
+  const [alcoholDrinks, setAlcoholDrinks] = useState<number>(0);
 
   // Neurological symptoms (1-10)
   const [burningFeet, setBurningFeet] = useState<number>(7);
@@ -329,20 +329,29 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   const handlePinCalendar = () => {
     if (!analysisResult) return;
+    const now = new Date();
+    const todayNum = now.getDate();
+    const todayDateStr = now.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+
     const newDay: MarkedDay = {
-      day: Math.floor(Math.random() * 20) + 9,
-      dateStr: analysisResult.calendarEventSuggestion.date || 'June 9, 2025',
-      title: analysisResult.calendarEventSuggestion.title || 'Hidden Gluten Flare',
-      severity: analysisResult.riskScore || 8,
-      type: 'gluten_exposure',
-      triggerDetails: analysisResult.compoundName,
+      day: todayNum,
+      dateStr: todayDateStr,
+      title: analysisResult.calendarEventSuggestion?.title || 'Personal Health & Symptom Update',
+      severity: analysisResult.riskScore || 7,
+      type: 'neuropathy_spike',
+      triggerDetails: analysisResult.compoundName || 'Health update',
       symptoms: [
         `Burning Feet: ${burningFeet}/10`,
         `Hand Tingling: ${handTingling}/10`,
-        `Heart Rate: ${rapidHeartbeat > 7 ? 'Tachycardia' : 'Elevated'}`,
+        `Heart Rate: ${rapidHeartbeat > 7 ? 'Tachycardia Spike' : 'Monitored'}`,
       ],
       imageUrl: selectedImage || undefined,
-      notes: analysisResult.concreteCorrelation || analysisResult.generalAdvice || '',
+      notes: analysisResult.concreteCorrelation || analysisResult.generalAdvice || 'Personal health check-in logged to calendar.',
       isNeurologicalCluster: true,
     };
     onPinToCalendar(newDay);
@@ -732,6 +741,34 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           !queryLower.includes('latte') &&
           !queryLower.includes('barista');
 
+        // Is user talking about their health / personal symptoms / body check-in?
+        // "ensure nily when ur tlaking about ur health/personal things, then it says save updates to calendar?"
+        const isHealthOrPersonalQuery =
+          isPureSymptomQuery ||
+          activeAction === 'checkin' ||
+          queryLower.includes('health') ||
+          queryLower.includes('symptom') ||
+          queryLower.includes('body') ||
+          queryLower.includes('mood') ||
+          queryLower.includes('sleep') ||
+          queryLower.includes('pain') ||
+          queryLower.includes('nerve') ||
+          queryLower.includes('neuropathy') ||
+          queryLower.includes('tingling') ||
+          queryLower.includes('burning') ||
+          queryLower.includes('heart') ||
+          queryLower.includes('beat') ||
+          queryLower.includes('tired') ||
+          queryLower.includes('fatigue') ||
+          queryLower.includes('flare') ||
+          queryLower.includes('feel') ||
+          queryLower.includes('hurts') ||
+          queryLower.includes('personal') ||
+          queryLower.includes('anxiety') ||
+          queryLower.includes('brain fog') ||
+          queryLower.includes('ataxia') ||
+          queryLower.includes('tremor');
+
         // Card 1: What to know about this item
         // "What to know about this item --> only pull up if someone is ASKING abotu the item, otherwise have LLM use the adfice and just genratle things. 
         // ex: if someoe asks having this symypl what to do? DONT pull up food informaiton"
@@ -904,24 +941,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </div>
             )}
 
-            {/* 2 One-Click Action Buttons */}
-            <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button
-                onClick={handlePinCalendar}
-                disabled={pinnedToCal}
-                className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
-                  pinnedToCal
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                    : 'bg-[#B6A1DA] hover:bg-purple-300 text-slate-900 active:scale-98'
-                }`}
-              >
-                <CalendarPlus className="w-4 h-4" />
-                <span>
-                  {pinnedToCal
-                    ? '✓ Pinned to Calendar'
-                    : '+ Pin to Calendar'}
-                </span>
-              </button>
+            {/* Action Buttons: Only show "Save updates to calendar" when talking about health/personal things */}
+            <div className={`pt-2 grid gap-2 ${isHealthOrPersonalQuery ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+              {/* Only shown when user is discussing health or personal symptoms */}
+              {isHealthOrPersonalQuery && (
+                <button
+                  onClick={handlePinCalendar}
+                  disabled={pinnedToCal}
+                  className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                    pinnedToCal
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : 'bg-[#B6A1DA] hover:bg-purple-300 text-slate-900 active:scale-98'
+                  }`}
+                >
+                  <CalendarPlus className="w-4 h-4" />
+                  <span>
+                    {pinnedToCal
+                      ? '✓ Saved updates to calendar'
+                      : '+ Save updates to calendar'}
+                  </span>
+                </button>
+              )}
 
               <button
                 onClick={handleAddToBoard}
@@ -936,6 +976,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 <span>
                   {addedToBoard
                     ? '✓ Saved to Health Board'
+                    : isHealthOrPersonalQuery
+                    ? '+ Save to Health Board'
                     : '+ Save Safe Swap to Board'}
                 </span>
               </button>

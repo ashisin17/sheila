@@ -34,10 +34,28 @@ export interface TriggerAnalysis {
   };
 }
 
+export interface DailyBodyMoodLog {
+  id?: string;
+  day: number;
+  month: number;
+  year: number;
+  dateKey: string; // e.g. "2025-06-12" or "2026-09-25"
+  dateStr: string;
+  sleepHours: number;
+  sugarIntake: 'none' | 'low' | 'high';
+  mood: 'Calm' | 'Focused' | 'Fatigued' | 'Brain Fog' | 'Anxious';
+  burningFeet: number;
+  handTingling: number;
+  rapidHeartbeat: number;
+  tremorsAtaxia: number;
+  bodyNotes?: string;
+  savedAt?: string;
+}
+
 export interface NeurologicalMetrics {
   hoursSlept: number; // e.g. 5
   sugarIntake: 'none' | 'low' | 'high';
-  alcoholDrinks: number; // 0, 1, 2+
+  alcoholDrinks?: number; // optional legacy
   burningFeet: number; // 1-10
   handTingling: number; // 1-10
   tremorsAtaxia: number; // 1-10
