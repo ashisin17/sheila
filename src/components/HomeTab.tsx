@@ -879,22 +879,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 type="button"
                 onClick={() => {
                   handleQuickQuestion(
-                    "Can I go to Din Tai Fung?",
-                    'dish_restaurant',
-                    undefined,
-                    undefined
-                  );
-                }}
-                className="text-[10px] font-bold bg-[#EAE06D]/90 hover:bg-[#EAE06D] text-slate-900 px-3 py-1.5 rounded-full transition border border-yellow-400 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95 ring-2 ring-yellow-300/50"
-              >
-                <span>🥟</span>
-                <span>&ldquo;Can I go to Din Tai Fung?&rdquo;</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  handleQuickQuestion(
                     "Can I try this caramel syrup? What safe alternatives do you recommend?",
                     'syrup_sauce',
                     DEMO_ASSETS.caramelSauce,
@@ -1001,7 +985,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                       {interimTranscript ? (
                         <span className="text-yellow-200 font-medium italic">&ldquo;{interimTranscript}&rdquo;</span>
                       ) : (
-                        'Recording your voice... Say "Can I go to Din Tai Fung?" then click "DONE" to stop and convert to text!'
+                        'Recording entire audio stream... Speak freely. When finished, click "DONE" to stop and convert to text!'
                       )}
                     </p>
                   </div>
@@ -1114,7 +1098,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   }}
                   placeholder={
                     isRecording
-                      ? '🎙 Recording your voice live... Say "Can I go to Din Tai Fung?", then tap DONE...'
+                      ? '🎙 Recording your voice live... Speak freely, then tap DONE (Turn into Text)...'
                       : t.placeholder
                   }
                   rows={3}
@@ -1206,16 +1190,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <span className="text-slate-400 font-bold text-[9.5px] uppercase tracking-wide">
               Voice Dictation:
             </span>
-            <button
-              type="button"
-              onClick={() => {
-                setInputText('Can I go to Din Tai Fung?');
-                setShowSubmitHighlight(true);
-              }}
-              className="text-purple-950 hover:text-purple-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2.5 py-0.5 rounded-full font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs"
-            >
-              🎤 &ldquo;Can I go to Din Tai Fung?&rdquo;
-            </button>
             <button
               type="button"
               onClick={() => {
