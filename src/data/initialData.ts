@@ -1,62 +1,202 @@
-import { MarkedDay, Provider, UserProfile, SoapNote, BillAuditResult } from '../types';
+import {
+  MarkedDay,
+  Provider,
+  UserProfile,
+  SoapNote,
+  BillAuditResult,
+  SymptomToggle,
+  EndoscopyPlan,
+  DailyRecoveryHabits,
+} from '../types';
 
 export const DEMO_ASSETS = {
   oatMilkMenu: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80',
   caramelSauce: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80',
   burningFeet: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
   medicalBill: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80',
+  afterVisitSummary: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
+};
+
+export const DEMO_AFTER_VISIT_SUMMARY_TEXT = `PACIFIC HEALTH METROPOLITAN HOSPITAL - AFTER-VISIT SUMMARY
+Patient Name: Chloe Vance | DOB: 10/12/2001 | Age: 24
+Encounter Date: June 1, 2025 | Attending: Dr. Angela Miller, MD
+Department: Internal Medicine & Urgent Evaluation Clinic
+
+CHIEF COMPLAINT & HISTORY OF PRESENT ILLNESS:
+24-year-old female presents with 14-month history of progressive episodic neurological symptoms:
+- Distal bilateral burning sensations in feet and lower extremities (rated 8/10)
+- Bilateral hand tingling, numbness, and fine intention tremors with motor clumsiness (Gluten Ataxia)
+- Post-prandial sinus tachycardia (resting HR spikes to 118-125 bpm)
+- Profound physical fatigue, cognitive brain fog, and chronic musculoskeletal/joint stiffness
+- Notable absence of traditional severe gastrointestinal pain/cramping, which previously led 8 prior urgent care and outpatient physicians to dismiss presentation as "generalized anxiety disorder", "college panic attacks", or "post-viral fatigue syndrome".
+
+CLINICAL IMPRESSION & SUSPECTED DIAGNOSIS:
+Suspected Atypical Celiac Disease (Marsh III Enteropathy with Gluten Neuropathy & Autonomic Reactivity).
+Multiple secondary nutritional deficiencies secondary to intestinal villous blunting (Vitamin D3, Active B12, Serum Ferritin).
+
+UPCOMING PROCEDURES SCHEDULED:
+- Procedure: Upper Endoscopy (Esophagogastroduodenoscopy) with 6-quadrant Duodenal Biopsies (CPT 43239)
+- Scheduled Date: October 24, 2025 (4 months out due to specialist booking backlog)
+- Facility: Bay Area Endoscopy & GI Surgery Pavilion
+
+CRITICAL CLINICAL DIRECTIVE (THE GLUTEN CHALLENGE CATCH-22):
+1. Phase 1 (Now until Oct 10, 2025): Strict 100% Gluten-Free Diet to promote villous regeneration, control sensory neuropathy, and allow functional academic/work capacity. Target 8+ hours sleep, strict zero alcohol, and low added sugar.
+2. Phase 2 (Oct 10 – Oct 24, 2025): MANDATORY 14-DAY GLUTEN CHALLENGE. Patient must consume 1-2 slices of gluten-containing bread daily prior to endoscopy so that small intestinal mucosal biopsies can histologically detect blunted villi. Flare protocol and emergency hydration kit must be standby.`;
+
+export const INITIAL_SYMPTOMS: SymptomToggle[] = [
+  {
+    id: 'peripheral_neuropathy',
+    label: 'Peripheral Neuropathy',
+    description: 'Burning in feet / tingling in hands',
+    category: 'neurological',
+    selected: true,
+    isGaslightedFlag: true,
+  },
+  {
+    id: 'gluten_ataxia',
+    label: 'Gluten Ataxia',
+    description: 'Loss of coordination & tremors',
+    category: 'neurological',
+    selected: true,
+    isGaslightedFlag: true,
+  },
+  {
+    id: 'joint_bone_pain',
+    label: 'Bone, Muscle & Joint Pain',
+    description: 'Deep migratory ache and joint stiffness',
+    category: 'neurological',
+    selected: true,
+    isGaslightedFlag: true,
+  },
+  {
+    id: 'vision_changes',
+    label: 'Vision Changes / Blurriness',
+    description: 'Ocular strain and episodic visual blurriness',
+    category: 'neurological',
+    selected: true,
+    isGaslightedFlag: true,
+  },
+  {
+    id: 'rapid_heartbeat',
+    label: 'Rapid Heartbeat (Tachycardia)',
+    description: 'Post-gluten resting heart spikes to 118-125 bpm',
+    category: 'neurological',
+    selected: true,
+    isGaslightedFlag: true,
+  },
+  {
+    id: 'chronic_exhaustion',
+    label: 'Chronic Exhaustion / Getting Sick',
+    description: 'Profound post-exertional fatigue & lowered immunity',
+    category: 'neurological',
+    selected: true,
+    isGaslightedFlag: true,
+  },
+  {
+    id: 'flattened_villi_deficiencies',
+    label: 'Flattened Villi / Deficiencies',
+    description: 'Severe malabsorption of Vitamin D, B12, and Iron',
+    category: 'gut_malabsorption',
+    selected: true,
+    isGaslightedFlag: false,
+  },
+  {
+    id: 'classic_stomach_cramping',
+    label: 'Classic Stomach Cramping',
+    description: 'Acute GI cramping and bloating (absent in atypical Celiac)',
+    category: 'gut_malabsorption',
+    selected: false,
+    isGaslightedFlag: false,
+  },
+];
+
+export const INITIAL_ENDOSCOPY_PLAN: EndoscopyPlan = {
+  procedureName: 'Upper Endoscopy (EGD) with Small Intestine Villi Biopsy',
+  cptCode: 'CPT 43239',
+  scheduledDate: '2025-10-24',
+  monthsOut: 4,
+  facilityCashPrice: 420,
+  hospitalBilledAvg: 2450,
+  phase1: {
+    title: 'Phase 1: Heal & Function Now (Months 1–3.5)',
+    rules: [
+      '100% Strict Gluten Elimination (Zero cross-contamination)',
+      'Sublingual Active Methyl-B12 & Vitamin D3 daily to heal villi and nerve myelin',
+      'Target 8+ Hours Sleep, Zero Alcohol, Low Added Sugar to calm neuro-inflammation',
+    ],
+    purpose: 'Allows villi recovery, stops peripheral burning, and clears brain fog so Maya can excel at school & work.',
+  },
+  phase2: {
+    title: 'Phase 2: The Gluten Challenge Window (Oct 10 – Oct 24, 2025)',
+    startDate: '2025-10-10',
+    challengeDuration: '14 Days Pre-Procedure',
+    protocol: 'Eat 1–2 slices of whole wheat bread or 3g gluten daily for 14 days prior to endoscopy biopsy.',
+    rationale: 'Clinical Catch-22: Intestinal villi heal when off gluten. To definitively prove Marsh III enteropathy under the microscope, the immune response must be temporarily provoked.',
+    flareProtectionKit: [
+      'Flare Support Mode enabled in app (1-tap symptom logs)',
+      'Emergency sublingual B12 + electrolyte hydration on bedside',
+      'Direct messaging channel open to Dr. Jordan Lee',
+    ],
+  },
+};
+
+export const INITIAL_HABITS: DailyRecoveryHabits = {
+  glutenFreeStrict: true,
+  sleepHours: 8,
+  zeroAlcohol: true,
+  lowSugar: true,
 };
 
 export const INITIAL_CAROUSEL_ITEMS = [
   {
     id: 1,
     tag: 'REMINDER',
-    title: 'Take your Vitamin D with dinner.',
-    detail: '2,000 IU softgel with healthy fats to rebuild fat-soluble vitamin stores depleted by blunted villi.',
-    badge: 'Villi Recovery 🔥',
-    nutrient: 'Vitamin D3',
+    title: 'Take your Vitamin D & B12 with dinner.',
+    detail: 'Rebuilding fat-soluble reserves and nerve myelin while intestinal villi heal.',
+    badge: 'Villi Healing 🔥',
+    nutrient: 'Vitamin D & B12',
     isActionable: true,
     actionText: 'Log Daily Dose',
   },
   {
     id: 2,
-    tag: 'VILLI MALABSORPTION',
-    title: 'Sublingual Methyl-B12 (1,000 mcg).',
-    detail: 'Dissolve under the tongue to bypass damaged terminal ileal villi and stop peripheral hand tingling and tremors.',
-    badge: 'Neuropathy Shield',
-    nutrient: 'Active B12',
+    tag: 'VILLI HEALING STREAK',
+    title: '18 days 100% gluten-free, low sugar, 0 alcohol.',
+    detail: 'Intestinal enterocyte microvilli turnover is actively regenerating without inflammatory blunting.',
+    badge: '18-Day Streak 🌟',
+    nutrient: 'Enterocyte Repair',
     isActionable: true,
-    actionText: 'Log B12 Taken',
+    actionText: 'Check Streak',
   },
   {
     id: 3,
-    tag: 'ANEMIA RECOVERY',
-    title: 'Chelated Iron / Ferritin Booster.',
-    detail: 'Duodenal villous atrophy severely blocks iron absorption. Chelated bisglycinate restores deep tissue ferritin.',
-    badge: 'Energy & Oxygen',
-    nutrient: 'Iron / Ferritin',
+    tag: 'ENDOSCOPY COUNTDOWN',
+    title: 'Upper Endoscopy in 4 months (October).',
+    detail: 'Pre-test gluten challenge reminder set for 7 days prior so your biopsy accurately detects villi reaction.',
+    badge: 'CPT 43239 🗓️',
+    nutrient: 'Biopsy Timeline',
     isActionable: true,
-    actionText: 'Log Iron Taken',
+    actionText: 'View Calendar Alert',
   },
   {
     id: 4,
-    tag: 'NEUROLOGICAL',
-    title: 'Magnesium Glycinate (400 mg).',
-    detail: 'Calms burning feet, muscle twitches, ataxia, and post-gluten rapid tachycardia before bedtime.',
-    badge: 'Autonomic Calmer',
-    nutrient: 'Magnesium',
-    isActionable: true,
-    actionText: 'Log Magnesium Taken',
+    tag: 'CORRELATION INSIGHT',
+    title: 'Hand tingling & tachycardia dropped 60%.',
+    detail: 'Correlated with 5 consecutive nights of 8h+ sleep and zero alcohol calming autonomic reactivity.',
+    badge: 'AI Pattern Match 🧠',
+    nutrient: 'Neuro Recovery',
+    isActionable: false,
+    actionText: 'View Insight',
   },
   {
     id: 5,
-    tag: 'STOP GASLIGHTING',
-    title: 'Celiac & Malabsorption Labs in 4 days.',
-    detail: 'June 12 appointment with Dr. Priya Shah. Tap to prepare your 8-Doctor-Proof SOAP packet with missing lab codes.',
-    badge: 'Prep SOAP Memo',
-    nutrient: 'Lab Panel Codes',
+    tag: 'COFFEE SHOP WATCH',
+    title: 'Barista oat milks & caramel syrups risk.',
+    detail: 'Often contain hidden barley malt, gluten thickeners, or steamer wand cross-contamination.',
+    badge: 'Cross-Contact Alert ☕',
+    nutrient: 'Safe Swaps',
     isActionable: true,
-    actionText: 'Generate 8-Doctor SOAP Note',
+    actionText: 'Scan Drink / Menu',
   },
 ];
 
@@ -161,8 +301,8 @@ export const INITIAL_PROVIDERS: Provider[] = [
     id: 'dr-jordan-lee',
     name: 'Dr. Jordan Lee',
     initials: 'JL',
-    specialty: 'Primary care',
-    subspecialty: 'Wellness Clinic',
+    specialty: 'Primary Care & Integrative GI',
+    subspecialty: 'Villi Malabsorption Recovery',
     distance: 'Local Clinic',
     visitType: 'Video & In Person',
     priceTier: '$',
@@ -171,20 +311,19 @@ export const INITIAL_PROVIDERS: Provider[] = [
     malabsorptionPanelPrice: 55,
     slidingScale: true,
     languages: ['English', 'Español'],
-    avatarBg: '#FCE881',
-    cmsBadge: 'Primary Care Advocate · Wellness Clinic',
+    avatarBg: '#EAE06D',
+    cmsBadge: 'Primary Advocate · Validates Celiac Neuropathy & Orders Full Nutrient Panels',
     isPrimary: true,
     nextVisit: 'June 12',
-    facility: 'Wellness Clinic',
+    facility: 'Integrative Wellness & GI Clinic',
     celiacLiterate: true,
-    phone: '(555) 234-8901',
   },
   {
     id: 'dr-priya-shah',
     name: 'Dr. Priya Shah',
     initials: 'PS',
-    specialty: 'Dermatology',
-    subspecialty: 'Skin health',
+    specialty: 'Gastroenterology',
+    subspecialty: 'Celiac Disease & Small Bowel Villi',
     distance: '1.2 mi',
     visitType: 'Video or in person',
     priceTier: '$',
@@ -193,18 +332,17 @@ export const INITIAL_PROVIDERS: Provider[] = [
     malabsorptionPanelPrice: 38,
     slidingScale: true,
     languages: ['English', 'Español', 'Hindi'],
-    avatarBg: '#EADDFF',
-    cmsBadge: 'Dermatology · Skin health (1.2 mi)',
-    facility: 'Metropolitan Skin Health Center',
+    avatarBg: '#E8DFF2',
+    cmsBadge: '$ Low - $45 Cash Visit / $48 tTG-IgA Panel (FQHC Celiac Partner, Sliding Scale)',
+    facility: 'Bay Area Community Health & Celiac Center',
     celiacLiterate: true,
-    phone: '(555) 482-1920',
   },
   {
     id: 'dr-elena-ruiz',
     name: 'Dr. Elena Ruiz',
     initials: 'ER',
-    specialty: 'Dermatology',
-    subspecialty: 'Acne & sensitive skin',
+    specialty: 'Neuro-Gastroenterology',
+    subspecialty: 'Gluten Ataxia & Autonomic Neuropathy',
     distance: '2.4 mi',
     visitType: 'In person',
     priceTier: '$$',
@@ -213,41 +351,42 @@ export const INITIAL_PROVIDERS: Provider[] = [
     malabsorptionPanelPrice: 95,
     slidingScale: false,
     languages: ['English', 'Español'],
-    avatarBg: '#EADDFF',
-    cmsBadge: 'Dermatology · Acne & sensitive skin (2.4 mi)',
-    facility: 'Pacific Dermatology & Allergy Clinic',
+    avatarBg: '#E8DFF2',
+    cmsBadge: '$$ Med - $145 Cash Visit / $125 Comprehensive Panel (Sutter Health Network)',
+    facility: 'Pacific Neuro-GI & Autonomic Clinic',
     celiacLiterate: true,
-    phone: '(555) 619-3382',
   },
   {
     id: 'dr-marcus-chen',
     name: 'Dr. Marcus Chen',
     initials: 'MC',
-    specialty: 'Dermatology',
-    subspecialty: 'General',
+    specialty: 'Gastroenterology',
+    subspecialty: 'Hospital Specialty Diagnostic Lab',
     distance: '3.1 mi',
     visitType: 'Video visits',
     priceTier: '$$$',
-    cashVisitPrice: 160,
-    celiacPanelPrice: 180,
-    malabsorptionPanelPrice: 150,
+    cashVisitPrice: 380,
+    celiacPanelPrice: 460,
+    malabsorptionPanelPrice: 460,
     slidingScale: false,
     languages: ['English', 'Mandarin'],
-    avatarBg: '#EADDFF',
-    cmsBadge: 'Dermatology · General (3.1 mi)',
-    facility: 'University Dermatology Clinic',
-    celiacLiterate: true,
-    phone: '(555) 792-8811',
+    avatarBg: '#E8DFF2',
+    cmsBadge: '$$$ High - $380 Cash Visit / $920 Blood Panel (Hospital Outpatient Billing Warning)',
+    facility: 'University Medical Center Plaza',
+    celiacLiterate: false,
   },
 ];
 
 export const INITIAL_USER_PROFILE: UserProfile = {
-  name: 'Sheila',
+  name: 'Maya',
   age: 28,
   primaryProvider: 'Dr. Jordan Lee & Dr. Priya Shah',
   clinic: 'Celiac & Neuro-GI Collaborative',
   villiRecoveryDays: 42,
   allergies: ['Gluten (Strict Celiac)', 'Barley Malt', 'Rye', 'Cross-Contaminated Oats'],
+  endoscopyPlan: INITIAL_ENDOSCOPY_PLAN,
+  activeSymptoms: INITIAL_SYMPTOMS,
+  recoveryHabits: INITIAL_HABITS,
   medications: [
     {
       name: 'Sublingual Methyl-B12',
@@ -389,7 +528,7 @@ export const TRANSLATIONS = {
       demoBillBtn: 'Demo: Audit $890 Blood Panel Bill',
     },
     you: {
-      healthBoard: "SHEILA'S HEALTH & VILLI RECOVERY BOARD",
+      healthBoard: "CHLOE'S HEALTH & VILLI RECOVERY BOARD",
       myCare: 'MY CARE & RECOVERY',
       primaryProvider: 'Primary / GI Provider',
       villiStreak: 'Villi Recovery: 42 Days 100% Gluten-Free',
@@ -471,7 +610,7 @@ export const TRANSLATIONS = {
       demoBillBtn: 'Demo: Auditar Factura de $890',
     },
     you: {
-      healthBoard: 'PANEL DE SALUD Y VELLOSIDADES DE SHEILA',
+      healthBoard: 'PANEL DE SALUD Y VELLOSIDADES DE CHLOE',
       myCare: 'MI ATENCIÓN Y RECUPERACIÓN',
       primaryProvider: 'Médico Primario / Gastro',
       villiStreak: 'Recuperación de Vellosidades: 42 Días 100% Sin Gluten',
@@ -553,7 +692,7 @@ export const TRANSLATIONS = {
       demoBillBtn: '演示: 审计 $890 血液生化账单',
     },
     you: {
-      healthBoard: 'SHEILA 的肠道绒毛与健康自护档案',
+      healthBoard: 'CHLOE 的肠道绒毛与健康自护档案',
       myCare: '我的主治与绒毛修复进度',
       primaryProvider: '主要消化与神经主治团队',
       villiStreak: '绒毛修复里程碑：连续 42 天 100% 无麸质',

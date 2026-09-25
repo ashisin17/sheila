@@ -20,9 +20,25 @@ import {
   Coffee,
   Activity,
   SlidersHorizontal,
+  CheckCircle,
+  ShieldCheck,
 } from 'lucide-react';
-import { Language, ActionType, TriggerAnalysis, MarkedDay, HealthBoardTrigger } from '../types';
-import { INITIAL_CAROUSEL_ITEMS, DEMO_ASSETS, TRANSLATIONS } from '../data/initialData';
+import {
+  Language,
+  ActionType,
+  TriggerAnalysis,
+  MarkedDay,
+  HealthBoardTrigger,
+  DailyRecoveryHabits,
+  EndoscopyPlan,
+} from '../types';
+import {
+  INITIAL_CAROUSEL_ITEMS,
+  DEMO_ASSETS,
+  TRANSLATIONS,
+  INITIAL_HABITS,
+  INITIAL_ENDOSCOPY_PLAN,
+} from '../data/initialData';
 import { analyzeTriggerApi } from '../services/api';
 
 interface HomeTabProps {
@@ -32,6 +48,10 @@ interface HomeTabProps {
   onOpenSoapModal: () => void;
   streakCount: number;
   onIncrementStreak: () => void;
+  recoveryHabits?: DailyRecoveryHabits;
+  onUpdateHabits?: (habits: DailyRecoveryHabits) => void;
+  endoscopyPlan?: EndoscopyPlan;
+  onNavigateToCalendar?: () => void;
 }
 
 export const HomeTab: React.FC<HomeTabProps> = ({
@@ -41,8 +61,23 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onOpenSoapModal,
   streakCount,
   onIncrementStreak,
+  recoveryHabits = INITIAL_HABITS,
+  onUpdateHabits,
+  endoscopyPlan = INITIAL_ENDOSCOPY_PLAN,
+  onNavigateToCalendar,
 }) => {
   const t = TRANSLATIONS[language].home;
+
+  const [habitsState, setHabitsState] = useState<DailyRecoveryHabits>(recoveryHabits);
+
+  const toggleHabit = (key: keyof DailyRecoveryHabits) => {
+    const updated = {
+      ...habitsState,
+      [key]: typeof habitsState[key] === 'boolean' ? !habitsState[key] : habitsState[key],
+    };
+    setHabitsState(updated);
+    if (onUpdateHabits) onUpdateHabits(updated);
+  };
 
   // Reminder Carousel state
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -774,6 +809,67 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </p>
           </div>
 
+          {/* Concrete Correlation Callout */}
+          <div className="bg-white rounded-2xl p-3 border border-purple-100 space-y-1">
+            <div className="text-[11px] font-extrabold uppercase text-slate-900 flex items-center gap-1">
+              <Activity className="w-3.5 h-3.5 text-rose-600" />
+              <span>Neurological Correlation Alert</span>
+            </div>
+            <p className="text-xs text-slate-800 leading-relaxed font-medium">
+              {analysisResult.concreteCorrelation}
+            </p>
+          </div>
+
+          {/* SAFE ALTERNATIVES TO ORDER INSTEAD */}
+          <div className="bg-emerald-50/90 rounded-2xl p-3.5 border-2 border-emerald-300 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
+              </span>
+              <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+                0% Gluten Risk
+              </span>
+            </div>
+            <ul className="text-xs text-slate-800 space-y-1.5 font-medium pl-0.5">
+              <li className="flex items-start gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                  1
+                </span>
+                <span><strong>Iced Latte with Almond or Coconut Milk</strong> + Pure Vanilla Syrup (Skip barista oat milk and caramel syrup).</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                  2
+                </span>
+                <span><strong>Ask barista:</strong> &ldquo;Can you rinse the steam pitcher &amp; blender due to severe Celiac allergy?&rdquo;</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                  3
+                </span>
+                <span><strong>Certified GF Pure Matcha:</strong> Whisked with unsweetened almond milk and pure honey.</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Recommendations List */}
+          {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
+            <div className="space-y-1 pt-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Immediate Villi-Protection Directives
+              </span>
+              <ul className="text-xs text-slate-800 space-y-1">
+                {analysisResult.recommendations.map((rec, i) => (
+                  <li key={i} className="flex items-start gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Action Buttons: Pin to Calendar & Add to Board */}
           <div className="grid grid-cols-2 gap-2 pt-1">
             <button
@@ -786,7 +882,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               }`}
             >
               <CalendarPlus className="w-3.5 h-3.5" />
-              <span>{pinnedToCal ? 'Pinned to Calendar' : '+ Pin to Calendar'}</span>
+              <span>{pinnedToCal ? '✓ Pinned to Calendar' : '+ Pin to Calendar'}</span>
             </button>
 
             <button
@@ -799,7 +895,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               }`}
             >
               <BookmarkPlus className="w-3.5 h-3.5" />
-              <span>{addedToBoard ? 'Saved to Board' : '+ Save to Board'}</span>
+              <span>{addedToBoard ? '✓ Saved to Health Board' : '+ Save to Board'}</span>
             </button>
           </div>
         </div>
