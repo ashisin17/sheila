@@ -684,8 +684,8 @@ Language preference: ${language}.`;
 // 4. Gemini Multimodal After-Visit Summary & Voice Intake Extraction
 app.post('/api/parse-visit-summary', async (req: Request, res: Response) => {
   const fallbackSummary = {
-    patientName: 'Chloe',
-    patientAge: 24,
+    patientName: 'Maya',
+    patientAge: 28,
     primaryDiagnosis: 'Suspected Atypical Celiac Disease (Marsh III Enteropathy with Gluten Neuropathy & Autonomic Reactivity)',
     dismissalHistory: 'Patient experienced 14 months of medical gaslighting across 8 clinicians who dismissed peripheral neuropathy, tremors, and tachycardia as "anxiety and frat flu" due to absence of classic stomach cramping.',
     symptoms: [
