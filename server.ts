@@ -205,6 +205,18 @@ CRITICAL INSTRUCTIONS FOR CONTEXTUAL CARD DISPLAY:
    (Provide English, Spanish, and Simplified Chinese).
 4. STEPS TO FEEL BETTER RIGHT NOW:
    In recommendations, give 2-3 simple, calming steps (hydration with electrolytes, 400 mg magnesium glycinate, sublingual Methyl-B12, quiet rest).
+5. SPECIAL RESTAURANT INSTRUCTION FOR DIN TAI FUNG:
+   If Chloe asks about Din Tai Fung (or "Din Tai Funt", "din tai", "dumplings", etc.):
+   - Set isItemSpecific: true, showBaristaQuestion: true, showSafeAlternatives: true.
+   - The response MUST clearly state: "Be careful! Soy sauce is not gluten free."
+   - Explain that traditional soy sauce is brewed with equal parts wheat and soybeans (high gluten), and is present in dumpling marinades, dipping vinegar sauces, and broths. Dumpling wrappers (Xiao Long Bao) are 100% wheat flour.
+   - In recommendations, recommend their gluten-free dishes:
+     1) Gluten-free fried rice (Shrimp Fried Rice or Pork/Chicken Fried Rice requested with NO soy sauce, cooked in a clean dedicated wok with salt, egg, and green onion).
+     2) Gluten-free vegetable sides: Sautéed String Beans with Garlic, Sautéed Spinach with Garlic, Sautéed Baby Bok Choy with Garlic, Sliced Cucumbers in sesame oil (request clean wok, no soy sauce).
+   - In safeAlternatives, recommend other restaurants with more gluten-free options in Santa Clara / Bay Area:
+     1) Asian Box (Mountain View / Palo Alto / Santana Row near Santa Clara) - 100% Certified Gluten-Free kitchen with dedicated GF Vietnamese rice boxes, noodles, and authentic Asian sauces.
+     2) P.F. Chang's (Westfield Valley Fair, Santa Clara) - Dedicated gluten-free wok station, dedicated prep area, and separate GF menu with wheat-free tamari (GF Chicken Lettuce Wraps, GF Fried Rice, GF Pad Thai, GF Mongolian Beef).
+     3) True Food Kitchen (Palo Alto / Santa Clara area) - Scratch kitchen with dedicated gluten-free protocols, noodle bowls, and allergen-safe dining.
 Language requested: ${language}.`;
 
     const contents = parts.length > 0 
@@ -293,6 +305,29 @@ Language requested: ${language}.`;
     });
 
     const parsed = JSON.parse(response.text || '{}');
+
+    // Guarantee exact requirements for Din Tai Fung dining queries
+    const userPromptText = (prompt || '').trim().toLowerCase();
+    if (/din\s*tai|fung|funt|dumpling|xiao\s*long|potsticker/i.test(userPromptText)) {
+      parsed.isItemSpecific = true;
+      parsed.showBaristaQuestion = true;
+      parsed.showSafeAlternatives = true;
+      parsed.crossContaminationTraps = 'Be careful! Soy sauce is not gluten free. Standard soy sauce is brewed with equal parts wheat and soybeans (contains high gluten). At Din Tai Fung, standard wheat-brewed soy sauce is in all dumpling marinades, dipping vinegar sauces, and broths. Plus, all Xiao Long Bao dumpling skins are 100% wheat flour, and bamboo steamers are shared.';
+      parsed.generalAdvice = 'Be careful! Soy sauce is not gluten free. Standard brewed soy sauce is almost 50% wheat protein. Nearly all dumplings, noodles, and dipping sauces at Din Tai Fung contain regular wheat soy sauce. To dine safely, stick strictly to their gluten-free dishes like fried rice (made with no soy sauce) and vegetable sides cooked in a clean dedicated wok, or visit dedicated gluten-free restaurants in Santa Clara.';
+      parsed.recommendations = [
+        'Recommend Din Tai Fung GF Dish: Shrimp Fried Rice or Pork/Chicken Fried Rice requested strictly "Without soy sauce, without chicken powder/MSG, cooked in a clean dedicated wok" (seasoned with salt, egg, and green onions only).',
+        'Recommend Din Tai Fung GF Vegetable Sides: Sautéed String Beans with Garlic, Sautéed Spinach with Garlic, Sautéed Baby Bok Choy with Garlic, or Sliced Cucumbers in Sesame Oil (must explicitly request "no soy sauce, clean dedicated wok").',
+        'Avoid All Dumplings & Noodles: All Xiao Long Bao (soup dumplings), potstickers, wontons, and noodles have wheat flour skins and cannot be made gluten-free.',
+        'Alert the Server: "I have Celiac Disease and severe gluten nerve sensitivity. Please ensure no soy sauce or dumpling dipping vinegar is brought to the table."',
+      ];
+      parsed.safeAlternatives = [
+        'Asian Box (Mountain View / Palo Alto / Santana Row near Santa Clara): 100% Certified Gluten-Free kitchen with dedicated GF Vietnamese rice boxes, noodles, and authentic Asian sauces.',
+        'P.F. Chang\'s (Westfield Valley Fair, Santa Clara): Dedicated gluten-free wok station, dedicated prep area, and separate GF menu with wheat-free tamari (GF Chicken Lettuce Wraps, GF Fried Rice, GF Pad Thai, and GF Mongolian Beef).',
+        'True Food Kitchen (Palo Alto / Santa Clara area): Scratch kitchen with dedicated gluten-free fryer, marked celiac protocols, and rich grain bowls.',
+        'Pho Kim Long (Santa Clara / San Jose): Naturally gluten-free rice noodle phở (order with clear bone broth, no hoisin sauce, no meatballs with wheat binders).',
+      ];
+    }
+
     return res.json({ success: true, data: parsed, source: 'gemini-live' });
   } catch (error: any) {
     console.error('Error in /api/analyze-trigger:', error);
@@ -305,9 +340,10 @@ Language requested: ${language}.`;
     const isSpecificItem = Boolean(req.body.imageBase64) || /syrup|caramel|oat|milk|bread|sourdough|sauce|teriyaki|beer|pasta|snack|cookie|bar|supplement|lip balm|dish/i.test(promptLower);
     const isSymptomFocus = /symptom|flare|burn|tingl|tremor|shak|fog|heart|tachy|palp|what to do|what should i do|feel.*bad|hurts/i.test(promptLower);
 
-    const isItemSpecific = isSpecificItem && !(isSymptomFocus && !req.body.imageBase64 && !/syrup|oat|caramel|bread/i.test(promptLower));
-    const showBaristaQuestion = asksBaristaOrDining;
-    const showSafeAlternatives = asksAlternatives && (isSpecificItem || /food|eat|drink/i.test(promptLower));
+    const isDinTaiFung = /din\s*tai|fung|funt|dumpling|xiao\s*long|potsticker|dim\s*sum/i.test(promptLower);
+    const isItemSpecific = (isSpecificItem || isDinTaiFung) && !(isSymptomFocus && !req.body.imageBase64 && !/syrup|oat|caramel|bread|din|fung/i.test(promptLower));
+    const showBaristaQuestion = asksBaristaOrDining || isDinTaiFung;
+    const showSafeAlternatives = (asksAlternatives || isDinTaiFung) && (isSpecificItem || isDinTaiFung || /food|eat|drink/i.test(promptLower));
 
     const isSyrupOrCaramel = /caramel|syrup|drizzle|flavor|sauce|sweet/i.test(userPrompt);
     const isNerveOrFlare = /tingl|tremor|shak|burn|nerve|fog|heart|tachy|palp/i.test(userPrompt);
@@ -336,7 +372,31 @@ Language requested: ${language}.`;
       'Certified GF matcha green tea whisked with almond milk',
     ];
 
-    if (isSyrupOrCaramel) {
+    if (isDinTaiFung) {
+      compoundName = 'Din Tai Fung (Dumpling House & Asian Dining)';
+      category = 'restaurant_dining';
+      riskLevel = 'High Risk / Hidden Wheat Trap';
+      riskScore = 8.8;
+      crossContaminationTraps = 'Be careful! Soy sauce is not gluten free. Standard soy sauce is brewed with equal parts wheat and soybeans (contains high gluten). At Din Tai Fung, standard wheat-brewed soy sauce is in all dumpling marinades, dipping vinegar sauces, and broths. Plus, all Xiao Long Bao dumpling skins are 100% wheat flour, and bamboo steamers are shared.';
+      concreteCorrelation = `Because you have Celiac Disease with small fiber neuropathy (burning feet ${burningFeet}/10, hand tingling ${handTingling}/10), eating wheat soy sauce or shared-steamer dumplings will trigger severe neurological burning, finger tremors, and racing heartbeat.`;
+      clinicalMechanism = 'Wheat-brewed soy sauce contains hydrolyzed wheat gluten proteins that trigger mucosal inflammation and tTG-6 autoantibodies, provoking small fiber neuropathy and tachycardia in Celiac patients.';
+      generalAdvice = 'Be careful! Soy sauce is not gluten free. Nearly all dumplings, noodles, and sauces at Din Tai Fung contain regular wheat soy sauce. To dine safely, stick strictly to their gluten-free dishes like fried rice (made with no soy sauce) and vegetable sides cooked in a clean wok, or visit dedicated gluten-free restaurants in Santa Clara.';
+      recommendations = [
+        'Recommend Din Tai Fung GF Dish: Shrimp Fried Rice or Pork/Chicken Fried Rice requested strictly "Without soy sauce, without chicken powder/MSG, cooked in a clean dedicated wok" (seasoned with salt, egg, and green onions only).',
+        'Recommend Din Tai Fung GF Vegetable Sides: Sautéed String Beans with Garlic, Sautéed Spinach with Garlic, Sautéed Baby Bok Choy with Garlic, or Sliced Cucumbers in Sesame Oil (must explicitly request "no soy sauce, clean dedicated wok").',
+        'Avoid All Dumplings & Noodles: All Xiao Long Bao (soup dumplings), potstickers, wontons, and noodles have wheat flour skins and cannot be made gluten-free.',
+        'Alert the Server: "I have Celiac Disease and severe gluten nerve sensitivity. Please ensure no soy sauce or dumpling dipping vinegar is brought to the table."',
+      ];
+      safeAlternatives = [
+        'Asian Box (Mountain View / Palo Alto / Santana Row near Santa Clara): 100% Certified Gluten-Free kitchen with dedicated GF Vietnamese rice boxes, noodles, and authentic Asian sauces.',
+        'P.F. Chang\'s (Westfield Valley Fair, Santa Clara): Dedicated gluten-free wok station, dedicated prep area, and separate GF menu with wheat-free tamari (GF Chicken Lettuce Wraps, GF Fried Rice, GF Pad Thai, and GF Mongolian Beef).',
+        'True Food Kitchen (Palo Alto / Santa Clara area): Scratch kitchen with dedicated gluten-free fryer, marked celiac protocols, and rich grain bowls.',
+        'Pho Kim Long (Santa Clara / San Jose): Naturally gluten-free rice noodle phở (order with clear bone broth, no hoisin sauce, no meatballs with wheat binders).',
+      ];
+      exactEn = 'I have Celiac Disease and severe nerve sensitivity; can you confirm this fried rice and vegetable dish are cooked in a freshly washed wok with zero soy sauce and no shared dumpling water?';
+      exactEs = 'Tengo enfermedad celíaca y sensibilidad nerviosa severa; ¿puede confirmar que este arroz frito y verduras se cocinan en un wok limpio sin salsa de soya ni agua de albóndigas compartida?';
+      exactZh = '我有乳糜泻和严重的神经敏感；能否请您确认这份炒饭和炒蔬菜是用彻底洗净的专用炒锅制作，绝不加酱油、鸡精，且绝无与共用水或蒸笼接触？';
+    } else if (isSyrupOrCaramel) {
       compoundName = userPrompt ? `Café Syrup / Flavoring (${userPrompt.slice(0, 35)})` : 'Caramel Drizzle & Flavored Syrups';
       category = 'gluten';
       riskLevel = 'High Risk';

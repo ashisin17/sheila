@@ -374,10 +374,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       setTimeout(() => {
         const sampleText =
           language === 'es'
-            ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y mis manos tiemblan con taquicardia.'
+            ? '¿Puedo ir a Din Tai Fung?'
             : language === 'zh'
-            ? '昨天在咖啡店喝了燕麦奶拿铁，现在双脚灼热发烫，手指刺痛发麻并且心跳过速。'
-            : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.';
+            ? '我可以去鼎泰丰吗？'
+            : 'Can I go to Din Tai Fung?';
         setInputText((prev) => (prev ? `${prev.trim()} ${sampleText}` : sampleText));
         setIsTranscribingAudio(false);
         setAudioConvertedToast(true);
@@ -439,10 +439,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 } else {
                   const fallbackText =
                     language === 'es'
-                      ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
+                      ? '¿Puedo ir a Din Tai Fung?'
                       : language === 'zh'
-                      ? '昨天喝了燕麦奶拿铁，双脚发烫，手指刺痛发麻。'
-                      : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.';
+                      ? '我可以去鼎泰丰吗？'
+                      : 'Can I go to Din Tai Fung?';
                   setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
                 }
 
@@ -453,8 +453,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 const fallbackText =
                   interimTranscript?.trim() ||
                   (language === 'es'
-                    ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
-                    : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+                    ? '¿Puedo ir a Din Tai Fung?'
+                    : language === 'zh'
+                    ? '我可以去鼎泰丰吗？'
+                    : 'Can I go to Din Tai Fung?');
                 setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
                 setAudioConvertedToast(true);
                 setShowSubmitHighlight(true);
@@ -467,7 +469,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             console.error('FileReader error on audio blob:', err);
             const fallbackText =
               interimTranscript?.trim() ||
-              'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.';
+              (language === 'es'
+                ? '¿Puedo ir a Din Tai Fung?'
+                : language === 'zh'
+                ? '我可以去鼎泰丰吗？'
+                : 'Can I go to Din Tai Fung?');
             setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
             setIsTranscribingAudio(false);
             setAudioConvertedToast(true);
@@ -479,8 +485,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           const fallbackText =
             interimTranscript?.trim() ||
             (language === 'es'
-              ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
-              : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+              ? '¿Puedo ir a Din Tai Fung?'
+              : language === 'zh'
+              ? '我可以去鼎泰丰吗？'
+              : 'Can I go to Din Tai Fung?');
           setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
           setIsTranscribingAudio(false);
           setAudioConvertedToast(true);
@@ -512,8 +520,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       const fallbackText =
         interimTranscript?.trim() ||
         (language === 'es'
-          ? 'Tomé un café con leche de avena ayer. Mis pies están ardiendo y tengo taquicardia.'
-          : 'Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+          ? '¿Puedo ir a Din Tai Fung?'
+          : language === 'zh'
+          ? '我可以去鼎泰丰吗？'
+          : 'Can I go to Din Tai Fung?');
       setInputText((prev) => (prev ? `${prev.trim()} ${fallbackText}` : fallbackText));
       setIsTranscribingAudio(false);
       setAudioConvertedToast(true);
@@ -869,6 +879,22 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 type="button"
                 onClick={() => {
                   handleQuickQuestion(
+                    "Can I go to Din Tai Fung?",
+                    'dish_restaurant',
+                    undefined,
+                    undefined
+                  );
+                }}
+                className="text-[10px] font-bold bg-[#EAE06D]/90 hover:bg-[#EAE06D] text-slate-900 px-3 py-1.5 rounded-full transition border border-yellow-400 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95 ring-2 ring-yellow-300/50"
+              >
+                <span>🥟</span>
+                <span>&ldquo;Can I go to Din Tai Fung?&rdquo;</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleQuickQuestion(
                     "Can I try this caramel syrup? What safe alternatives do you recommend?",
                     'syrup_sauce',
                     DEMO_ASSETS.caramelSauce,
@@ -975,7 +1001,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                       {interimTranscript ? (
                         <span className="text-yellow-200 font-medium italic">&ldquo;{interimTranscript}&rdquo;</span>
                       ) : (
-                        'Recording entire audio stream... Speak freely. When finished, click "DONE" to stop and convert to text!'
+                        'Recording your voice... Say "Can I go to Din Tai Fung?" then click "DONE" to stop and convert to text!'
                       )}
                     </p>
                   </div>
@@ -1088,7 +1114,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   }}
                   placeholder={
                     isRecording
-                      ? '🎙 Recording your voice live... Speak freely, then tap DONE (Turn into Text)...'
+                      ? '🎙 Recording your voice live... Say "Can I go to Din Tai Fung?", then tap DONE...'
                       : t.placeholder
                   }
                   rows={3}
@@ -1183,7 +1209,18 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <button
               type="button"
               onClick={() => {
+                setInputText('Can I go to Din Tai Fung?');
+                setShowSubmitHighlight(true);
+              }}
+              className="text-purple-950 hover:text-purple-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2.5 py-0.5 rounded-full font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs"
+            >
+              🎤 &ldquo;Can I go to Din Tai Fung?&rdquo;
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 setInputText('Had an iced oat latte yesterday. Feet are burning, hands are tingling, and heart is racing.');
+                setShowSubmitHighlight(true);
               }}
               className="text-purple-900 hover:text-purple-950 bg-[#F3EDF7] hover:bg-purple-100 px-2 py-0.5 rounded-full font-medium transition cursor-pointer"
             >
@@ -1193,6 +1230,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               type="button"
               onClick={() => {
                 setInputText('Checked lip balm ingredients: found Triticum Vulgare wheat germ oil. Lips are burning and stomach upset.');
+                setShowSubmitHighlight(true);
               }}
               className="text-purple-900 hover:text-purple-950 bg-[#F3EDF7] hover:bg-purple-100 px-2 py-0.5 rounded-full font-medium transition cursor-pointer"
             >
@@ -1296,16 +1334,23 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         // Card 3: SAFE ALTERNATIVES TO ORDER INSTEAD
         // "SAFE ALTERNATIVES TO ORDER INSTEAD -> only need with food if ASKING for altneratives! want this to be SMART LLM"
+        const isDinTaiFungQuery =
+          queryLower.includes('din tai') ||
+          queryLower.includes('fung') ||
+          queryLower.includes('funt') ||
+          Boolean(analysisResult.compoundName && analysisResult.compoundName.toLowerCase().includes('din tai'));
+
         const asksAlternatives =
           analysisResult.showSafeAlternatives ??
           (queryLower.includes('alternative') ||
             queryLower.includes('instead') ||
             queryLower.includes('swap') ||
             queryLower.includes('substitute') ||
-            queryLower.includes('recommend'));
+            queryLower.includes('recommend') ||
+            isDinTaiFungQuery);
 
         const showSafeAlternativesCard =
-          asksAlternatives &&
+          (asksAlternatives || isDinTaiFungQuery) &&
           !isPureSymptomQuery &&
           Boolean(analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0);
 
@@ -1372,11 +1417,32 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
             {/* CARD: What to know about this item (ONLY when asking about the item, NEVER for symptom queries) */}
             {showItemCard && (
-              <div className="bg-[#F3EDF7] rounded-2xl p-3 border border-purple-200/70 space-y-1">
-                <span className="text-[10px] font-extrabold uppercase text-purple-900 block">
-                  What to know about this item
-                </span>
-                <p className="text-xs text-slate-800 leading-relaxed font-medium">
+              <div
+                className={`rounded-2xl p-3.5 border space-y-1.5 ${
+                  isDinTaiFungQuery
+                    ? 'bg-rose-50/90 border-rose-300 shadow-2xs'
+                    : 'bg-[#F3EDF7] border-purple-200/70'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  {isDinTaiFungQuery && (
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                  )}
+                  <span
+                    className={`text-[10px] font-extrabold uppercase block ${
+                      isDinTaiFungQuery ? 'text-rose-950 font-black tracking-wider' : 'text-purple-900'
+                    }`}
+                  >
+                    {isDinTaiFungQuery
+                      ? '⚠️ GLUTEN WARNING (SOY SAUCE & DUMPLINGS)'
+                      : 'What to know about this item'}
+                  </span>
+                </div>
+                <p
+                  className={`text-xs leading-relaxed ${
+                    isDinTaiFungQuery ? 'text-rose-950 font-semibold' : 'text-slate-800 font-medium'
+                  }`}
+                >
                   {analysisResult.crossContaminationTraps}
                 </p>
               </div>
@@ -1389,7 +1455,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <div className="bg-[#F3EDF7] rounded-2xl p-3.5 border border-purple-200/80 space-y-1.5">
                 <div className="text-[10px] font-extrabold uppercase text-purple-950 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-purple-700" />
-                  <span>Clinical Guidance &amp; Recovery Advice</span>
+                  <span>Clinical Guidance &amp; Dining Advice</span>
                 </div>
                 <p className="text-xs text-slate-800 leading-relaxed font-medium">
                   {clinicalAdvice}
@@ -1397,16 +1463,20 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </div>
             )}
 
-            {/* CARD: SAFE ALTERNATIVES TO ORDER INSTEAD (ONLY when food-related AND asking for alternatives) */}
+            {/* CARD: SAFE ALTERNATIVES TO ORDER INSTEAD / RESTAURANTS IN SANTA CLARA */}
             {showSafeAlternativesCard && analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0 && (
               <div className="bg-emerald-50/90 rounded-2xl p-3.5 border border-emerald-300 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
+                    <span>
+                      {isDinTaiFungQuery
+                        ? 'RECOMMENDED GLUTEN-FREE RESTAURANTS IN SANTA CLARA'
+                        : 'SAFE ALTERNATIVES TO ORDER INSTEAD'}
+                    </span>
                   </span>
                   <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
-                    100% Gluten-Free
+                    {isDinTaiFungQuery ? 'Santa Clara / Silicon Valley' : '100% Gluten-Free'}
                   </span>
                 </div>
                 <ul className="text-xs text-slate-800 space-y-2 font-medium pl-0.5">
@@ -1422,11 +1492,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </div>
             )}
 
-            {/* CARD: Steps to feel better right now */}
+            {/* CARD: Steps to feel better right now / Din Tai Fung GF Dishes */}
             {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
               <div className="bg-slate-50/90 rounded-2xl p-3.5 border border-slate-200/70 space-y-1.5">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 block">
-                  Steps to feel better right now
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 block">
+                  {isDinTaiFungQuery
+                    ? 'RECOMMENDED GLUTEN-FREE DISHES AT DIN TAI FUNG'
+                    : 'Steps to feel better right now'}
                 </span>
                 <ul className="text-xs text-slate-800 space-y-1.5">
                   {analysisResult.recommendations.map((rec, i) => (
