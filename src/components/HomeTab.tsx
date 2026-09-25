@@ -470,9 +470,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <span className="uppercase tracking-wider font-extrabold text-[10px] text-purple-900">
                 Hidden Gluten &amp; Inflammation Scanner:
               </span>
-              <span className="text-purple-700 font-bold text-[10px] bg-purple-50 px-2 py-0.5 rounded-full">
-                1-Click Demo Ready
-              </span>
             </div>
             <div className="grid grid-cols-3 gap-1.5 text-xs font-semibold">
               <button
@@ -520,20 +517,20 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </div>
           </div>
 
-          {/* 1-Tap Daily Recovery Toggles */}
-          <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-1.5">
+          {/* 1-Tap Daily Recovery Habits Widget with Back Button */}
+          <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleHabitBack}
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2 py-0.5 rounded-lg border border-purple-200 shadow-2xs transition active:scale-95 cursor-pointer"
-                  title="Back to previous habit state / Undo"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-purple-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-purple-200 shadow-2xs transition active:scale-95 cursor-pointer"
+                  title="Undo previous habit toggle / Back"
                 >
-                  <ChevronLeft className="w-3 h-3 stroke-[2.5]" />
+                  <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Back</span>
                 </button>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 block">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-700 block">
                   1- Tap Daily Habits
                 </span>
               </div>
@@ -544,30 +541,22 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               <button
                 onClick={() => toggleHabit('sleepHours')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
                   habitsState.sleepHours >= 8
                     ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <Moon className="w-3 h-3" />
                 <span>8h+ Sleep</span>
               </button>
-            </div>
-          </div>
 
-          {/* 1-Tap Daily Recovery Toggles */}
-          <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-1.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-              1-Tap Daily Recovery Habits (Villi Regeneration)
-            </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               <button
                 onClick={() => toggleHabit('zeroAlcohol')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
                   habitsState.zeroAlcohol
                     ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <Wine className="w-3 h-3" />
@@ -576,10 +565,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
               <button
                 onClick={() => toggleHabit('lowSugar')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
                   habitsState.lowSugar
                     ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <Flame className="w-3 h-3" />
@@ -588,10 +577,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
               <button
                 onClick={() => toggleHabit('glutenFreeStrict')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
                   habitsState.glutenFreeStrict
                     ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <ShieldCheck className="w-3 h-3" />
@@ -688,6 +677,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAnalyze();
+                  }
+                }}
                 placeholder={t.placeholder}
                 rows={3}
                 className="w-full bg-[#F3EDF7]/60 focus:bg-white rounded-2xl p-3 text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-purple-300 outline-none transition resize-none leading-relaxed"
@@ -703,7 +698,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             >
               <div className="flex items-center gap-1.5">
                 <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
-                <span className="font-extrabold text-xs text-slate-800">Inflammation Log</span>
+                <span className="font-extrabold text-xs text-slate-800">
+                  How your body feels today (Tingling, Tremors, Sleep)
+                </span>
               </div>
               <span className="text-[11px] text-purple-700 font-semibold">
                 {showSensors ? 'Hide Toggles ▲' : 'Adjust Toggles ▼'}
