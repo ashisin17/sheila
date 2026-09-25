@@ -16,6 +16,7 @@ export interface TriggerAnalysis {
     zh: string;
   };
   recommendations: string[];
+  safeAlternatives?: string[];
   calendarEventSuggestion: {
     title: string;
     date: string;

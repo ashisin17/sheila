@@ -157,34 +157,24 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
       });
     }
 
-    const systemInstruction = `You are Sheila, a compassionate, hyper-personalized, and clinically sharp AI health advocate assisting Chloe (age 22).
+    const systemInstruction = `You are Sheila, a warm, caring, personalized AI health advocate helping Chloe (age 22).
 
-Chloe's Clinical Profile:
-- Suspected Atypical Celiac Disease (Marsh III Enteropathy with marked villous blunting)
-- Associated Autoimmune Neuropathy & Dysautonomia: small fiber neuropathy (burning feet, pins and needles), gluten ataxia / hand & finger tremors, autonomic tachycardia (racing heart), and severe brain fog.
-- Malabsorption from villous damage: compromised B12, Iron, and Vitamin D absorption.
-- High-Risk Triggers: trace gluten (>20 ppm), barley malt (found in syrups, flavorings, dark chocolate/caramel drizzles, sauces), oat cross-contamination from shared machinery and café steam wands. Secondary flare multipliers: sleep <7h, alcohol, and refined sugars.
+About Chloe:
+- Chloe has Suspected Atypical Celiac Disease (Marsh III villous enteropathy) with nerve sensitivity (small fiber neuropathy: burning feet & hand tingling, tremors/shakiness in fingers, and tachycardia/racing heart).
+- Even trace gluten (>20 ppm) triggers nerve flares and prevents her intestinal villi from healing.
+- Current Check-in: Sleep: ${hoursSlept}h, Sugar: ${sugarIntake}, Alcohol: ${alcoholDrinks} drinks. Symptoms: Burning Feet (${burningFeet}/10), Hand Tingling (${handTingling}/10), Shaky Tremors (${tremorsAtaxia}/10), Heartbeat (${rapidHeartbeat}/10).
 
-Current Biometric Check-in:
-- Sleep: ${hoursSlept} hours
-- Sugar: ${sugarIntake}
-- Alcohol: ${alcoholDrinks} drinks
-- Burning Feet: ${burningFeet}/10
-- Hand/Finger Tingling: ${handTingling}/10
-- Tremors / Shaky Fingers: ${tremorsAtaxia}/10
-- Heartbeat / Palpitations: ${rapidHeartbeat}/10
-- Joint Pain: ${jointPain}/10
-
-CRITICAL RULES:
-1. PERSONALIZED DIRECT ANSWER: Analyze what Chloe is asking about specifically ("${prompt || 'General check-in'}"). Never return generic placeholder text or unrelated food items. If she asks about a specific item, beverage, syrup, brand, or feeling, address THAT item directly.
-2. If she asks whether she can try something, tell her clearly whether it's safe or dangerous, what hidden traps to watch for (e.g. barley malt in caramel, wheat flour thickeners, shared equipment), and offer safe, delicious swaps (e.g. pure vanilla extract, pure 100% grade A maple syrup, certified GF oat milk).
-3. If Chloe reports tremors, tingling, burning feet, or brain fog, correlate her symptoms to her recent intake and sleep/sugar levels with empathy, and give immediate concrete relief steps (hydration with electrolytes, sublingual Methyl-B12, gentle resting).
-4. Provide an exact 1-sentence question to ask the server or barista in English, Spanish, and Simplified Chinese.
-5. Language requested: ${language}.`;
+CRITICAL INSTRUCTIONS:
+1. ADDRESS HER EXACT PROMPT DIRECTLY: Look closely at what Chloe asked ("${prompt || 'General check-in'}"). If she asks about sourdough bread, talk about bread! If she asks about iced matcha or caramel latte, talk about that beverage! Never give unrelated canned advice.
+2. KEEP IT SIMPLE, CLEAR & COMFORTING: Avoid dense medical textbooks and convoluted medical jargon. Use clean, plain English that is easy to read in 10 seconds.
+3. DYNAMIC SAFE ALTERNATIVES: Provide 2-3 specific, delicious, 100% gluten-free alternatives tailored strictly to WHAT SHE ASKED. (E.g. for sourdough bread: recommend certified gluten-free sourdough like Bread SRSLY or millet bread, toasted in a dedicated GF toaster; for coffee: recommend cold brew with almond/coconut milk and pure maple syrup; for pasta: recommend brown rice or chickpea pasta).
+4. SYMPTOM CORRELATION: In simple words, explain how this item relates to her current feeling (e.g. tingling at ${handTingling}/10 or shakiness at ${tremorsAtaxia}/10) and low sleep (${hoursSlept}h).
+5. EXACT QUESTION: Provide a simple, polite 1-sentence question to ask the barista or server in English, Spanish, and Simplified Chinese.
+Language requested: ${language}.`;
 
     const contents = parts.length > 0 
-      ? { parts: [...parts, { text: `Patient Chloe (age 22) asks / notes: "${prompt || 'Analyzing food / symptoms for hidden gluten & cross-contamination'}". Action Category: ${actionType}. Current Biometrics: Sleep: ${hoursSlept}h, Sugar: ${sugarIntake}, Alcohol: ${alcoholDrinks} drinks, Burning Feet: ${burningFeet}/10, Hand Tingling: ${handTingling}/10, Tremors: ${tremorsAtaxia}/10, Heartbeat: ${rapidHeartbeat}/10, Joint Pain: ${jointPain}/10.` }] }
-      : `Patient Chloe (age 22) asks / notes: "${prompt || 'Daily check-in & dietary trigger analysis'}". Action Category: ${actionType}. Current Biometrics: Sleep: ${hoursSlept}h, Sugar: ${sugarIntake}, Alcohol: ${alcoholDrinks} drinks, Burning Feet: ${burningFeet}/10, Hand Tingling: ${handTingling}/10, Tremors/Shakiness: ${tremorsAtaxia}/10, Heartbeat: ${rapidHeartbeat}/10, Joint Pain: ${jointPain}/10. Please give a personalized assessment tailored directly to Chloe's question, condition, and symptoms.`;
+      ? { parts: [...parts, { text: `Chloe (22) asks: "${prompt || 'Analyzing food / symptoms for hidden gluten traps'}". Current feeling: Sleep: ${hoursSlept}h, Tingling: ${handTingling}/10, Tremors: ${tremorsAtaxia}/10, Heart: ${rapidHeartbeat}/10.` }] }
+      : `Chloe (22) asks: "${prompt || 'Daily check-in & dietary trigger analysis'}". Current feeling: Sleep: ${hoursSlept}h, Tingling: ${handTingling}/10, Tremors/Shakiness: ${tremorsAtaxia}/10, Heart: ${rapidHeartbeat}/10. Please give a direct, simple, personalized answer with safe alternatives tailored specifically to her question.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -195,13 +185,18 @@ CRITICAL RULES:
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            compoundName: { type: Type.STRING },
+            compoundName: { type: Type.STRING, description: 'Direct clean name of the item/question analyzed' },
             category: { type: Type.STRING },
-            riskScore: { type: Type.NUMBER },
-            riskLevel: { type: Type.STRING },
-            crossContaminationTraps: { type: Type.STRING },
-            concreteCorrelation: { type: Type.STRING },
-            clinicalMechanism: { type: Type.STRING },
+            riskScore: { type: Type.NUMBER, description: 'Risk score from 1 to 10' },
+            riskLevel: { type: Type.STRING, description: 'High Risk, Moderate Risk, or Low Risk' },
+            crossContaminationTraps: { type: Type.STRING, description: 'Simple, direct 1-2 sentence explanation of hidden gluten or prep risks' },
+            concreteCorrelation: { type: Type.STRING, description: 'Simple 1-2 sentence correlation to Chloe current symptoms' },
+            clinicalMechanism: { type: Type.STRING, description: 'Easy-to-understand explanation of why her body reacts' },
+            safeAlternatives: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: '2-3 specific, delicious 100% gluten-free alternatives matching Chloe question',
+            },
             exactQuestionToAsk: {
               type: Type.OBJECT,
               properties: {
@@ -214,6 +209,7 @@ CRITICAL RULES:
             recommendations: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
+              description: '2-3 simple steps to feel better right now',
             },
             calendarEventSuggestion: {
               type: Type.OBJECT,
@@ -243,6 +239,7 @@ CRITICAL RULES:
             'crossContaminationTraps',
             'concreteCorrelation',
             'clinicalMechanism',
+            'safeAlternatives',
             'exactQuestionToAsk',
             'recommendations',
             'calendarEventSuggestion',
@@ -279,6 +276,12 @@ CRITICAL RULES:
     let exactEs = '“¿Este producto está certificado sin gluten y se puede preparar con equipo limpio y exclusivo?”';
     let exactZh = '“请问这款产品是否有明确的无麸质认证？能否使用专用清洁用具进行备餐？”';
 
+    let safeAlternatives = [
+      'Cold brew or iced drip coffee with certified GF almond or coconut milk',
+      'Pure maple syrup or pure vanilla bean extract (100% gluten-free)',
+      'Certified GF matcha green tea whisked with almond milk',
+    ];
+
     if (isSyrupOrCaramel) {
       compoundName = userPrompt ? `Café Syrup / Flavoring (${userPrompt.slice(0, 35)})` : 'Caramel Drizzle & Flavored Syrups';
       category = 'gluten';
@@ -287,6 +290,11 @@ CRITICAL RULES:
       crossContaminationTraps = 'Commercial caramel drizzles, malt syrups, and flavored coffee syrups frequently use barley malt extract or wheat-derived thickeners, triggering nerve flares without overt digestive cramping.';
       concreteCorrelation = `Hidden barley malt triggers Chloe's small fiber neuropathy (burning feet ${burningFeet}/10, hand tingling ${handTingling}/10) and tremors within 2 to 6 hours after consumption.`;
       clinicalMechanism = 'Barley malt contains hordein (gluten protein). Because Chloe has villi atrophy, gluten activates circulating antibodies that cross-react with peripheral nerve myelin, provoking tremors and tachycardia.';
+      safeAlternatives = [
+        '100% Pure Grade A Maple Syrup (naturally gluten-free)',
+        'Pure Vanilla Bean extract (alcohol-free or certified GF)',
+        'Steamed coconut milk with a dusting of pure Ceylon cinnamon',
+      ];
       recommendations = [
         'Safe Alternative: Request 100% pure maple syrup or pure vanilla bean extract with no malt extract.',
         'Drink 16 oz of electrolyte-rich water to flush cytokines and soothe nerve excitability.',
@@ -303,6 +311,11 @@ CRITICAL RULES:
       crossContaminationTraps = `Sleep deprivation (${hoursSlept}h) and immune activation amplify peripheral nerve hyper-excitability. Hand tremors (${tremorsAtaxia}/10) and burning feet (${burningFeet}/10) indicate active small fiber irritation.`;
       concreteCorrelation = `Chloe's logged biometrics (Sleep: ${hoursSlept}h, Tingling: ${handTingling}/10, Shakiness: ${tremorsAtaxia}/10, Heart: ${rapidHeartbeat}/10) confirm a neuro-autonomic flare pattern.`;
       clinicalMechanism = 'Gluten ataxia and autonomic tachycardia occur when transglutaminase antibodies cross the blood-brain barrier and irritate autonomic ganglia, exacerbated by low sleep and nutrient malabsorption.';
+      safeAlternatives = [
+        'Electrolyte water with sea salt, lemon, and magnesium glycinate',
+        'Warm chamomile or peppermint herbal tea (naturally caffeine-free)',
+        'Anti-inflammatory golden turmeric latte with unsweetened almond milk',
+      ];
       recommendations = [
         'Sip warm water with electrolytes and take 400 mg Magnesium Glycinate to calm autonomic tachycardia.',
         'Prioritize 8+ hours of sleep tonight to enable small intestinal villi cellular repair.',
@@ -312,17 +325,40 @@ CRITICAL RULES:
       exactEs = '“¿Puede asegurarse de que mi pedido no tenga contacto con gluten o cebada, preparado en una superficie limpia?”';
       exactZh = '“能否确保我的餐品完全不接触麸质或大麦，并在彻底擦净的操作台面上备餐？”';
     } else if (isFoodOrEat && userPrompt) {
-      compoundName = `Dietary Analysis: ${userPrompt.slice(0, 45)}`;
-      category = 'cross_contamination';
-      riskLevel = 'Moderate to High Risk';
-      riskScore = 7.9;
-      crossContaminationTraps = `Shared fryers, shared toasters, and bulk-milled grains pose trace gluten hazards exceeding the 20 ppm Celiac safety threshold for ${userPrompt.slice(0, 30)}.`;
-      concreteCorrelation = `With Chloe's intestinal villi blunting, even trace cross-contamination (>20 ppm) will trigger peripheral tingling (${handTingling}/10) and heart rate spikes.`;
-      recommendations = [
-        'Verify if the manufacturer certifies gluten-free batch testing to <20 ppm.',
-        'Ask about dedicated gluten-free fryers and prep surfaces.',
-        'Pair meals with hydrating liquids to support small bowel motility.',
+      const isBread = /bread|sourdough|toast|sandwich|bun|bagel|pastry|croissant/i.test(userPrompt);
+      compoundName = isBread ? 'Traditional Bakery Sourdough (Wheat-Based)' : `Dietary Analysis: ${userPrompt.slice(0, 45)}`;
+      category = isBread ? 'gluten' : 'cross_contamination';
+      riskLevel = isBread ? 'High Risk' : 'Moderate to High Risk';
+      riskScore = isBread ? 9.8 : 7.9;
+      crossContaminationTraps = isBread 
+        ? 'Traditional sourdough made from wheat is NOT safe for Celiac disease. Wild fermentation reduces some wheat proteins, but leaves toxic gliadin peptides far above the 20 ppm safety threshold, plus bakery flour dust cross-contaminates all equipment.'
+        : `Shared fryers, shared toasters, and bulk-milled grains pose trace gluten hazards exceeding the 20 ppm Celiac safety threshold for ${userPrompt.slice(0, 30)}.`;
+      concreteCorrelation = isBread
+        ? `Eating wheat sourdough will trigger Chloe's peripheral tingling (${handTingling}/10) and burning feet (${burningFeet}/10) and halt intestinal villi healing.`
+        : `With Chloe's intestinal villi blunting, even trace cross-contamination (>20 ppm) will trigger peripheral tingling (${handTingling}/10) and heart rate spikes.`;
+      safeAlternatives = isBread ? [
+        'Bread SRSLY or Simple Kneads 100% Certified Gluten-Free Sourdough (made from organic sorghum & millet)',
+        'Canyon Bakehouse or Schär certified gluten-free toasted in a dedicated GF toaster',
+        'Grain-free cassava or almond flour wraps / tortillas',
+      ] : [
+        'Certified 100% gluten-free designated options cooked in a separate pan',
+        'Fresh leafy greens, avocado, and olive oil with clean grilled proteins',
+        'Naturally gluten-free grain bowls (quinoa, wild rice) with tamari instead of soy sauce',
       ];
+      recommendations = [
+        isBread ? 'Never consume wheat, rye, barley, or spelt sourdough — only 100% certified gluten-free sourdough.' : 'Verify if the manufacturer certifies gluten-free batch testing to <20 ppm.',
+        'Use a dedicated toaster or toaster bags to prevent shared bread crumb contact.',
+        'Hydrate with electrolytes and rest in a quiet space to protect nerve function.',
+      ];
+      exactEn = isBread 
+        ? '“Is this bread made exclusively with certified gluten-free flour and starter in a gluten-free kitchen?”'
+        : '“Is this prepared with dedicated gluten-free cookware and utensils away from flour dust?”';
+      exactEs = isBread
+        ? '“¿Este pan está elaborado exclusivamente con harina y masa madre certificadas sin gluten?”'
+        : '“¿Se prepara con utensilios y sartenes exclusivos sin gluten?”';
+      exactZh = isBread
+        ? '“请问这款面包是否使用100%认证的无麸质面粉制作，且与含麸质面包完全隔开？”'
+        : '“请问这道菜是否使用专用无麸质器具烹饪，避免接触面粉微尘？”';
     }
 
     const result = {
@@ -333,6 +369,7 @@ CRITICAL RULES:
       crossContaminationTraps,
       concreteCorrelation,
       clinicalMechanism,
+      safeAlternatives,
       exactQuestionToAsk: {
         en: exactEn,
         es: exactEs,

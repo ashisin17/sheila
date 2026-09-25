@@ -423,14 +423,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </div>
             </div>
 
-            {/* Navigation Chevron */}
-            <button
-              onClick={nextCarousel}
-              className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center text-slate-900 transition self-center"
-              title="Next notification"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            {/* Navigation Chevrons: Previous and Next */}
+            <div className="flex items-center gap-1.5 self-center shrink-0">
+              <button
+                type="button"
+                onClick={prevCarousel}
+                className="w-8 h-8 rounded-full bg-white/40 hover:bg-white/70 flex items-center justify-center text-slate-900 transition active:scale-95 cursor-pointer shadow-2xs"
+                title="Previous card"
+                aria-label="Previous card"
+              >
+                <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+              </button>
+              <button
+                type="button"
+                onClick={nextCarousel}
+                className="w-8 h-8 rounded-full bg-white/40 hover:bg-white/70 flex items-center justify-center text-slate-900 transition active:scale-95 cursor-pointer shadow-2xs"
+                title="Next card"
+                aria-label="Next card"
+              >
+                <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
           </div>
 
           {/* Carousel Pagination Dots */}
@@ -513,78 +526,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 </div>
                 <span className="text-[10px] leading-tight font-extrabold">Upload After-Visit / Lab</span>
                 <span className="text-[8px] text-purple-700 font-bold">PDF / JPG Note</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 1-Tap Daily Recovery Habits Widget with Back Button */}
-          <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleHabitBack}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-purple-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-purple-200 shadow-2xs transition active:scale-95 cursor-pointer"
-                  title="Undo previous habit toggle / Back"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>Back</span>
-                </button>
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-700 block">
-                  1- Tap Daily Habits
-                </span>
-              </div>
-              <span className="text-[9px] text-purple-700 font-bold bg-purple-100/70 px-2 py-0.5 rounded-full">
-                4 Core Habits
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              <button
-                onClick={() => toggleHabit('sleepHours')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
-                  habitsState.sleepHours >= 8
-                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <Moon className="w-3 h-3" />
-                <span>8h+ Sleep</span>
-              </button>
-
-              <button
-                onClick={() => toggleHabit('zeroAlcohol')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
-                  habitsState.zeroAlcohol
-                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <Wine className="w-3 h-3" />
-                <span>Zero Alcohol</span>
-              </button>
-
-              <button
-                onClick={() => toggleHabit('lowSugar')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
-                  habitsState.lowSugar
-                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <Flame className="w-3 h-3" />
-                <span>Low Sugar</span>
-              </button>
-
-              <button
-                onClick={() => toggleHabit('glutenFreeStrict')}
-                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border cursor-pointer ${
-                  habitsState.glutenFreeStrict
-                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <ShieldCheck className="w-3 h-3" />
-                <span>100% Gluten-Free</span>
               </button>
             </div>
           </div>
@@ -977,48 +918,46 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </p>
           </div>
 
-          {/* SAFE ALTERNATIVES TO ORDER INSTEAD */}
-          <div className="bg-emerald-50/90 rounded-2xl p-3.5 border-2 border-emerald-300 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
-                <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
-              </span>
-              <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
-                100% Gluten-Free
-              </span>
+          {/* SAFE ALTERNATIVES TO ORDER INSTEAD - DYNAMIC FROM LLM */}
+          {((analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0) || true) && (
+            <div className="bg-emerald-50/90 rounded-2xl p-3.5 border border-emerald-300 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
+                </span>
+                <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+                  100% Gluten-Free
+                </span>
+              </div>
+              <ul className="text-xs text-slate-800 space-y-2 font-medium pl-0.5">
+                {(analysisResult.safeAlternatives && analysisResult.safeAlternatives.length > 0
+                  ? analysisResult.safeAlternatives
+                  : [
+                      'Ask for certified 100% gluten-free preparation in a clean, dedicated pan or toaster.',
+                      'Choose naturally gluten-free whole food options with clean, simple ingredients.',
+                    ]
+                ).map((alt, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
+                    <span className="leading-snug">{alt}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="text-xs text-slate-800 space-y-1.5 font-medium pl-0.5">
-              <li className="flex items-start gap-1.5">
-                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                  1
-                </span>
-                <span><strong>Iced Latte with Almond or Coconut Milk</strong> + Pure Vanilla Syrup (Skip barista oat milk and caramel syrup).</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                  2
-                </span>
-                <span><strong>Ask barista:</strong> &ldquo;Can you rinse the steam pitcher &amp; blender due to severe Celiac allergy?&rdquo;</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                  3
-                </span>
-                <span><strong>Certified GF Pure Matcha:</strong> Whisked with unsweetened almond milk and pure honey.</span>
-              </li>
-            </ul>
-          </div>
+          )}
 
-          {/* Recommendations List */}
+          {/* Recommendations / Steps to feel better */}
           {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
-            <div className="space-y-1 pt-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="bg-slate-50/80 rounded-2xl p-3 border border-slate-200/70 space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
                 Steps to feel better right now
               </span>
-              <ul className="text-xs text-slate-800 space-y-1">
+              <ul className="text-xs text-slate-800 space-y-1.5">
                 {analysisResult.recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-1.5">
+                  <li key={i} className="flex items-start gap-1.5 leading-snug">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                     <span>{rec}</span>
                   </li>

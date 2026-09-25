@@ -365,7 +365,7 @@ export default function App() {
           />
         ) : (
           /* Mobile Phone Simulator Container */
-          <div className="max-w-[420px] mx-auto sm:my-6 sm:rounded-[44px] sm:border-[8px] sm:border-slate-800 sm:shadow-2xl overflow-hidden bg-[#F3EDF7] flex flex-col min-h-screen sm:min-h-[844px] relative">
+          <div className="max-w-[420px] w-full mx-auto sm:my-6 sm:rounded-[44px] sm:border-[8px] sm:border-slate-800 sm:shadow-2xl overflow-hidden bg-[#F3EDF7] flex flex-col h-[100dvh] sm:h-[844px] max-h-[100dvh] sm:max-h-[844px] relative">
             {/* Mobile Top Status Bar (simulated) */}
             <div className="hidden sm:flex items-center justify-between px-6 pt-3 pb-1 text-slate-900 text-[11px] font-bold shrink-0">
               <span>9:41</span>
@@ -378,7 +378,7 @@ export default function App() {
             </div>
 
             {/* Active Screen Tab View */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
               {activeTab === 'home' && (
                 <HomeTab
                   language={language}
@@ -454,8 +454,8 @@ export default function App() {
               )}
             </div>
 
-            {/* Bottom Floating Navigation */}
-            <div className="sticky bottom-0 z-30">
+            {/* Bottom Sticky Navigation Bar */}
+            <div className="shrink-0 sticky bottom-0 z-40 bg-[#ECE6F0] border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
               <BottomNav
                 activeTab={activeTab}
                 onTabChange={(tab) => {
