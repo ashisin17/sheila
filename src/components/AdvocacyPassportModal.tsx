@@ -102,7 +102,7 @@ Price Transparency Rights: Protected under CMS Hospital Price Transparency Rule 
             <div className="flex items-start justify-between border-b border-purple-200 pb-3">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-900">
-                  AuraHealth Self-Advocate ID
+                  Sheila Self-Advocate ID
                 </span>
                 <h2 className="text-xl font-black text-slate-900 mt-0.5">
                   {userProfile.name}, {userProfile.age}

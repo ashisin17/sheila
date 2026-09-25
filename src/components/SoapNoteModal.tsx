@@ -48,8 +48,8 @@ export const SoapNoteModal: React.FC<SoapNoteModalProps> = ({
       const data = await generateSoapApi({
         markedDays,
         language,
-        patientName: 'Sheila',
-        age: 28,
+        patientName: 'Chloe',
+        age: 22,
       });
       setSoapData(data);
     } catch (err) {

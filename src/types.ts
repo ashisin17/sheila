@@ -204,6 +204,36 @@ export interface DailyRecoveryHabits {
   lowSugar: boolean;
 }
 
+export interface FoodLogEntry {
+  id: string;
+  time: string; // e.g. "11:00 AM"
+  dateStr: string; // e.g. "Thursday, June 12"
+  day: number; // 12
+  item: string; // e.g. "Iced Latte with caramel drizzle"
+  location?: string; // e.g. "Campus Cafe"
+  photoUrl?: string;
+  suspectedTrigger?: boolean;
+  notes?: string;
+}
+
+export interface CollectionCard {
+  id: string;
+  dayLabel: string; // "TUE · JUNE 3"
+  type: string; // "Photo check-in", "Wellness check-in", "Journal", "Food log", "After lunch"
+  meta?: string; // "2 photos", "Video visit", "1 photo of meal"
+  content: string; // "More shedding after showers.", "Asked about iron levels."
+  cardBg: 'yellow' | 'white' | 'lavender';
+  photosCount?: number;
+}
+
+export interface UserCollection {
+  id: string;
+  title: string; // "Tracking hair loss" or "Celiac symptoms"
+  daysSaved: number;
+  lastDate: string; // "June 24", "June 28"
+  cards: CollectionCard[];
+}
+
 export interface UserProfile {
   name: string;
   age: number;

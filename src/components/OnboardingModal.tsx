@@ -69,9 +69,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [symptoms, setSymptoms] = useState<SymptomToggle[]>(INITIAL_SYMPTOMS);
   const [endoscopyDate, setEndoscopyDate] = useState<string>('2025-10-24');
   const [glutenChallengeAlert, setGlutenChallengeAlert] = useState<boolean>(true);
-  const [patientName, setPatientName] = useState<string>('Maya');
+  const [patientName, setPatientName] = useState<string>('Chloe');
   const [gaslightingNotice, setGaslightingNotice] = useState<string>(
-    '8 previous doctors dismissed Maya’s peripheral neuropathy, hand tremors, and tachycardia as "anxiety / frat flu" because classic severe stomach cramping was absent.'
+    '8 previous doctors dismissed Chloe’s peripheral neuropathy, hand tremors, and tachycardia as "anxiety / frat flu" because classic severe stomach cramping was absent.'
   );
 
   // Step 3 state (Daily habits & plan)
@@ -234,7 +234,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     </span>
                   </div>
                   <p className="text-[12px] text-slate-700 leading-relaxed font-medium">
-                    &ldquo;Hi Maya! Nobody wants to fill out a 20-question medical intake form when exhausted and sick.
+                    &ldquo;Hi Chloe! Nobody wants to fill out a 20-question medical intake form when exhausted and sick.
                     Pick your condition below, or let me auto-fill your profile from your hospital After-Visit Summary or blood panel!&rdquo;
                   </p>
                 </div>
@@ -251,7 +251,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-800 font-semibold leading-snug">
-                  1-Click Live Demo: Upload Maya&apos;s hospital discharge summary: watches symptom toggles light up and schedules her 4-month endoscopy!
+                  1-Click Live Demo: Upload Chloe&apos;s hospital discharge summary: watches symptom toggles light up and schedules her 4-month endoscopy!
                 </p>
                 <button
                   onClick={handleDemoUpload}
@@ -261,12 +261,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   {isAnalyzing ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin text-[#EAE06D]" />
-                      <span>Sheila is parsing Maya&apos;s After-Visit Summary...</span>
+                      <span>Sheila is parsing Chloe&apos;s After-Visit Summary...</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-[#EAE06D]" />
-                      <span>Demo: Upload Maya&apos;s After-Visit Summary</span>
+                      <span>Demo: Upload Chloe&apos;s After-Visit Summary</span>
                       <ArrowRight className="w-4 h-4 text-[#EAE06D]" />
                     </>
                   )}
@@ -376,7 +376,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-slate-900 shrink-0" />
                     <span className="text-xs font-extrabold text-slate-900">
-                      Auto-filled by Sheila from Maya&apos;s After-Visit Summary
+                      Auto-filled by Sheila from Chloe&apos;s After-Visit Summary
                     </span>
                   </div>
                   <span className="text-[10px] font-bold text-slate-700 bg-white/80 px-2 py-0.5 rounded-full">
@@ -587,7 +587,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </div>
                 <div className="space-y-0.5">
                   <h3 className="font-extrabold text-sm text-emerald-950">
-                    Maya&apos;s Personalized 3-Pillar Celiac &amp; Villi Action Plan
+                    Chloe&apos;s Personalized 3-Pillar Celiac &amp; Villi Action Plan
                   </h3>
                   <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
                     Synthesized by Sheila from your clinical history, 4-month endoscopy timeline, and CMS price transparency rights.
@@ -654,7 +654,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   className="w-full bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 font-black py-3.5 px-4 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 active:scale-98 text-sm cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-slate-900" />
-                  <span>Enter AuraHealth (Populate All 4 Tabs)</span>
+                  <span>Enter Sheila (Populate All 4 Tabs)</span>
                   <ArrowRight className="w-4 h-4 text-slate-900" />
                 </button>
               </div>

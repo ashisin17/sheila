@@ -73,14 +73,28 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   const t = TRANSLATIONS[language].home;
 
   const [habitsState, setHabitsState] = useState<DailyRecoveryHabits>(recoveryHabits);
+  const [habitsHistory, setHabitsHistory] = useState<DailyRecoveryHabits[]>([]);
 
   const toggleHabit = (key: keyof DailyRecoveryHabits) => {
+    setHabitsHistory((prev) => [...prev, habitsState]);
     const updated = {
       ...habitsState,
       [key]: typeof habitsState[key] === 'boolean' ? !habitsState[key] : habitsState[key],
     };
     setHabitsState(updated);
     if (onUpdateHabits) onUpdateHabits(updated);
+  };
+
+  const handleHabitBack = () => {
+    if (habitsHistory.length > 0) {
+      const prevHabits = habitsHistory[habitsHistory.length - 1];
+      setHabitsHistory((prev) => prev.slice(0, prev.length - 1));
+      setHabitsState(prevHabits);
+      if (onUpdateHabits) onUpdateHabits(prevHabits);
+    } else {
+      setHabitsState(INITIAL_HABITS);
+      if (onUpdateHabits) onUpdateHabits(INITIAL_HABITS);
+    }
   };
 
   // Carousel state (1 to 5 villi malabsorption nutrients)
@@ -247,6 +261,57 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         handTingling,
         tremorsAtaxia,
         rapidHeartbeat,
+        jointPain,
+        language,
+      });
+      setAnalysisResult(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleQuickQuestion = async (
+    questionText: string,
+    action: ActionType,
+    image?: string,
+    imgName?: string,
+    symptoms?: { tremors?: number; tingling?: number; feet?: number; heart?: number }
+  ) => {
+    setInputText(questionText);
+    setActiveAction(action);
+    if (image) {
+      setSelectedImage(image);
+      setImageName(imgName || 'Sample.jpg');
+    }
+    const newTremors = symptoms?.tremors ?? tremorsAtaxia;
+    const newTingling = symptoms?.tingling ?? handTingling;
+    const newFeet = symptoms?.feet ?? burningFeet;
+    const newHeart = symptoms?.heart ?? rapidHeartbeat;
+
+    if (symptoms?.tremors !== undefined) setTremorsAtaxia(symptoms.tremors);
+    if (symptoms?.tingling !== undefined) setHandTingling(symptoms.tingling);
+    if (symptoms?.feet !== undefined) setBurningFeet(symptoms.feet);
+    if (symptoms?.heart !== undefined) setRapidHeartbeat(symptoms.heart);
+
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setPinnedToCal(false);
+    setAddedToBoard(false);
+
+    try {
+      const data = await analyzeTriggerApi({
+        prompt: questionText,
+        actionType: action,
+        imageBase64: image || selectedImage || undefined,
+        hoursSlept,
+        sugarIntake,
+        alcoholDrinks,
+        burningFeet: newFeet,
+        handTingling: newTingling,
+        tremorsAtaxia: newTremors,
+        rapidHeartbeat: newHeart,
         jointPain,
         language,
       });
@@ -457,9 +522,25 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
           {/* 1-Tap Daily Recovery Toggles */}
           <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-1.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-              1-Tap Daily Recovery Habits (Villi Regeneration)
-            </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleHabitBack}
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2 py-0.5 rounded-lg border border-purple-200 shadow-2xs transition active:scale-95 cursor-pointer"
+                  title="Back to previous habit state / Undo"
+                >
+                  <ChevronLeft className="w-3 h-3 stroke-[2.5]" />
+                  <span>Back</span>
+                </button>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 block">
+                  1- Tap Daily Habits
+                </span>
+              </div>
+              <span className="text-[9px] text-purple-700 font-bold bg-purple-100/70 px-2 py-0.5 rounded-full">
+                4 Core Habits
+              </span>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               <button
                 onClick={() => toggleHabit('sleepHours')}
@@ -549,35 +630,81 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             className="hidden"
           />
 
-          {/* Text Input Area */}
-          <div className="relative">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder={t.placeholder}
-              rows={3}
-              className="w-full bg-[#F3EDF7]/60 focus:bg-white rounded-2xl p-3 text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-purple-300 outline-none transition resize-none leading-relaxed"
-            />
+          {/* Text Input Area with Quick Question Chips */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  handleQuickQuestion(
+                    "Can I try this caramel syrup? What safe alternatives do you recommend?",
+                    'syrup_sauce',
+                    DEMO_ASSETS.caramelSauce,
+                    'Caramel_Syrup_Bottle.jpg'
+                  );
+                }}
+                className="text-[10px] font-bold bg-[#EAE06D]/70 hover:bg-[#EAE06D] text-slate-900 px-3 py-1.5 rounded-full transition border border-yellow-300 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95"
+              >
+                <span>☕</span>
+                <span>&ldquo;Can I try this syrup?&rdquo; (Get Safe Recommendations)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleQuickQuestion(
+                    "I'm experiencing shaky hand tremors and severe brain fog today. Could anything that I ate or drank earlier have caused this?",
+                    'syrup_sauce',
+                    DEMO_ASSETS.caramelSauce,
+                    'Iced_Latte_Caramel_Drizzle.jpg',
+                    { tremors: 8, tingling: 8, feet: 7, heart: 8 }
+                  );
+                }}
+                className="text-[10px] font-bold bg-[#E8DFF2] hover:bg-purple-200 text-purple-950 px-3 py-1.5 rounded-full transition border border-purple-300/80 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95"
+              >
+                <span>❓</span>
+                <span>&ldquo;Feeling tremors &amp; brain fog TODAY... could something I ate cause this?&rdquo;</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigateToCalendar?.()}
+                className="text-[10px] font-bold bg-white hover:bg-slate-50 text-slate-700 px-2.5 py-1.5 rounded-full transition border border-slate-300 shadow-2xs text-left cursor-pointer flex items-center gap-1 active:scale-95"
+              >
+                <span>🥑</span>
+                <span>+ Log what I ate today into Calendar</span>
+              </button>
+            </div>
+
+            <div className="relative">
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder={t.placeholder}
+                rows={3}
+                className="w-full bg-[#F3EDF7]/60 focus:bg-white rounded-2xl p-3 text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-purple-300 outline-none transition resize-none leading-relaxed"
+              />
+            </div>
           </div>
 
-          {/* Inflammation & Villi-Healing Tracker (Sleep, Alcohol, Sugar + Neurological Symptoms) */}
+          {/* Body Sensors & Symptom Adjusters */}
           <div className="border-t border-purple-100 pt-2 space-y-2.5">
             <button
               onClick={() => setShowSensors(!showSensors)}
-              className="flex items-center justify-between w-full text-xs font-bold text-slate-700 py-0.5"
+              className="flex items-center justify-between w-full text-xs font-bold text-slate-700 py-0.5 cursor-pointer"
             >
               <div className="flex items-center gap-1.5">
                 <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
-                <span>Inflammation & Neurological Villi Sensors</span>
+                <span className="font-extrabold text-xs text-slate-800">Inflammation Log</span>
               </div>
               <span className="text-[11px] text-purple-700 font-semibold">
-                {showSensors ? 'Hide Sensors ▲' : 'Adjust Toggles ▼'}
+                {showSensors ? 'Hide Toggles ▲' : 'Adjust Toggles ▼'}
               </span>
             </button>
 
             {showSensors && (
               <div className="bg-[#F3EDF7]/70 rounded-2xl p-3 space-y-3 text-xs">
-                {/* 1-Tap Metabolic Toggles: Sleep, Sugar, Alcohol */}
+                {/* 1-Tap Toggles: Sleep, Sugar, Alcohol */}
                 <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
                   {/* Hours Slept */}
                   <div className="bg-white p-2 rounded-xl border border-purple-100">
@@ -646,12 +773,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   </div>
                 </div>
 
-                {/* Neurological Symptom Sliders */}
+                {/* Symptom Sliders with Friendly Words */}
                 <div className="space-y-2 pt-1 border-t border-purple-200/60 text-[11px]">
                   {/* Burning Feet */}
                   <div>
                     <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Burning Feet (Small Fiber Neuropathy)</span>
+                      <span>Burning feet sensation</span>
                       <span className="text-rose-700 font-extrabold">{burningFeet}/10</span>
                     </div>
                     <input
@@ -667,7 +794,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   {/* Hand Tingling */}
                   <div>
                     <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Hand Tingling & Numbness</span>
+                      <span>Hand tingling &amp; numbness</span>
                       <span className="text-purple-950 font-extrabold">{handTingling}/10</span>
                     </div>
                     <input
@@ -683,8 +810,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   {/* Rapid Heartbeat */}
                   <div>
                     <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Rapid Heartbeat (Post-Gluten Tachycardia)</span>
-                      <span className="text-rose-700 font-extrabold">{rapidHeartbeat > 7 ? '115+ bpm (Spike)' : `${rapidHeartbeat}/10`}</span>
+                      <span>Racing heartbeat</span>
+                      <span className="text-rose-700 font-extrabold">{rapidHeartbeat > 7 ? 'Spike (115+ bpm)' : `${rapidHeartbeat}/10`}</span>
                     </div>
                     <input
                       type="range"
@@ -699,7 +826,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   {/* Tremors / Ataxia */}
                   <div>
                     <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Tremors / Motor Ataxia</span>
+                      <span>Shaky fingers &amp; tremors</span>
                       <span className="text-purple-950 font-extrabold">{tremorsAtaxia}/10</span>
                     </div>
                     <input
@@ -827,7 +954,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           {/* Cross Contamination Traps */}
           <div className="bg-[#F3EDF7] rounded-2xl p-3 border border-purple-200/70 space-y-1">
             <span className="text-[10px] font-extrabold uppercase text-purple-900 block">
-              Cross-Contamination & Hidden Trap Mechanics
+              What to know about this item
             </span>
             <p className="text-xs text-slate-800 leading-relaxed font-medium">
               {analysisResult.crossContaminationTraps}
@@ -838,7 +965,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <div className="bg-white rounded-2xl p-3 border border-purple-100 space-y-1">
             <div className="text-[11px] font-extrabold uppercase text-slate-900 flex items-center gap-1">
               <Activity className="w-3.5 h-3.5 text-rose-600" />
-              <span>Neurological Correlation Alert</span>
+              <span>Sheila&apos;s Food Log Cross-Check</span>
             </div>
             <p className="text-xs text-slate-800 leading-relaxed font-medium">
               {analysisResult.concreteCorrelation}
@@ -853,7 +980,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
               </span>
               <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
-                0% Gluten Risk
+                100% Gluten-Free
               </span>
             </div>
             <ul className="text-xs text-slate-800 space-y-1.5 font-medium pl-0.5">
@@ -882,7 +1009,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
             <div className="space-y-1 pt-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Immediate Villi-Protection Directives
+                Steps to feel better right now
               </span>
               <ul className="text-xs text-slate-800 space-y-1">
                 {analysisResult.recommendations.map((rec, i) => (
