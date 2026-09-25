@@ -20,10 +20,7 @@ import {
   Copy,
   Check,
   Coffee,
-  HeartPulse,
   Zap,
-  Moon,
-  Wine,
   HelpCircle,
   ShieldCheck,
 } from 'lucide-react';
@@ -105,7 +102,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [activeAction, setActiveAction] = useState<ActionType>('menu_oatmilk');
-  const [showSensors, setShowSensors] = useState(true);
 
   // Villi-Healing & Neurological Biometrics
   const [hoursSlept, setHoursSlept] = useState<number>(5);
@@ -629,164 +625,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 className="w-full bg-[#F3EDF7]/60 focus:bg-white rounded-2xl p-3 text-xs text-slate-800 placeholder:text-slate-400 border border-transparent focus:border-purple-300 outline-none transition resize-none leading-relaxed"
               />
             </div>
-          </div>
-
-          {/* Body Sensors & Symptom Adjusters */}
-          <div className="border-t border-purple-100 pt-2 space-y-2.5">
-            <button
-              onClick={() => setShowSensors(!showSensors)}
-              className="flex items-center justify-between w-full text-xs font-bold text-slate-700 py-0.5 cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5">
-                <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
-                <span className="font-extrabold text-xs text-slate-800">
-                  How your body feels today (Tingling, Tremors, Sleep)
-                </span>
-              </div>
-              <span className="text-[11px] text-purple-700 font-semibold">
-                {showSensors ? 'Hide Toggles ▲' : 'Adjust Toggles ▼'}
-              </span>
-            </button>
-
-            {showSensors && (
-              <div className="bg-[#F3EDF7]/70 rounded-2xl p-3 space-y-3 text-xs">
-                {/* 1-Tap Toggles: Sleep, Sugar, Alcohol */}
-                <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
-                  {/* Hours Slept */}
-                  <div className="bg-white p-2 rounded-xl border border-purple-100">
-                    <span className="text-slate-400 block mb-1 flex items-center justify-center gap-0.5">
-                      <Moon className="w-2.5 h-2.5 text-purple-600" />
-                      <span>Sleep</span>
-                    </span>
-                    <div className="flex justify-center gap-1">
-                      {[4.5, 6, 8].map((h) => (
-                        <button
-                          key={h}
-                          onClick={() => setHoursSlept(h)}
-                          className={`px-1.5 py-0.5 rounded-md ${
-                            hoursSlept === h
-                              ? 'bg-purple-800 text-white'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {h}h
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sugar Intake */}
-                  <div className="bg-white p-2 rounded-xl border border-purple-100">
-                    <span className="text-slate-400 block mb-1">Sugar</span>
-                    <div className="flex justify-center gap-1">
-                      {(['none', 'low', 'high'] as const).map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => setSugarIntake(s)}
-                          className={`px-1.5 py-0.5 rounded-md uppercase text-[9px] ${
-                            sugarIntake === s
-                              ? 'bg-purple-800 text-white'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Alcohol */}
-                  <div className="bg-white p-2 rounded-xl border border-purple-100">
-                    <span className="text-slate-400 block mb-1 flex items-center justify-center gap-0.5">
-                      <Wine className="w-2.5 h-2.5 text-rose-600" />
-                      <span>Alcohol</span>
-                    </span>
-                    <div className="flex justify-center gap-1">
-                      {[0, 1, 2].map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => setAlcoholDrinks(a)}
-                          className={`px-1.5 py-0.5 rounded-md ${
-                            alcoholDrinks === a
-                              ? 'bg-rose-700 text-white'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {a}dr
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Symptom Sliders with Friendly Words */}
-                <div className="space-y-2 pt-1 border-t border-purple-200/60 text-[11px]">
-                  {/* Burning Feet */}
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Burning feet sensation</span>
-                      <span className="text-rose-700 font-extrabold">{burningFeet}/10</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={burningFeet}
-                      onChange={(e) => setBurningFeet(Number(e.target.value))}
-                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-rose-600"
-                    />
-                  </div>
-
-                  {/* Hand Tingling */}
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Hand tingling &amp; numbness</span>
-                      <span className="text-purple-950 font-extrabold">{handTingling}/10</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={handTingling}
-                      onChange={(e) => setHandTingling(Number(e.target.value))}
-                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-800"
-                    />
-                  </div>
-
-                  {/* Rapid Heartbeat */}
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Racing heartbeat</span>
-                      <span className="text-rose-700 font-extrabold">{rapidHeartbeat > 7 ? 'Spike (115+ bpm)' : `${rapidHeartbeat}/10`}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={rapidHeartbeat}
-                      onChange={(e) => setRapidHeartbeat(Number(e.target.value))}
-                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-rose-600"
-                    />
-                  </div>
-
-                  {/* Tremors / Ataxia */}
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-700 mb-0.5">
-                      <span>Shaky fingers &amp; tremors</span>
-                      <span className="text-purple-950 font-extrabold">{tremorsAtaxia}/10</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={tremorsAtaxia}
-                      onChange={(e) => setTremorsAtaxia(Number(e.target.value))}
-                      className="w-full h-1.5 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-800"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Action Row: Camera/Upload, Purple Mic, Yellow Send Button */}
