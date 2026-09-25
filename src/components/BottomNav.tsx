@@ -18,52 +18,63 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   const t = TRANSLATIONS[language].tabs;
 
-  const tabs: Array<{ id: TabType; label: string; icon: React.ReactNode }> = [
+  const tabs: Array<{ id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     {
       id: 'home',
       label: t.home,
-      icon: <Home className="w-4 h-4" />,
+      icon: Home,
     },
     {
       id: 'calendar',
       label: t.calendar,
-      icon: <Calendar className="w-4 h-4" />,
+      icon: Calendar,
     },
     {
       id: 'providers',
       label: t.providers,
-      icon: <Users className="w-4 h-4" />,
+      icon: Users,
     },
     {
       id: 'you',
       label: t.you,
-      icon: <User className="w-4 h-4" />,
+      icon: User,
     },
   ];
 
   return (
-    <div className="w-full pb-2 pt-1 px-4">
-      <nav className="bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-purple-100/80 px-2 py-1.5 flex items-center justify-around">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-full transition-all duration-200 ${
+    <nav className="w-full bg-[#ECE6F0] border-t border-slate-200/60 px-4 py-2 flex items-center justify-around">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        const IconComponent = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className="flex flex-col items-center justify-center transition-all group cursor-pointer"
+          >
+            <div
+              className={`flex items-center justify-center transition-all duration-150 ${
                 isActive
-                  ? 'bg-[#F3EDF7] text-slate-900 border border-purple-200/90 shadow-xs scale-102 font-bold'
-                  : 'text-slate-400 hover:text-slate-600 font-medium'
+                  ? 'border border-purple-300/90 rounded-full px-5 py-1 bg-white/70 shadow-2xs'
+                  : 'px-3 py-1'
               }`}
             >
-              <div className={`${isActive ? 'text-slate-900' : 'text-slate-400'}`}>
-                {tab.icon}
-              </div>
-              <span className="text-[10px] mt-0.5 tracking-tight">{tab.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
+              <IconComponent
+                className={`w-5 h-5 transition-colors ${
+                  isActive ? 'text-[#231A2F] stroke-[2.2]' : 'text-slate-500 hover:text-slate-800 stroke-[1.8]'
+                }`}
+              />
+            </div>
+            <span
+              className={`text-[10px] mt-0.5 tracking-tight ${
+                isActive ? 'font-bold text-[#231A2F]' : 'font-medium text-slate-500'
+              }`}
+            >
+              {tab.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 };

@@ -1,29 +1,13 @@
 import React, { useState } from 'react';
-import {
-  Search,
-  SlidersHorizontal,
-  ShieldAlert,
-  FileCheck,
-  CheckCircle2,
-  Calendar,
-  Sparkles,
-  DollarSign,
-  ArrowUpRight,
-  Upload,
-  FileText,
-  BadgeDollarSign,
-  Building,
-  HeartHandshake,
-} from 'lucide-react';
+import { Pill, CheckCircle2, X } from 'lucide-react';
 import { Provider, Language, BillAuditResult } from '../types';
-import { INITIAL_PROVIDERS, DEMO_ASSETS, TRANSLATIONS } from '../data/initialData';
-import { auditBillApi } from '../services/api';
+import { INITIAL_PROVIDERS } from '../data/initialData';
 
 interface ProvidersTabProps {
   language: Language;
   onOpenBookingModal: (provider: Provider) => void;
   onOpenSoapModal: () => void;
-  onOpenBillAuditModal: (audit: BillAuditResult) => void;
+  onOpenBillAuditModal?: (audit: BillAuditResult) => void;
   selectedCptFilter?: string;
   onClearCptFilter?: () => void;
 }
@@ -36,339 +20,210 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
   selectedCptFilter,
   onClearCptFilter,
 }) => {
-  const t = TRANSLATIONS[language].providers;
+  // Pharmacy refill state
+  const [refillSuccess, setRefillSuccess] = useState(false);
+  const [pharmacyName, setPharmacyName] = useState('[Pharmacy name]');
+  const [isEditingPharmacy, setIsEditingPharmacy] = useState(false);
 
-  // Search & Filter state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPriceTier, setSelectedPriceTier] = useState<string>('all');
-  const [slidingScaleOnly, setSlidingScaleOnly] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
+  // Providers data
+  const primaryDoctor = INITIAL_PROVIDERS.find((p) => p.isPrimary) || INITIAL_PROVIDERS[0];
+  const recommendedDoctors = INITIAL_PROVIDERS.filter((p) => !p.isPrimary);
 
-  // Medical Bill Audit state
-  const [isAuditingBill, setIsAuditingBill] = useState(false);
-
-  // Filter providers
-  const primaryProvider = INITIAL_PROVIDERS.find((p) => p.isPrimary);
-  const specialists = INITIAL_PROVIDERS.filter((p) => !p.isPrimary);
-
-  const filteredSpecialists = specialists.filter((p) => {
-    // Search
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const match =
-        p.name.toLowerCase().includes(q) ||
-        p.specialty.toLowerCase().includes(q) ||
-        p.subspecialty.toLowerCase().includes(q) ||
-        p.facility.toLowerCase().includes(q);
-      if (!match) return false;
-    }
-
-    // Price tier
-    if (selectedPriceTier !== 'all' && p.priceTier !== selectedPriceTier) {
-      return false;
-    }
-
-    // Sliding scale
-    if (slidingScaleOnly && !p.slidingScale) {
-      return false;
-    }
-
-    // Language
-    if (selectedLanguage !== 'all') {
-      const target =
-        selectedLanguage === 'es' ? 'Español' : selectedLanguage === 'zh' ? 'Mandarin' : 'English';
-      if (!p.languages.includes(target)) return false;
-    }
-
-    return true;
-  });
-
-  // Handle Bill Audit
-  const handleRunBillAudit = async (useDemo = true) => {
-    setIsAuditingBill(true);
-    try {
-      const billText = useDemo
-        ? 'Dermatology consultation and ANA/CRP lab blood panel bill dated May 28, 2025. Total amount billed: $640.00 for Account #ACC-849201-DERM at Metro Specialty Health & Pathology Partners. Line items: CPT 99204 $380, CPT 86038 ANA $185, CPT 86140 CRP $75.'
-        : 'Medical bill upload for review against CMS fair market prices.';
-
-      const auditData = await auditBillApi({
-        billText,
-        billImageBase64: useDemo ? DEMO_ASSETS.medicalBill : undefined,
-        language,
-      });
-
-      onOpenBillAuditModal(auditData);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAuditingBill(false);
-    }
+  const handleRefillClick = () => {
+    setRefillSuccess(true);
+    setTimeout(() => {
+      setRefillSuccess(false);
+    }, 4500);
   };
 
   return (
-    <div className="space-y-4 px-4 py-3">
-      {/* 1. Header */}
-      <div className="px-1">
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-          {t.careTeam}
+    <div className="space-y-6 px-4 pt-4 pb-8 max-w-[420px] mx-auto text-slate-900">
+      {/* 1. TOP HEADER */}
+      <div className="space-y-1">
+        <span className="text-[11px] font-extrabold tracking-[0.1em] text-[#6E6377] uppercase block">
+          YOUR CARE TEAM
         </span>
-        <h2 className="text-2xl font-black tracking-tight text-slate-900">
-          {t.title}
-        </h2>
+        <h1 className="text-[32px] font-black text-[#231A2F] tracking-tight leading-tight">
+          Providers
+        </h1>
       </div>
 
-      {/* 2. Search Bar matching mockup */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-          <Search className="w-4 h-4" />
-        </div>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t.searchPlaceholder}
-          className="w-full bg-white rounded-full py-2.5 pl-10 pr-4 text-xs text-slate-800 placeholder:text-slate-400 shadow-sm border border-purple-100/80 focus:border-purple-300 outline-none transition font-medium"
-        />
-      </div>
-
-      {/* Active CPT Code Referral Banner (from SOAP note) */}
+      {/* Referral filter indicator if navigated from SOAP note */}
       {selectedCptFilter && (
         <div className="bg-[#EAE06D] rounded-2xl p-2.5 text-xs text-slate-900 flex items-center justify-between font-bold shadow-xs">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-slate-900" />
-            <span>Filtering for {selectedCptFilter} from your SOAP Memo</span>
-          </div>
+          <span>Focusing on {selectedCptFilter} from your SOAP Memo</span>
           {onClearCptFilter && (
             <button
               onClick={onClearCptFilter}
               className="text-[10px] bg-white px-2 py-0.5 rounded-full text-slate-800 hover:bg-slate-100"
             >
-              Clear Filter
+              Clear
             </button>
           )}
         </div>
       )}
 
-      {/* 3. Hotel-Style Price & Access Filter Pills */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-semibold scrollbar-none">
-          {/* Price Tier Filter */}
-          <div className="flex items-center bg-white rounded-full p-0.5 border border-purple-200/80 shadow-2xs shrink-0">
-            <button
-              onClick={() => setSelectedPriceTier('all')}
-              className={`px-2.5 py-1 rounded-full transition ${
-                selectedPriceTier === 'all'
-                  ? 'bg-[#B6A1DA] text-slate-900 font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              All Prices
-            </button>
-            <button
-              onClick={() => setSelectedPriceTier('$')}
-              className={`px-2 py-1 rounded-full transition ${
-                selectedPriceTier === '$'
-                  ? 'bg-[#EAE06D] text-slate-900 font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-              title="Low Cash Tier (<$50)"
-            >
-              $ Low
-            </button>
-            <button
-              onClick={() => setSelectedPriceTier('$$')}
-              className={`px-2 py-1 rounded-full transition ${
-                selectedPriceTier === '$$'
-                  ? 'bg-[#EAE06D] text-slate-900 font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-              title="Medium Tier ($50-$200)"
-            >
-              $$ Med
-            </button>
-            <button
-              onClick={() => setSelectedPriceTier('$$$')}
-              className={`px-2 py-1 rounded-full transition ${
-                selectedPriceTier === '$$$'
-                  ? 'bg-[#EAE06D] text-slate-900 font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-              title="Specialty / Hospital Tier ($200+)"
-            >
-              $$$ High
-            </button>
+      {/* 2. SECTION: YOUR PROVIDERS */}
+      <div className="space-y-2.5">
+        <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase px-0.5">
+          YOUR PROVIDERS
+        </h2>
+
+        {/* Primary Doctor Card (Dr. Jordan Lee) */}
+        <div className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80">
+          <div className="flex items-center gap-3.5">
+            {/* Avatar Circle with Initials JL */}
+            <div className="w-12 h-12 rounded-full bg-[#FCE881] flex items-center justify-center font-bold text-slate-900 text-sm shrink-0 shadow-2xs">
+              {primaryDoctor.initials}
+            </div>
+
+            <div>
+              <h3 className="text-[15px] font-bold text-[#231A2F] leading-tight">
+                {primaryDoctor.name}
+              </h3>
+              <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
+                {primaryDoctor.specialty} · {primaryDoctor.subspecialty}
+              </p>
+              <p className="text-[12px] text-[#7E7487] font-normal mt-0.5 leading-snug">
+                Next visit: {primaryDoctor.nextVisit || 'June 12'}
+              </p>
+            </div>
           </div>
 
-          {/* Sliding Scale Toggle */}
+          {/* Message Button */}
           <button
-            onClick={() => setSlidingScaleOnly(!slidingScaleOnly)}
-            className={`px-3 py-1 rounded-full border shrink-0 transition flex items-center gap-1 ${
-              slidingScaleOnly
-                ? 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold shadow-2xs'
-                : 'bg-white text-slate-600 border-purple-200/80 hover:bg-slate-50'
-            }`}
+            onClick={onOpenSoapModal}
+            className="rounded-full border border-slate-300/90 bg-white hover:bg-slate-50 text-[#231A2F] font-semibold text-[13px] px-5 py-2 transition-all active:scale-95 shadow-xs shrink-0"
           >
-            <HeartHandshake className="w-3 h-3 text-emerald-700" />
-            <span>{t.filterSliding}</span>
+            Message
           </button>
-
-          {/* Language Spoken */}
-          <select
-            value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
-            className="bg-white text-slate-700 text-[11px] font-semibold border border-purple-200/80 rounded-full px-2.5 py-1 outline-none shadow-2xs shrink-0 cursor-pointer"
-          >
-            <option value="all">Languages: All</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="zh">Mandarin (中文)</option>
-          </select>
         </div>
       </div>
 
-      {/* 4. "YOUR PROVIDER" Section */}
-      {primaryProvider && (
-        <div className="space-y-1.5">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-1">
-            {t.yourProvider}
-          </span>
-          <div className="bg-white rounded-3xl p-4 shadow-sm border border-purple-100/70 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              {/* Avatar JL in yellow circle */}
-              <div
-                style={{ backgroundColor: primaryProvider.avatarBg }}
-                className="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm text-slate-900 shadow-xs shrink-0"
-              >
-                {primaryProvider.initials}
-              </div>
-              <div>
-                <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
-                  {primaryProvider.name}
-                </h4>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  {primaryProvider.specialty} · {primaryProvider.subspecialty}
-                </p>
-                <p className="text-[10px] text-purple-800 font-bold mt-0.5">
-                  Next visit: {primaryProvider.nextVisit}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={onOpenSoapModal}
-              className="bg-white hover:bg-purple-50 text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full border border-slate-300 shadow-xs transition"
-            >
-              {t.messageBtn}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 5. "DERMATOLOGISTS NEAR YOU" Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-            {t.dermatologistsNearYou}
-          </span>
-          <span className="text-xs font-bold text-slate-400">
-            {filteredSpecialists.length} {t.found}
+      {/* 3. SECTION: RECOMMENDED PROVIDERS */}
+      <div className="space-y-2.5">
+        <div className="flex items-baseline justify-between px-0.5">
+          <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase">
+            RECOMMENDED PROVIDERS
+          </h2>
+          <span className="text-[12.5px] font-medium text-[#6E6377]">
+            Dermatology near you
           </span>
         </div>
 
-        {/* List of Dermatologists */}
-        <div className="space-y-2.5">
-          {filteredSpecialists.map((doc) => (
+        {/* List of recommended dermatologists */}
+        <div className="space-y-3">
+          {recommendedDoctors.map((doc) => (
             <div
               key={doc.id}
-              className="bg-white rounded-3xl p-4 shadow-sm border border-purple-100/70 space-y-2.5 hover:border-purple-200 transition"
+              className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80 transition-shadow hover:shadow-sm"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {/* Avatar Circle in soft purple */}
-                  <div
-                    style={{ backgroundColor: doc.avatarBg }}
-                    className="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm text-purple-950 shadow-xs shrink-0"
-                  >
-                    {doc.initials}
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
-                      {doc.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-500 font-medium">
-                      {doc.specialty} · {doc.subspecialty}
-                    </p>
-                    <p className="text-[10px] text-slate-400 font-medium">
-                      {doc.distance} · {doc.visitType}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3.5">
+                {/* Purple Avatar Circle */}
+                <div className="w-12 h-12 rounded-full bg-[#EADDFF] flex items-center justify-center font-bold text-[#21005D] text-sm shrink-0 shadow-2xs">
+                  {doc.initials}
                 </div>
 
-                {/* Yellow "Book" button matching mockup */}
-                <button
-                  onClick={() => onOpenBookingModal(doc)}
-                  className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold px-4 py-2 rounded-full shadow-xs transition active:scale-95"
-                >
-                  {t.bookBtn}
-                </button>
-              </div>
-
-              {/* CMS Hospital Price Transparency Badge */}
-              <div className="bg-[#F3EDF7] rounded-2xl p-2.5 border border-purple-200/80 flex items-start gap-2">
-                <BadgeDollarSign className="w-3.5 h-3.5 text-purple-800 shrink-0 mt-0.5" />
-                <div className="text-[11px] leading-relaxed text-slate-800 font-medium">
-                  {doc.cmsBadge}
+                <div>
+                  <h3 className="text-[15px] font-bold text-[#231A2F] leading-tight">
+                    {doc.name}
+                  </h3>
+                  <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
+                    {doc.specialty} · {doc.subspecialty}
+                  </p>
+                  <p className="text-[12px] text-[#7E7487] font-normal mt-0.5 leading-snug">
+                    {doc.distance} · {doc.visitType}
+                  </p>
                 </div>
               </div>
+
+              {/* Book Button */}
+              <button
+                onClick={() => onOpenBookingModal(doc)}
+                className="rounded-full bg-[#F1E56B] hover:bg-[#E5D95C] text-[#231A2F] font-bold text-[13px] px-6 py-2 transition-all active:scale-95 shadow-xs shrink-0"
+              >
+                Book
+              </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 6. "Got a Surprise Medical Bill or Denial?" Action Card */}
-      <div className="bg-[#B6A1DA] rounded-3xl p-5 text-slate-900 shadow-sm space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#EAE06D] flex items-center justify-center text-slate-900 shrink-0 shadow-xs">
-            <ShieldAlert className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div className="flex-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-900/80 block">
-              Patient Bill Defender & Price Transparency
-            </span>
-            <h3 className="font-extrabold text-base text-slate-900 leading-snug">
-              {t.billCardTitle}
-            </h3>
-            <p className="text-xs text-slate-800/90 mt-1 leading-relaxed">
-              {t.billCardSubtitle}
-            </p>
-          </div>
-        </div>
+      {/* 4. SECTION: YOUR PHARMACIES */}
+      <div className="space-y-2.5">
+        <h2 className="text-[12px] font-extrabold tracking-[0.08em] text-[#6E6377] uppercase px-0.5">
+          YOUR PHARMACIES
+        </h2>
 
-        {/* Action Buttons for Bill Audit */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-          <button
-            onClick={() => handleRunBillAudit(true)}
-            disabled={isAuditingBill}
-            className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
-          >
-            {isAuditingBill ? (
-              <Sparkles className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <FileCheck className="w-3.5 h-3.5" />
-            )}
-            <span>{t.demoBillBtn}</span>
-          </button>
+        {/* Pharmacy Card */}
+        <div className="bg-white rounded-[26px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-slate-100/80">
+          <div className="flex items-center gap-3.5">
+            {/* Yellow Avatar Circle with Capsule Pill Icon */}
+            <div className="w-12 h-12 rounded-full bg-[#FCE881] flex items-center justify-center text-slate-800 shrink-0 shadow-2xs">
+              <Pill className="w-5 h-5 -rotate-45 text-slate-900" strokeWidth={2.3} />
+            </div>
 
+            <div>
+              {isEditingPharmacy ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={pharmacyName}
+                    onChange={(e) => setPharmacyName(e.target.value)}
+                    onBlur={() => setIsEditingPharmacy(false)}
+                    autoFocus
+                    className="text-[15px] font-bold text-[#231A2F] border-b border-purple-400 outline-none w-36"
+                  />
+                  <button
+                    onClick={() => setIsEditingPharmacy(false)}
+                    className="text-xs text-purple-700 font-bold"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <h3
+                  onClick={() => setIsEditingPharmacy(true)}
+                  className="text-[15px] font-bold text-[#231A2F] leading-tight cursor-pointer hover:underline"
+                  title="Click to rename pharmacy"
+                >
+                  {pharmacyName}
+                </h3>
+              )}
+              <p className="text-[12.5px] text-[#5D5566] font-normal mt-0.5 leading-snug">
+                Birth control · Vitamin D
+              </p>
+              <p className="text-[12px] text-[#7E7487] font-normal mt-0.5 leading-snug">
+                0.8 mi · Open until 9 PM
+              </p>
+            </div>
+          </div>
+
+          {/* Refill Button */}
           <button
-            onClick={() => handleRunBillAudit(false)}
-            disabled={isAuditingBill}
-            className="bg-white/90 hover:bg-white text-slate-900 text-xs font-bold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95"
+            onClick={handleRefillClick}
+            className="rounded-full bg-[#F1E56B] hover:bg-[#E5D95C] text-[#231A2F] font-bold text-[13px] px-5 py-2 transition-all active:scale-95 shadow-xs shrink-0"
           >
-            <Upload className="w-3.5 h-3.5 text-purple-700" />
-            <span>Upload Bill Photo / EOB</span>
+            Refill
           </button>
         </div>
       </div>
+
+      {/* Refill Confirmation Banner */}
+      {refillSuccess && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl p-3 flex items-center justify-between text-xs font-semibold shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Refill requested for Birth control & Vitamin D! Ready by 4:00 PM.</span>
+          </div>
+          <button
+            onClick={() => setRefillSuccess(false)}
+            className="text-emerald-700 hover:text-emerald-900 p-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
