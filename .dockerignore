@@ -3,5 +3,13 @@ dist
 .git
 .github
 .env
+.env.*
 .env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+credentials.json
+service-account*.json
+token*.json
 npm-debug.log
