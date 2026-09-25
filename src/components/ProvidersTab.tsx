@@ -69,8 +69,11 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
         id: 'slot-1',
         timeStr: '10:00 AM - 10:45 AM',
         dateStr: 'Tomorrow',
+        isoStartTime: '2025-06-12T10:00:00',
+        isoEndTime: '2025-06-12T10:45:00',
+        available: true,
         hasConflict: false,
-        type: provider.visitType.includes('Video') ? 'video' : 'in-person',
+        type: provider.visitType.includes('Video') ? 'Video' : 'In Person',
       },
       notes: "Health visit scheduled via AuraHealth. Patient clinical profile & SOAP memo attached.",
     });

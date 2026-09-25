@@ -315,8 +315,6 @@ export default function App() {
         onClose={() => setIsSoapModalOpen(false)}
         language={language}
         markedDays={markedDays}
-        patientName={userProfile.name}
-        age={userProfile.age}
         onNavigateToProviders={handleNavigateToProviders}
       />
 
@@ -324,7 +322,7 @@ export default function App() {
         isOpen={isBillAuditModalOpen}
         onClose={() => setIsBillAuditModalOpen(false)}
         language={language}
-        initialAudit={billAuditData}
+        auditResult={billAuditData}
       />
 
       <BookingModal
@@ -349,7 +347,8 @@ export default function App() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         userProfile={userProfile}
-        onSaveProfile={(updated) => {
+        language={language}
+        onSave={(updated: UserProfile) => {
           setUserProfile(updated);
           showToast('✓ Profile updated successfully');
         }}
