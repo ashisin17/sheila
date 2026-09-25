@@ -11,6 +11,7 @@ interface ProvidersTabProps {
   onOpenBillAuditModal?: (audit: BillAuditResult) => void;
   selectedCptFilter?: string;
   onClearCptFilter?: () => void;
+  onOpenProviderMatching?: () => void;
 }
 
 export const ProvidersTab: React.FC<ProvidersTabProps> = ({
@@ -20,6 +21,7 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
   onOpenBillAuditModal,
   selectedCptFilter,
   onClearCptFilter,
+  onOpenProviderMatching,
 }) => {
   // Pharmacy refill state
   const [refillSuccess, setRefillSuccess] = useState(false);
@@ -153,6 +155,26 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
             Dermatology near you
           </span>
         </div>
+
+        {/* Expanded Matching Engine Banner (PR #1) */}
+        {onOpenProviderMatching && (
+          <div className="bg-[#EADDFF]/70 border border-purple-200/80 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-2xs">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-900 block">
+                EXPANDED NETWORK MATCHING (PR #1)
+              </span>
+              <p className="text-[11.5px] text-slate-700 mt-0.5">
+                Match with 5+ doctors by insurance, ZIP radius, and Google Calendar conflict checks.
+              </p>
+            </div>
+            <button
+              onClick={onOpenProviderMatching}
+              className="bg-[#231A2F] text-white font-bold text-[11px] px-3 py-1.5 rounded-full shrink-0 hover:bg-slate-800 transition shadow-xs"
+            >
+              Launch Matcher
+            </button>
+          </div>
+        )}
 
         {/* Search & Filter Bar */}
         <div className="space-y-2">

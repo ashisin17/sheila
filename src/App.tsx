@@ -25,13 +25,14 @@ import { AdvocacyPassportModal } from './components/AdvocacyPassportModal';
 import { EditInfoModal } from './components/EditInfoModal';
 import { FourScreenShowcase } from './components/FourScreenShowcase';
 import { GoogleAccountState } from './components/GoogleAccountCard';
+import { ProviderMatchingMobile } from './components/ProviderMatchingMobile';
 import { Sparkles, Wifi, Battery, Signal, X } from 'lucide-react';
 
 export default function App() {
   // Navigation & Preferences
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [language, setLanguage] = useState<Language>('en');
-  const [viewMode, setViewMode] = useState<'simulator' | 'showcase'>('simulator');
+  const [viewMode, setViewMode] = useState<'simulator' | 'showcase' | 'provider-matching'>('simulator');
 
   // Application Data States
   const [markedDays, setMarkedDays] = useState<MarkedDay[]>(INITIAL_MARKED_DAYS);
@@ -160,7 +161,10 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 flex flex-col items-center justify-start p-2 sm:p-4">
-        {viewMode === 'showcase' ? (
+        {viewMode === 'provider-matching' ? (
+          /* Full Mobile Provider Matching Engine from PR #1 */
+          <ProviderMatchingMobile onBackToCareTeam={() => setViewMode('simulator')} />
+        ) : viewMode === 'showcase' ? (
           /* 4-Screen Side-by-Side Figma Showcase View */
           <FourScreenShowcase
             language={language}
@@ -269,6 +273,7 @@ export default function App() {
                   onOpenBillAuditModal={handleOpenBillAudit}
                   selectedCptFilter={selectedCptFilter}
                   onClearCptFilter={() => setSelectedCptFilter(undefined)}
+                  onOpenProviderMatching={() => setViewMode('provider-matching')}
                 />
               )}
 
