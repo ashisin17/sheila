@@ -5,8 +5,8 @@ import { Language } from '../types';
 interface HeaderProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
-  viewMode: 'simulator' | 'showcase';
-  onViewModeChange: (mode: 'simulator' | 'showcase') => void;
+  viewMode: 'simulator' | 'showcase' | 'provider-matching';
+  onViewModeChange: (mode: 'simulator' | 'showcase' | 'provider-matching') => void;
   streakCount: number;
 }
 
@@ -62,6 +62,18 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               <span>4-Screen</span>
+            </button>
+            <button
+              onClick={() => onViewModeChange('provider-matching')}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition ${
+                viewMode === 'provider-matching'
+                  ? 'bg-[#B6A1DA] text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Full Mobile Provider Matching Engine from PR #1"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Match Engine (PR #1)</span>
             </button>
           </div>
 
