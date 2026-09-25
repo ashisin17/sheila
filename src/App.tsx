@@ -6,13 +6,19 @@ import {
   Provider,
   BillAuditResult,
   HealthBoardTrigger,
+  SymptomToggle,
+  EndoscopyPlan,
+  DailyRecoveryHabits,
 } from './types';
 import {
   INITIAL_MARKED_DAYS,
   INITIAL_USER_PROFILE,
+  INITIAL_SYMPTOMS,
+  INITIAL_ENDOSCOPY_PLAN,
+  INITIAL_HABITS,
   TRANSLATIONS,
 } from './data/initialData';
-import { Header } from './components/Header';
+import { Header, ConditionPreset } from './components/Header';
 import { BottomNav, TabType } from './components/BottomNav';
 import { HomeTab } from './components/HomeTab';
 import { CalendarTab } from './components/CalendarTab';
@@ -23,6 +29,7 @@ import { BillAuditModal } from './components/BillAuditModal';
 import { BookingModal } from './components/BookingModal';
 import { AdvocacyPassportModal } from './components/AdvocacyPassportModal';
 import { EditInfoModal } from './components/EditInfoModal';
+import { OnboardingModal } from './components/OnboardingModal';
 import { FourScreenShowcase } from './components/FourScreenShowcase';
 import { Sparkles, Wifi, Battery, Signal } from 'lucide-react';
 
@@ -32,11 +39,17 @@ export default function App() {
   const [language, setLanguage] = useState<Language>('en');
   const [viewMode, setViewMode] = useState<'simulator' | 'showcase'>('simulator');
 
+  // Presentation Top Bar States
+  const [activeDemoView, setActiveDemoView] = useState<'onboarding' | 'main'>('main');
+  const [selectedPreset, setSelectedPreset] = useState<ConditionPreset>('celiac');
+
   // Application Data States
   const [markedDays, setMarkedDays] = useState<MarkedDay[]>(INITIAL_MARKED_DAYS);
   const [userProfile, setUserProfile] = useState<UserProfile>(INITIAL_USER_PROFILE);
-  const [streakCount, setStreakCount] = useState<number>(14);
+  const [streakCount, setStreakCount] = useState<number>(18);
   const [selectedCptFilter, setSelectedCptFilter] = useState<string | undefined>();
+  const [endoscopyPlan, setEndoscopyPlan] = useState<EndoscopyPlan>(INITIAL_ENDOSCOPY_PLAN);
+  const [recoveryHabits, setRecoveryHabits] = useState<DailyRecoveryHabits>(INITIAL_HABITS);
 
   // Modals
   const [isSoapModalOpen, setIsSoapModalOpen] = useState(false);
@@ -55,10 +68,110 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // Condition preset handler
+  const handleSelectPreset = (preset: ConditionPreset) => {
+    setSelectedPreset(preset);
+    if (preset === 'celiac') {
+      setUserProfile((prev) => ({
+        ...prev,
+        allergies: ['Gluten (Strict Celiac)', 'Barley Malt', 'Rye', 'Cross-Contaminated Oats'],
+        pinnedTriggers: [
+          {
+            id: 'oat-milk-cross',
+            name: 'Cross-Contaminated Oat Milk',
+            category: 'cross_contamination',
+            riskBadge: 'HIGH RISK (9/10)',
+            dateAdded: 'June 3, 2025',
+            notes: 'Shared steam wand cross-contact',
+          },
+          {
+            id: 'barley-malt-caramel',
+            name: 'Barley Malt Caramel Syrup',
+            category: 'gluten',
+            riskBadge: 'HIGH RISK (8.5/10)',
+            dateAdded: 'June 7, 2025',
+            notes: 'Hidden gluten thickener',
+          },
+          {
+            id: 'sugar-alcohol-neuropathy',
+            name: 'High Refined Sugar + Alcohol',
+            category: 'neuropathy_trigger',
+            riskBadge: 'NEURO TRIGGER (7/10)',
+            dateAdded: 'June 18, 2025',
+            notes: 'Direct small fiber neuropathy trigger',
+          },
+        ],
+      }));
+      showToast('Loaded preset: Celiac Disease (Neurological & Gut Enteropathy)');
+    } else if (preset === 'lupus') {
+      setUserProfile((prev) => ({
+        ...prev,
+        allergies: ['UV Radiation (Photosensitive)', 'Sulfa Drugs', 'Alfalfa Sprouts'],
+        pinnedTriggers: [
+          {
+            id: 'uv-radiation',
+            name: 'Direct Sunlight / UV > 5',
+            category: 'neuropathy_trigger',
+            riskBadge: 'HIGH RISK (9/10)',
+            dateAdded: 'June 2, 2025',
+            notes: 'Triggers malar flare & joint fatigue',
+          },
+          {
+            id: 'skincare-mi',
+            name: 'Methylisothiazolinone in Skincare',
+            category: 'cross_contamination',
+            riskBadge: 'ALLERGEN (8/10)',
+            dateAdded: 'June 10, 2025',
+            notes: 'Contact dermatitis trigger',
+          },
+          {
+            id: 'sleep-deprivation',
+            name: 'Sleep Deprivation (<6h)',
+            category: 'neuropathy_trigger',
+            riskBadge: 'INFLAMMATION (6.5/10)',
+            dateAdded: 'June 16, 2025',
+            notes: 'Systemic inflammation surge',
+          },
+        ],
+      }));
+      showToast('Loaded preset: Lupus & Cutaneous Eczema Flares');
+    } else if (preset === 'undiagnosed') {
+      setUserProfile((prev) => ({
+        ...prev,
+        pinnedTriggers: [
+          {
+            id: 'post-meal-tachycardia',
+            name: 'Post-Meal Tachycardia',
+            category: 'neuropathy_trigger',
+            riskBadge: 'AUTONOMIC (8/10)',
+            dateAdded: 'June 4, 2025',
+            notes: 'HR spikes to 120 bpm after eating',
+          },
+          {
+            id: 'burning-feet-tremors',
+            name: 'Burning Feet & Hand Tremors',
+            category: 'neuropathy_trigger',
+            riskBadge: 'SMALL FIBER (8.5/10)',
+            dateAdded: 'June 8, 2025',
+            notes: 'Dismissed by 8 clinicians as anxiety',
+          },
+          {
+            id: 'restaurant-unfiltered',
+            name: 'Unfiltered Restaurant Meals',
+            category: 'cross_contamination',
+            riskBadge: 'CROSS-CONTACT (7/10)',
+            dateAdded: 'June 15, 2025',
+            notes: 'Suspected autoimmune malabsorption',
+          },
+        ],
+      }));
+      showToast('Loaded preset: Undiagnosed Autoimmune (8+ Doctors Dismissed)');
+    }
+  };
+
   // Handlers
   const handlePinToCalendar = (newDay: MarkedDay) => {
     setMarkedDays((prev) => {
-      // Check if day already marked, replace or prepend
       const filtered = prev.filter((d) => d.day !== newDay.day);
       return [newDay, ...filtered];
     });
@@ -101,20 +214,44 @@ export default function App() {
     setIsBillAuditModalOpen(true);
   };
 
+  // Onboarding completion
+  const handleCompleteOnboarding = (data: {
+    symptoms: SymptomToggle[];
+    endoscopyPlan: EndoscopyPlan;
+    habits: DailyRecoveryHabits;
+    patientName: string;
+  }) => {
+    setEndoscopyPlan(data.endoscopyPlan);
+    setRecoveryHabits(data.habits);
+    setUserProfile((prev) => ({
+      ...prev,
+      name: data.patientName || 'Maya',
+      endoscopyPlan: data.endoscopyPlan,
+      activeSymptoms: data.symptoms,
+      recoveryHabits: data.habits,
+    }));
+    setActiveDemoView('main');
+    showToast(`✓ Welcome ${data.patientName || 'Maya'}! 4-Tab Action Plan populated.`);
+  };
+
   return (
     <div className="min-h-screen bg-[#F3EDF7] font-['Plus_Jakarta_Sans',sans-serif] text-slate-800 antialiased selection:bg-purple-200">
-      {/* Global App Header */}
+      {/* Global App Header with Hackathon Top Demo Bar */}
       <Header
         language={language}
         onLanguageChange={setLanguage}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         streakCount={streakCount}
+        activeDemoView={activeDemoView}
+        onDemoViewChange={setActiveDemoView}
+        selectedPreset={selectedPreset}
+        onSelectPreset={handleSelectPreset}
       />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-full shadow-xl flex items-center gap-2 border border-slate-700 animate-bounce">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-full shadow-xl flex items-center gap-2 border border-slate-700 animate-bounce">
           <Sparkles className="w-3.5 h-3.5 text-[#EAE06D]" />
           <span>{toastMessage}</span>
         </div>
@@ -165,6 +302,10 @@ export default function App() {
                   onOpenSoapModal={() => setIsSoapModalOpen(true)}
                   streakCount={streakCount}
                   onIncrementStreak={handleIncrementStreak}
+                  recoveryHabits={recoveryHabits}
+                  onUpdateHabits={setRecoveryHabits}
+                  endoscopyPlan={endoscopyPlan}
+                  onNavigateToCalendar={() => setActiveTab('calendar')}
                 />
               )}
 
@@ -174,6 +315,7 @@ export default function App() {
                   markedDays={markedDays}
                   onOpenSoapModal={() => setIsSoapModalOpen(true)}
                   onNavigateToProviders={handleNavigateToProviders}
+                  endoscopyPlan={endoscopyPlan}
                 />
               )}
 
@@ -212,6 +354,14 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Onboarding & Sheila Intake Modal (Can be opened from Top Demo Bar or Sheila button) */}
+      <OnboardingModal
+        isOpen={activeDemoView === 'onboarding'}
+        onClose={() => setActiveDemoView('main')}
+        onComplete={handleCompleteOnboarding}
+        language={language}
+      />
 
       {/* Modals */}
       <SoapNoteModal

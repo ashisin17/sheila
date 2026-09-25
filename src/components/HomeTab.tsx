@@ -25,9 +25,24 @@ import {
   Moon,
   Wine,
   HelpCircle,
+  ShieldCheck,
 } from 'lucide-react';
-import { Language, ActionType, TriggerAnalysis, MarkedDay, HealthBoardTrigger } from '../types';
-import { INITIAL_CAROUSEL_ITEMS, DEMO_ASSETS, TRANSLATIONS } from '../data/initialData';
+import {
+  Language,
+  ActionType,
+  TriggerAnalysis,
+  MarkedDay,
+  HealthBoardTrigger,
+  DailyRecoveryHabits,
+  EndoscopyPlan,
+} from '../types';
+import {
+  INITIAL_CAROUSEL_ITEMS,
+  DEMO_ASSETS,
+  TRANSLATIONS,
+  INITIAL_HABITS,
+  INITIAL_ENDOSCOPY_PLAN,
+} from '../data/initialData';
 import { analyzeTriggerApi } from '../services/api';
 
 interface HomeTabProps {
@@ -37,6 +52,10 @@ interface HomeTabProps {
   onOpenSoapModal: () => void;
   streakCount: number;
   onIncrementStreak: () => void;
+  recoveryHabits?: DailyRecoveryHabits;
+  onUpdateHabits?: (habits: DailyRecoveryHabits) => void;
+  endoscopyPlan?: EndoscopyPlan;
+  onNavigateToCalendar?: () => void;
 }
 
 export const HomeTab: React.FC<HomeTabProps> = ({
@@ -46,8 +65,23 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onOpenSoapModal,
   streakCount,
   onIncrementStreak,
+  recoveryHabits = INITIAL_HABITS,
+  onUpdateHabits,
+  endoscopyPlan = INITIAL_ENDOSCOPY_PLAN,
+  onNavigateToCalendar,
 }) => {
   const t = TRANSLATIONS[language].home;
+
+  const [habitsState, setHabitsState] = useState<DailyRecoveryHabits>(recoveryHabits);
+
+  const toggleHabit = (key: keyof DailyRecoveryHabits) => {
+    const updated = {
+      ...habitsState,
+      [key]: typeof habitsState[key] === 'boolean' ? !habitsState[key] : habitsState[key],
+    };
+    setHabitsState(updated);
+    if (onUpdateHabits) onUpdateHabits(updated);
+  };
 
   // Carousel state (1 to 5 villi malabsorption nutrients)
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -365,18 +399,20 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         {/* Actionable Check-in Container Card */}
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-purple-100/70 space-y-3">
-          {/* Multimodal 1-Tap Coffee Shop & Menu Risk Scanner Pills */}
+          {/* 3 One-Tap Hidden Gluten & Inflammation Scan Buttons with Instant Demos */}
           <div>
             <div className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center justify-between">
-              <span>1-TAP MENU & RISK SCANNERS:</span>
-              <span className="text-purple-700 font-semibold text-[10px]">
-                Tap for instant demo
+              <span className="uppercase tracking-wider font-extrabold text-[10px] text-purple-900">
+                Hidden Gluten &amp; Inflammation Scanner:
+              </span>
+              <span className="text-purple-700 font-bold text-[10px] bg-purple-50 px-2 py-0.5 rounded-full">
+                1-Click Demo Ready
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs font-semibold">
+            <div className="grid grid-cols-3 gap-1.5 text-xs font-semibold">
               <button
                 onClick={() => loadDemoSample('menu_oatmilk')}
-                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
+                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border cursor-pointer ${
                   activeAction === 'menu_oatmilk'
                     ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
                     : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
@@ -385,49 +421,92 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
                   ☕
                 </div>
-                <span className="text-[10px] leading-tight">Menu & Oat Milk</span>
+                <span className="text-[10px] leading-tight font-extrabold">Scan Coffee Shop / Menu</span>
+                <span className="text-[8px] text-purple-700 font-bold">Demo: Oat Caramel Latte</span>
               </button>
 
               <button
                 onClick={() => loadDemoSample('syrup_sauce')}
-                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
+                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border cursor-pointer ${
                   activeAction === 'syrup_sauce'
                     ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
                     : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
                 }`}
               >
                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
-                  🍯
+                  🍫
                 </div>
-                <span className="text-[10px] leading-tight">Syrups & Sauces</span>
+                <span className="text-[10px] leading-tight font-extrabold">Scan Food / Supplement</span>
+                <span className="text-[8px] text-purple-700 font-bold">Demo: Protein Bar &amp; Sauce</span>
               </button>
 
               <button
-                onClick={() => loadDemoSample('dish_restaurant')}
-                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
-                  activeAction === 'dish_restaurant'
-                    ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
-                    : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
-                }`}
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+                className="py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7] cursor-pointer"
               >
                 <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
-                  🍽️
+                  📋
                 </div>
-                <span className="text-[10px] leading-tight">Restaurant Dish</span>
+                <span className="text-[10px] leading-tight font-extrabold">Upload After-Visit / Lab</span>
+                <span className="text-[8px] text-purple-700 font-bold">PDF / JPG Note</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 1-Tap Daily Recovery Toggles */}
+          <div className="bg-[#F3EDF7]/60 rounded-2xl p-2.5 border border-purple-200/50 space-y-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+              1-Tap Daily Recovery Habits (Villi Regeneration)
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button
+                onClick={() => toggleHabit('sleepHours')}
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                  habitsState.sleepHours >= 8
+                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
+                    : 'bg-white text-slate-600 border-slate-200'
+                }`}
+              >
+                <Moon className="w-3 h-3" />
+                <span>8h+ Sleep</span>
               </button>
 
               <button
-                onClick={() => loadDemoSample('supplement_cosmetic')}
-                className={`py-2 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition border ${
-                  activeAction === 'supplement_cosmetic'
-                    ? 'bg-[#E8DFF2] border-purple-400 text-purple-950 font-bold shadow-2xs'
-                    : 'bg-[#F3EDF7]/60 border-transparent text-slate-600 hover:bg-[#F3EDF7]'
+                onClick={() => toggleHabit('zeroAlcohol')}
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                  habitsState.zeroAlcohol
+                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
+                    : 'bg-white text-slate-600 border-slate-200'
                 }`}
               >
-                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-purple-800 shadow-2xs">
-                  💄
-                </div>
-                <span className="text-[10px] leading-tight">Balm / Supplement</span>
+                <Wine className="w-3 h-3" />
+                <span>Zero Alcohol</span>
+              </button>
+
+              <button
+                onClick={() => toggleHabit('lowSugar')}
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                  habitsState.lowSugar
+                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
+                    : 'bg-white text-slate-600 border-slate-200'
+                }`}
+              >
+                <Flame className="w-3 h-3" />
+                <span>Low Sugar</span>
+              </button>
+
+              <button
+                onClick={() => toggleHabit('glutenFreeStrict')}
+                className={`py-1.5 px-2 rounded-xl text-[11px] font-extrabold transition flex items-center justify-center gap-1 border ${
+                  habitsState.glutenFreeStrict
+                    ? 'bg-purple-800 text-white border-purple-900 shadow-2xs'
+                    : 'bg-white text-slate-600 border-slate-200'
+                }`}
+              >
+                <ShieldCheck className="w-3 h-3" />
+                <span>100% Gluten-Free</span>
               </button>
             </div>
           </div>
@@ -766,6 +845,39 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </p>
           </div>
 
+          {/* SAFE ALTERNATIVES TO ORDER INSTEAD */}
+          <div className="bg-emerald-50/90 rounded-2xl p-3.5 border-2 border-emerald-300 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-black tracking-wider text-emerald-950 flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                <span>SAFE ALTERNATIVES TO ORDER INSTEAD</span>
+              </span>
+              <span className="text-[9px] bg-emerald-200/80 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">
+                0% Gluten Risk
+              </span>
+            </div>
+            <ul className="text-xs text-slate-800 space-y-1.5 font-medium pl-0.5">
+              <li className="flex items-start gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                  1
+                </span>
+                <span><strong>Iced Latte with Almond or Coconut Milk</strong> + Pure Vanilla Syrup (Skip barista oat milk and caramel syrup).</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                  2
+                </span>
+                <span><strong>Ask barista:</strong> &ldquo;Can you rinse the steam pitcher &amp; blender due to severe Celiac allergy?&rdquo;</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                  3
+                </span>
+                <span><strong>Certified GF Pure Matcha:</strong> Whisked with unsweetened almond milk and pure honey.</span>
+              </li>
+            </ul>
+          </div>
+
           {/* Recommendations List */}
           {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
             <div className="space-y-1 pt-1">
@@ -784,11 +896,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           )}
 
           {/* 2 One-Click Action Buttons */}
-          <div className="pt-2 grid grid-cols-1 gap-2">
+          <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               onClick={handlePinCalendar}
               disabled={pinnedToCal}
-              className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs ${
+              className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
                 pinnedToCal
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                   : 'bg-[#B6A1DA] hover:bg-purple-300 text-slate-900 active:scale-98'
@@ -797,15 +909,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <CalendarPlus className="w-4 h-4" />
               <span>
                 {pinnedToCal
-                  ? '✓ Pinned to June Calendar (See Calendar Tab)'
-                  : t.pinToCalendar}
+                  ? '✓ Pinned to Calendar'
+                  : '+ Pin to Calendar'}
               </span>
             </button>
 
             <button
               onClick={handleAddToBoard}
               disabled={addedToBoard}
-              className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs ${
+              className={`w-full py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
                 addedToBoard
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                   : 'bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 active:scale-98'
@@ -814,8 +926,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <BookmarkPlus className="w-4 h-4" />
               <span>
                 {addedToBoard
-                  ? '✓ Added to Health Board (See You Tab)'
-                  : t.addToHealthBoard}
+                  ? '✓ Saved to Health Board'
+                  : '+ Save Safe Swap to Board'}
               </span>
             </button>
           </div>

@@ -162,10 +162,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             />
             <label htmlFor="attachSoap" className="cursor-pointer text-xs space-y-0.5">
               <span className="font-extrabold text-purple-950 block">
-                Attach Sheila's 1-Page June Clinical SOAP Memo
+                Attach Chloe's 1-Page Clinical SOAP Memo (Prepared by Sheila)
               </span>
               <span className="text-[11px] text-slate-600 block leading-tight">
-                Automatically pre-loads your logged Methylisothiazolinone skincare flares, June marked calendar dates, and suggested CPT 86038 ANA code so {provider.name} is fully briefed before the visit.
+                Automatically pre-loads your logged coffee shop / oat milk triggers, June marked calendar dates, and suggested CPT 83516 tTG-IgA / nutrient codes so {provider.name} is fully briefed before the visit.
               </span>
             </label>
           </div>

@@ -166,6 +166,44 @@ export interface HealthBoardTrigger {
   dateAdded: string;
 }
 
+export interface SymptomToggle {
+  id: string;
+  label: string;
+  description: string;
+  category: 'neurological' | 'gut_malabsorption';
+  selected: boolean;
+  isGaslightedFlag?: boolean;
+}
+
+export interface EndoscopyPlan {
+  procedureName: string;
+  cptCode: string;
+  scheduledDate: string; // e.g. "2025-10-24"
+  monthsOut: number; // 4
+  facilityCashPrice: number;
+  hospitalBilledAvg: number;
+  phase1: {
+    title: string;
+    rules: string[];
+    purpose: string;
+  };
+  phase2: {
+    title: string;
+    startDate: string;
+    challengeDuration: string;
+    protocol: string;
+    rationale: string;
+    flareProtectionKit: string[];
+  };
+}
+
+export interface DailyRecoveryHabits {
+  glutenFreeStrict: boolean;
+  sleepHours: number;
+  zeroAlcohol: boolean;
+  lowSugar: boolean;
+}
+
 export interface UserProfile {
   name: string;
   age: number;
@@ -197,4 +235,7 @@ export interface UserProfile {
     zh: string;
   };
   pinnedTriggers: HealthBoardTrigger[];
+  endoscopyPlan?: EndoscopyPlan;
+  activeSymptoms?: SymptomToggle[];
+  recoveryHabits?: DailyRecoveryHabits;
 }

@@ -270,22 +270,22 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
             <button
               onClick={() => handleRunBillAudit(true)}
               disabled={isAuditingBill}
-              className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+              className="bg-[#EAE06D] hover:bg-yellow-300 text-slate-900 text-xs font-extrabold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {isAuditingBill ? (
                 <Sparkles className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <FileCheck className="w-3.5 h-3.5" />
               )}
-              <span>Demo: Audit $890 Blood Panel</span>
+              <span>Demo: Audit $1,180 Massive Blood Panel Bill</span>
             </button>
             <button
               onClick={() => handleRunBillAudit(false)}
               disabled={isAuditingBill}
-              className="bg-white/90 hover:bg-white text-slate-900 text-xs font-bold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95"
+              className="bg-white/90 hover:bg-white text-slate-900 text-xs font-bold py-2.5 px-3 rounded-2xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5 text-purple-700" />
-              <span>Upload Lab Bill / EOB</span>
+              <span>Upload Bill Photo / EOB</span>
             </button>
           </div>
         </div>
