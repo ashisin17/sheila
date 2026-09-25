@@ -74,6 +74,7 @@ export interface Provider {
   nextVisit?: string;
   facility: string;
   celiacLiterate: boolean;
+  phone?: string;
 }
 
 export interface CptCodeRecommendation {

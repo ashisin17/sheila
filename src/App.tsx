@@ -274,6 +274,8 @@ export default function App() {
                   selectedCptFilter={selectedCptFilter}
                   onClearCptFilter={() => setSelectedCptFilter(undefined)}
                   onOpenProviderMatching={() => setViewMode('provider-matching')}
+                  googleAccount={googleAccount}
+                  onConnectGoogle={handleConnectGoogle}
                 />
               )}
 
