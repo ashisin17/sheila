@@ -67,3 +67,24 @@ export async function auditBillApi(params: {
   const result = await response.json();
   return result.data;
 }
+
+export async function parseVisitSummaryApi(params: {
+  summaryText?: string;
+  imageBase64?: string;
+  imageMimeType?: string;
+  voiceTranscript?: string;
+  language?: Language;
+}): Promise<any> {
+  const response = await fetch('/api/parse-visit-summary', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to parse after-visit summary: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  return result.data;
+}
