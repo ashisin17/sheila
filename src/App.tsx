@@ -28,7 +28,7 @@ import { Sparkles, Wifi, Battery, Signal } from 'lucide-react';
 
 export default function App() {
   // Navigation & Preferences
-  const [activeTab, setActiveTab] = useState<TabType>('providers');
+  const [activeTab, setActiveTab] = useState<TabType>('home');
   const [language, setLanguage] = useState<Language>('en');
   const [viewMode, setViewMode] = useState<'simulator' | 'showcase'>('simulator');
 

@@ -1,14 +1,20 @@
 export type Language = 'en' | 'es' | 'zh';
 
-export type ActionType = 'skincare' | 'meal' | 'flare' | 'checkin';
+export type ActionType = 'menu_oatmilk' | 'syrup_sauce' | 'dish_restaurant' | 'supplement_cosmetic' | 'checkin';
 
 export interface TriggerAnalysis {
   compoundName: string;
   category: string;
   riskScore: number;
   riskLevel: 'High Risk' | 'Moderate Risk' | 'Low Risk';
+  crossContaminationTraps: string;
   concreteCorrelation: string;
   clinicalMechanism: string;
+  exactQuestionToAsk: {
+    en: string;
+    es: string;
+    zh: string;
+  };
   recommendations: string[];
   calendarEventSuggestion: {
     title: string;
@@ -23,16 +29,28 @@ export interface TriggerAnalysis {
   };
 }
 
+export interface NeurologicalMetrics {
+  hoursSlept: number; // e.g. 5
+  sugarIntake: 'none' | 'low' | 'high';
+  alcoholDrinks: number; // 0, 1, 2+
+  burningFeet: number; // 1-10
+  handTingling: number; // 1-10
+  tremorsAtaxia: number; // 1-10
+  rapidHeartbeat: number; // 1-10
+  jointPain: number; // 1-10
+}
+
 export interface MarkedDay {
   day: number;
   dateStr: string;
   title: string;
   severity: number; // 1-10
-  type: 'flare' | 'checkin' | 'trigger' | 'appointment';
+  type: 'gluten_exposure' | 'neuropathy_spike' | 'villi_recovery' | 'appointment';
   triggerDetails: string;
   symptoms: string[];
   imageUrl?: string;
   notes: string;
+  isNeurologicalCluster?: boolean;
   hasSoapNote?: boolean;
 }
 
@@ -46,7 +64,8 @@ export interface Provider {
   visitType: string;
   priceTier: '$' | '$$' | '$$$';
   cashVisitPrice: number;
-  anaLabPrice: number;
+  celiacPanelPrice: number;
+  malabsorptionPanelPrice: number;
   slidingScale: boolean;
   languages: string[];
   avatarBg: string;
@@ -54,6 +73,7 @@ export interface Provider {
   isPrimary?: boolean;
   nextVisit?: string;
   facility: string;
+  celiacLiterate: boolean;
 }
 
 export interface CptCodeRecommendation {
@@ -62,6 +82,7 @@ export interface CptCodeRecommendation {
   typicalCashRate: string;
   hospitalBilledAvg: string;
   rationale: string;
+  panelCategory: 'Celiac Panel' | 'Malabsorption / Neuropathy' | 'Differential';
 }
 
 export interface SoapNote {
@@ -76,19 +97,23 @@ export interface SoapNote {
     summary: string;
     patientQuotes: string[];
     symptomTimeline: string;
+    neurologicalClusterDetected: boolean;
   };
   objective: {
     vitalsSummary: string;
     loggedFlaresCount: number;
+    villiRecoveryDays: number;
     flareLogBreakdown: Array<{
       date: string;
       event: string;
       trigger: string;
+      clusterSymptoms: string;
     }>;
     physicalFindings: string;
   };
   assessment: {
     primaryImpression: string;
+    gaslightingDefenseNote: string;
     riskFactors: string;
     diagnosticConfidence: string;
   };
@@ -117,6 +142,7 @@ export interface BillAuditResult {
   fairCashRate: number;
   overchargeAmount: number;
   overchargePercentage: number;
+  denialReason: string;
   lineItems: BilledLineItem[];
   legalCitations: string[];
   financialAssistanceEligibility: {
@@ -134,7 +160,7 @@ export interface BillAuditResult {
 export interface HealthBoardTrigger {
   id: string;
   name: string;
-  category: 'skincare' | 'food' | 'environmental' | 'medication';
+  category: 'gluten' | 'cross_contamination' | 'neuropathy_trigger' | 'supplement';
   riskBadge: string;
   notes: string;
   dateAdded: string;
@@ -145,17 +171,30 @@ export interface UserProfile {
   age: number;
   primaryProvider: string;
   clinic: string;
+  villiRecoveryDays: number; // e.g. 42
   allergies: string[];
   medications: Array<{
     name: string;
     dosage: string;
     instruction: string;
+    purpose: string;
     streakDays: number;
   }>;
   emergencyContact: {
     name: string;
     phone: string;
     relationship: string;
+  };
+  flareProtocol: {
+    step1: string;
+    step2: string;
+    step3: string;
+    tachycardiaNote: string;
+  };
+  chefBaristaCard: {
+    en: string;
+    es: string;
+    zh: string;
   };
   pinnedTriggers: HealthBoardTrigger[];
 }

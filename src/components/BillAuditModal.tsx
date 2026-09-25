@@ -140,6 +140,19 @@ export const BillAuditModal: React.FC<BillAuditModalProps> = ({
                 <span>Account: <strong className="text-slate-800">{auditResult.accountNumber}</strong></span>
               </div>
 
+              {/* Insurance Denial Alert */}
+              {auditResult.denialReason && (
+                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 space-y-1">
+                  <div className="flex items-center gap-1.5 text-rose-900 font-extrabold text-xs">
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                    <span>Insurance Improper Denial Flag:</span>
+                  </div>
+                  <p className="text-[11px] text-rose-950 font-medium leading-relaxed">
+                    {auditResult.denialReason}
+                  </p>
+                </div>
+              )}
+
               {/* Itemized CPT Breakdown */}
               <div className="space-y-2">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block px-1">

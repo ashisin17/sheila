@@ -28,122 +28,120 @@ if (apiKey) {
   });
 }
 
-// Multimodal Trigger Analysis Endpoint
+// 1. Multimodal Hidden Gluten & Neurological Trigger Analysis Endpoint
 app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
   try {
     const {
       prompt,
-      actionType, // 'skincare' | 'meal' | 'flare' | 'checkin'
+      actionType, // 'menu_oatmilk' | 'syrup_sauce' | 'dish_restaurant' | 'supplement_cosmetic' | 'checkin'
       imageBase64,
       imageMimeType = 'image/jpeg',
-      jointPain = 5,
-      skinRedness = 7,
-      fatigue = 6,
+      hoursSlept = 6,
+      sugarIntake = 'low',
+      alcoholDrinks = 0,
+      burningFeet = 6,
+      handTingling = 7,
+      tremorsAtaxia = 5,
+      rapidHeartbeat = 8,
+      jointPain = 6,
       language = 'en',
     } = req.body;
 
-    // High quality clinical fallback if Gemini key is missing or offline
     const fallbackResults: Record<string, any> = {
-      skincare: {
-        compoundName: 'Methylisothiazolinone & Synthetic Fragrance',
-        category: 'skincare',
-        riskScore: 8.8,
+      menu_oatmilk: {
+        compoundName: 'Barista Oat Milk (Shared Wheat Line & Steam Wand Cross-Contamination)',
+        category: 'cross_contamination',
+        riskScore: 8.9,
         riskLevel: 'High Risk',
-        concreteCorrelation: 'Logged 3 times this month; cheek erythema and burning sensation spiked 18-24 hours post-application.',
-        clinicalMechanism: 'Methylisothiazolinone is an isothiazolinone preservative and potent contact allergen that triggers cell-mediated delayed-type hypersensitivity and cutaneous barrier disruption.',
-        recommendations: [
-          'Immediately discontinue facial serums containing isothiazolinones.',
-          'Substitute with ceramide-dominant barrier repair ointments without phenoxyethanol or fragrance.',
-          'Request an Extended Patch Test series at your June 12 appointment.'
-        ],
-        calendarEventSuggestion: {
-          title: 'Topical Flare: Methylisothiazolinone Exposure',
-          date: 'June 8, 2025',
-          severity: 8,
-          notes: 'Serum applied at night. Woke with bilateral malar rash and burning.'
+        crossContaminationTraps: 'Commercial barista oat milk is frequently rolled on shared wheat/barley milling equipment unless certified gluten-free. Additionally, shared espresso steam wands froth dairy and oat milk together, depositing wheat protein directly into every beverage.',
+        concreteCorrelation: `Your hand tingling (${handTingling}/10) and heart rate (${rapidHeartbeat > 7 ? 'tachycardia 112+ bpm' : 'elevated'}) correlate with hidden gluten ingestion within an 18-hour window on ${hoursSlept} hours of sleep.`,
+        clinicalMechanism: 'In Celiac patients with intestinal villous atrophy, trace gluten cross-contamination activates circulating tissue transglutaminase antibodies (tTG-IgA) and cross-reacts with transglutaminase-6 (TG6) in the central and peripheral nervous system, provoking rapid ataxia, small fiber neuropathy, and autonomic tachycardia.',
+        exactQuestionToAsk: {
+          en: '“Is your oat milk certified gluten-free, and can you wipe down and purge the steam wand with a clean towel before frothing my drink?”',
+          es: '“¿Su leche de avena tiene certificación libre de gluten, y podría limpiar y purgar la boquilla de vapor con un paño limpio antes de preparar mi bebida?”',
+          zh: '“请问贵店的燕麦奶是否有明确的无麸质认证（Gluten-Free）？能否在制作前用干净毛巾彻底擦拭并释放蒸汽冲洗喷嘴以防交叉污染？”'
         },
-        healthBoardTag: {
-          name: 'Methylisothiazolinone',
-          riskBadge: 'High Risk (Preservative)',
-          notes: 'Confirmed cutaneous trigger; avoid in all leave-on cosmetic serums.'
-        }
-      },
-      meal: {
-        compoundName: 'Solanine & Capsaicin (Nightshade Alkaloids)',
-        category: 'food',
-        riskScore: 7.4,
-        riskLevel: 'High Risk',
-        concreteCorrelation: 'Logged 4 times in the past 6 weeks; associated with next-morning joint stiffness (+3.4 severity increase).',
-        clinicalMechanism: 'Solanine is a glycoalkaloid found in tomatoes and peppers that can increase intestinal permeability and activate pro-inflammatory cytokine cascades (IL-6, TNF-alpha) in susceptible individuals.',
         recommendations: [
-          'Trial a 21-day strict nightshade elimination protocol (no tomatoes, bell peppers, eggplant, or paprika).',
-          'Opt for root-vegetable based sauces (roasted carrots, beets, nutritional yeast).',
-          'Monitor morning wrist and knuckle stiffness.'
+          'Request a cold brew or drink prepared with clean shaker rather than the shared espresso steam wand.',
+          'Verify if the oat milk brand specifies <20 ppm or certified gluten-free batch testing.',
+          'Take sublingual Methyl-B12 to protect small nerve fiber myelin from immune attack.'
         ],
         calendarEventSuggestion: {
-          title: 'Systemic Flare: High Nightshade Pasta Dinner',
-          date: 'June 9, 2025',
-          severity: 7,
-          notes: 'Spicy arrabbiata pasta with roasted tomatoes and crushed red pepper.'
-        },
-        healthBoardTag: {
-          name: 'Nightshades (Solanine)',
-          riskBadge: 'Moderate-High Risk (Dietary)',
-          notes: 'Correlated with next-day joint inflammation and bilateral hand stiffness.'
-        }
-      },
-      flare: {
-        compoundName: 'Cutaneous Malar Erythema & Micro-Inflammation',
-        category: 'flare',
-        riskScore: 8.5,
-        riskLevel: 'High Risk',
-        concreteCorrelation: 'Consistent with subacute cutaneous flare pattern logged on June 3, June 7, and June 24.',
-        clinicalMechanism: 'Photodistributed erythema sparing the nasolabial folds with follicular plugging. Strong indication for serological ANA titer check and complement level review.',
-        recommendations: [
-          'Apply cool mineral compresses and broad-spectrum physical SPF 50+ mineral sunscreen.',
-          'Avoid active AHA/BHA exfoliants and retinoids during active inflammatory phase.',
-          'Document high-resolution photos for Dr. Priya Shah / Dr. Jordan Lee review.'
-        ],
-        calendarEventSuggestion: {
-          title: 'Facial Malar Flare Logged',
-          date: 'June 10, 2025',
+          title: 'Gluten Spike: Barista Oat Milk Cross-Contamination',
+          date: 'June 4, 2025',
           severity: 8.5,
-          notes: 'Cheek redness rating 8.5/10, warmth and sensitivity to touch.'
+          notes: 'Shared steam wand froth; burning feet and hand tingling spiked 16 hours later.'
         },
         healthBoardTag: {
-          name: 'Photosensitive Malar Rash',
-          riskBadge: 'Active Flare Marker',
-          notes: 'Requires CPT 86038 ANA panel confirmation.'
+          name: 'Barista Oat Milk (Shared Lines)',
+          riskBadge: 'High Risk Cross-Contamination',
+          notes: 'Shared café steam wands and non-certified oat grains provoke severe neuro-tachycardia flares.'
+        }
+      },
+      syrup_sauce: {
+        compoundName: 'Barley Malt Extract & Caramel Color (Hidden Gluten)',
+        category: 'gluten',
+        riskScore: 9.4,
+        riskLevel: 'High Risk',
+        crossContaminationTraps: 'Artisan caramel syrups, mocha drizzles, and savory gravies frequently use barley malt syrup or wheat starch as thickening agents without explicit allergen disclosure.',
+        concreteCorrelation: 'Logged 4 times before acute hand tremors and ataxia episodes. Directly damages duodenal brush-border enzymes.',
+        clinicalMechanism: 'Hordein proteins in barley malt bind to HLA-DQ2/DQ8 receptors, accelerating small intestinal mucosal blunting and blocking vitamin B12 absorption in the distal ileum.',
+        exactQuestionToAsk: {
+          en: '“Does this caramel sauce or flavoring syrup contain any barley malt, malt syrup, or wheat-derived starch?”',
+          es: '“¿Este sirope de caramelo o aderezo contiene extracto de malta de cebada, jarabe de malta o almidón de trigo?”',
+          zh: '“请问这款焦糖风味糖浆或酱汁中，是否含有大麦芽提取物（Barley Malt）、麦芽糖浆或任何小麦淀粉？”'
+        },
+        recommendations: [
+          'Choose pure organic maple syrup or certified gluten-free vanilla extract.',
+          'Inspect commercial sauce bottles for "maltodextrin (wheat)" or "barley flavoring".',
+          'Document flare in June Calendar for Dr. Priya Shah review.'
+        ],
+        calendarEventSuggestion: {
+          title: 'Barley Malt Exposure: Hand Tremors & Ataxia',
+          date: 'June 8, 2025',
+          severity: 9,
+          notes: 'Artisan caramel syrup contained hidden barley malt; severe tingling and unsteadiness.'
+        },
+        healthBoardTag: {
+          name: 'Barley Malt & Caramel Sauces',
+          riskBadge: 'Strict Gluten Trap',
+          notes: 'Contains hordein prolamins that destroy intestinal villi and trigger peripheral neuropathy.'
         }
       },
       checkin: {
-        compoundName: 'Cumulative Inflammatory Load',
-        category: 'systemic',
+        compoundName: 'Neuro-Inflammatory Cluster (Sleep & Metabolic Trigger)',
+        category: 'neuropathy_trigger',
         riskScore: 7.8,
         riskLevel: 'High Risk',
-        concreteCorrelation: 'Pain score is 65% higher than your baseline weekly average.',
-        clinicalMechanism: 'Elevated subjective fatigue and joint redness indicate active systemic response, possibly compounded by sleep deprivation and missed Vitamin D doses.',
+        crossContaminationTraps: 'Lack of sleep combined with alcohol and simple sugars impairs blood-brain barrier integrity and amplifies gluten-induced neuro-inflammation.',
+        concreteCorrelation: `Your hand tingling (${handTingling}/10), burning feet (${burningFeet}/10), and heart rate spiked 18 hours after having an iced oat latte + ${alcoholDrinks} drink on ${hoursSlept} hours of sleep.`,
+        clinicalMechanism: 'Ethanol and sleep deprivation reduce peripheral nerve microcirculation, triggering unmyelinated C-fiber hyperexcitability and orthostatic tachycardia in patients with existing villi malabsorption.',
+        exactQuestionToAsk: {
+          en: '“Can I verify that all ingredients in this meal are prepared in a dedicated gluten-free prep area?”',
+          es: '“¿Puedo verificar que todos los ingredientes de este plato se preparen en un área exclusiva sin gluten?”',
+          zh: '“请问这道餐品的所有原料是否是在专用的无麸质操作区域进行备餐制作的？”'
+        },
         recommendations: [
-          'Take scheduled 2000 IU Vitamin D with evening meal.',
-          'Engage in gentle lymphatic stretching and limit blue light exposure.',
-          'Prepare your 1-page SOAP Memo for your upcoming provider check-in.'
+          'Take 400 mg Magnesium Glycinate at bedtime to quiet autonomic tachycardia and nocturnal burning feet.',
+          'Maintain 1,000 mcg sublingual Methyl-B12 daily to support remyelination.',
+          'Prioritize 8+ hours restorative sleep to halt systemic cytokine production.'
         ],
         calendarEventSuggestion: {
-          title: 'Symptom Spike Check-in',
-          date: 'June 10, 2025',
-          severity: 7,
-          notes: `Joint Pain: ${jointPain}/10, Skin Redness: ${skinRedness}/10, Fatigue: ${fatigue}/10`
+          title: 'Neuropathy Spike: Low Sleep & Alcohol Exposure',
+          date: 'June 19, 2025',
+          severity: 7.5,
+          notes: `Hand tingling ${handTingling}/10, burning feet ${burningFeet}/10 on ${hoursSlept}h sleep.`
         },
         healthBoardTag: {
-          name: 'Inflammatory Fatigue Spike',
-          riskBadge: 'Systemic Metric',
-          notes: 'Correlated with stress and sleep disruption.'
+          name: 'Alcohol + Sleep Deficit Spike',
+          riskBadge: 'Neuropathy Multiplier',
+          notes: 'Dramatically worsens peripheral tingling and resting tachycardia.'
         }
       }
     };
 
     if (!ai) {
-      const result = fallbackResults[actionType] || fallbackResults.skincare;
+      const result = fallbackResults[actionType] || fallbackResults.menu_oatmilk;
       return res.json({ success: true, data: result, source: 'cached-clinical' });
     }
 
@@ -157,15 +155,14 @@ app.post('/api/analyze-trigger', async (req: Request, res: Response) => {
       });
     }
 
-    const systemInstruction = `You are a clinical AI health assistant specialized in autoimmune, dermatological, and chronic inflammatory triggers for a patient named Maya (age 28).
-Her baseline condition involves photosensitivity, malar-pattern skin redness, and reactive arthralgia.
-Current check-in metrics: Joint Pain (${jointPain}/10), Skin Redness (${skinRedness}/10), Fatigue (${fatigue}/10).
-Language requested: ${language} (if 'es', write values in Spanish; if 'zh', write values in Simplified Chinese; if 'en', write in English).
-Analyze the input photo or description with clinical precision: identify specific offending ingredients or inflammatory compounds, compute risk score (1-10), establish concrete correlation with her flare history, explain clinical mechanism, and provide actionable next steps.`;
+    const systemInstruction = `You are a clinical Celiac & Neuro-Immunology specialist assisting Sheila (age 28), who has Atypical Celiac Disease, Intestinal Villous Atrophy, and Severe Peripheral Small Fiber Neuropathy (Burning Feet, Hand Tingling, Tremors/Ataxia, Rapid Heartbeat).
+Current biometrics: Hours Slept (${hoursSlept}h), Sugar (${sugarIntake}), Alcohol (${alcoholDrinks} drinks). Symptoms: Burning Feet (${burningFeet}/10), Hand Tingling (${handTingling}/10), Tremors/Ataxia (${tremorsAtaxia}/10), Heartbeat (${rapidHeartbeat}/10), Joint Pain (${jointPain}/10).
+Analyze the coffee shop menu, oat milk carton, sauce, or meal photo for hidden gluten and cross-contamination (shared lines, shared steam wands, barley malt, modified wheat starch). Provide an exact 1-sentence question for the barista/waiter in English, Spanish, and Simplified Chinese. Explain the exact neurological mechanism.
+Language requested: ${language}.`;
 
     const contents = parts.length > 0 
-      ? { parts: [...parts, { text: `User Action: ${actionType}. User notes: ${prompt || 'Analyze this item for inflammatory triggers.'}` }] }
-      : `User Action: ${actionType}. User notes: ${prompt || 'Check-in analysis.'} Joint Pain: ${jointPain}, Redness: ${skinRedness}, Fatigue: ${fatigue}`;
+      ? { parts: [...parts, { text: `User Action: ${actionType}. User notes: ${prompt || 'Analyze for hidden gluten & cross-contamination.'}` }] }
+      : `Action: ${actionType}. User notes: ${prompt || 'Daily check-in.'} Sleep: ${hoursSlept}h, Sugar: ${sugarIntake}, Alcohol: ${alcoholDrinks}, Tingling: ${handTingling}, Burning feet: ${burningFeet}, Heartbeat: ${rapidHeartbeat}`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -180,8 +177,18 @@ Analyze the input photo or description with clinical precision: identify specifi
             category: { type: Type.STRING },
             riskScore: { type: Type.NUMBER },
             riskLevel: { type: Type.STRING },
+            crossContaminationTraps: { type: Type.STRING },
             concreteCorrelation: { type: Type.STRING },
             clinicalMechanism: { type: Type.STRING },
+            exactQuestionToAsk: {
+              type: Type.OBJECT,
+              properties: {
+                en: { type: Type.STRING },
+                es: { type: Type.STRING },
+                zh: { type: Type.STRING },
+              },
+              required: ['en', 'es', 'zh'],
+            },
             recommendations: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
@@ -211,8 +218,10 @@ Analyze the input photo or description with clinical precision: identify specifi
             'category',
             'riskScore',
             'riskLevel',
+            'crossContaminationTraps',
             'concreteCorrelation',
             'clinicalMechanism',
+            'exactQuestionToAsk',
             'recommendations',
             'calendarEventSuggestion',
             'healthBoardTag',
@@ -225,123 +234,158 @@ Analyze the input photo or description with clinical precision: identify specifi
     return res.json({ success: true, data: parsed, source: 'gemini-live' });
   } catch (error: any) {
     console.error('Error in /api/analyze-trigger:', error);
-    // Graceful fallback to guarantee live demo never fails
-    const type = req.body?.actionType || 'skincare';
-    return res.json({
-      success: true,
-      data: {
-        compoundName: 'Methylisothiazolinone (Preservative)',
-        category: type,
-        riskScore: 8.6,
-        riskLevel: 'High Risk',
-        concreteCorrelation: 'Logged 3 times this month; triggers cheek erythema 18-24h post application.',
-        clinicalMechanism: 'Potent cellular allergen that activates cutaneous mast cells and cytokine cascade.',
-        recommendations: [
-          'Eliminate products with synthetic isothiazolinone preservatives.',
-          'Switch to fragrance-free ceramide formulations.',
-          'Present this report during your June 12 provider check-in.'
-        ],
-        calendarEventSuggestion: {
-          title: 'Topical Flare Trigger Logged',
-          date: 'June 8, 2025',
-          severity: 8,
-          notes: 'Flare reaction documented with photo and ingredient scan.'
-        },
-        healthBoardTag: {
-          name: 'Methylisothiazolinone',
-          riskBadge: 'High Risk (Preservative)',
-          notes: 'Documented contact dermatitis and autoimmune flare accelerator.'
-        }
+    const result = {
+      compoundName: 'Barista Oat Milk (Shared Wheat Lines & Shared Steam Wand)',
+      category: 'cross_contamination',
+      riskScore: 8.8,
+      riskLevel: 'High Risk',
+      crossContaminationTraps: 'Commercial café oat milk is often processed on shared wheat machinery, and shared espresso steam wands cross-contaminate every hot beverage with aerosolized gluten.',
+      concreteCorrelation: 'Your hand tingling and heart rate spiked 18 hours after having an iced oat latte on 5 hours of sleep.',
+      clinicalMechanism: 'Cross-reactive autoimmune tTG antibodies attack small peripheral sensory nerves and autonomic ganglia, inducing burning feet and tachycardia.',
+      exactQuestionToAsk: {
+        en: '“Is your oat milk certified gluten-free, and can you wipe down and purge the steam wand before making my drink?”',
+        es: '“¿Su leche de avena está certificada libre de gluten y podría limpiar la boquilla de vapor antes de preparar mi bebida?”',
+        zh: '“请问燕麦奶是否有无麸质认证？能否在使用前彻底擦洗并冲洗蒸汽喷嘴？”'
       },
-      source: 'fallback-resilient'
-    });
+      recommendations: [
+        'Order cold brew prepared in clean pitcher without steam wand frothing.',
+        'Take 1,000 mcg sublingual Methyl-B12 daily to rebuild nerve sheath.',
+        'Log incident in your June Calendar to include in your 8-Doctor-Proof SOAP memo.'
+      ],
+      calendarEventSuggestion: {
+        title: 'Café Cross-Contamination Logged',
+        date: 'June 4, 2025',
+        severity: 8,
+        notes: 'Hand tingling and tachycardia logged 18h post café visit.'
+      },
+      healthBoardTag: {
+        name: 'Shared Steam Wand Oat Milk',
+        riskBadge: 'High Risk Cross-Contamination',
+        notes: 'Aerosolized wheat prolamins provoke autonomic tachycardia.'
+      }
+    };
+    return res.json({ success: true, data: result, source: 'fallback-resilient' });
   }
 });
 
-// 1-Page Clinical SOAP Note Generator Endpoint
+// 2. 1-Page "8-Doctor-Proof" Clinical SOAP Note Generator Endpoint
+function getFallbackSoap(patientName = 'Sheila', age = 28) {
+  return {
+    patientInfo: {
+      name: patientName,
+      age: age,
+      dateGenerated: 'June 10, 2025',
+      primaryProvider: 'Dr. Priya Shah, MD (Gastroenterology) & Dr. Jordan Lee, MD',
+      upcomingVisit: 'June 12, 2025 · 10:30 AM (Video Appointment)'
+    },
+    subjective: {
+      summary: "Patient presents with progressive peripheral neuropathy (bilateral burning feet, hand tingling, intermittent tremors/ataxia) and episodic sinus tachycardia (110-125 bpm) over the past 6 months. Repeatedly dismissed by 8 previous clinicians as 'just anxiety' or psychosomatic illness. Objective symptom timeline demonstrates temporal spikes 14-24 hours following ingestion of hidden gluten traps (barista oat milk processed on shared lines, barley malt caramel sauces) and low sleep/alcohol. Adherent to strict gluten elimination with villi recovery streak (42 days) yielding notable baseline improvement.",
+      patientQuotes: [
+        "Eight doctors told me my labs were 'normal' and said my burning feet and tremors were just anxiety.",
+        "My hand tingling and racing heart spike exactly 16 to 18 hours after accidental cross-contamination at coffee shops.",
+        "I need the specific Celiac antibody panel with total IgA and micronutrient levels ordered before my villi heal completely."
+      ],
+      symptomTimeline: "6 recorded flare spikes in June 2025 directly correlating with hidden gluten cross-contamination and autonomic spikes.",
+      neurologicalClusterDetected: true
+    },
+    objective: {
+      vitalsSummary: "Resting BP: 116/74 mmHg | Pulse: 68 bpm (baseline) spiking to 118 bpm during gluten challenge | Villi Healing Streak: 42 Days 100% Gluten-Free",
+      loggedFlaresCount: 6,
+      villiRecoveryDays: 42,
+      flareLogBreakdown: [
+        { date: "June 3, 2025", event: "Barista Oat Milk Cross-Contamination", trigger: "Shared steam wand & non-certified oat grains", clusterSymptoms: "Burning Feet 8/10, Heart Rate 118 bpm" },
+        { date: "June 7, 2025", event: "Barley Malt Caramel Syrup", trigger: "Hidden barley hordein in coffee syrup", clusterSymptoms: "Tremors/Ataxia 8.5/10, Hand Tingling 9/10" },
+        { date: "June 12, 2025", event: "Comprehensive Diagnostic Appointment", trigger: "Consultation & Lab Requisition", clusterSymptoms: "8-Doctor-Proof SOAP Packet Review" },
+        { date: "June 18, 2025", event: "Alcohol + Sugar on 4.5h Sleep", trigger: "Ethanol & sleep deprivation neuropathy trigger", clusterSymptoms: "Hand Tingling 8/10, Tachycardia 108 bpm" },
+        { date: "June 24, 2025", event: "Day 30 Gluten-Free Villi Milestone", trigger: "100% Strict Celiac Diet Adherence", clusterSymptoms: "Resting HR 68 bpm, Tingling reduced to 1/10" },
+        { date: "June 28, 2025", event: "Lip Balm Cross-Reaction", trigger: "Wheat-derived tocopherol germ oil", clusterSymptoms: "Perioral burning & mild joint ache" }
+      ],
+      physicalFindings: "Neurological exam reveals distal symmetric vibratory sensory reduction in bilateral toes, intact deep tendon reflexes, and mild postural tremor. No focal motor deficit. Abdomen soft, non-distended on 100% gluten-free diet."
+    },
+    assessment: {
+      primaryImpression: "1. Suspected Atypical Celiac Disease (Marsh III Villous Blunting) with Gluten Neuropathy & Gluten Ataxia.\n2. Chronic Secondary Micronutrient Malabsorption (depleted Vitamin B12, Vitamin D3, and Ferritin due to proximal small bowel villous flattening).\n3. Autonomic dysfunction (post-prandial sinus tachycardia) secondary to gut-derived neuro-inflammatory cascade.",
+      gaslightingDefenseNote: "CLINICAL DEFENSE AGAINST PSYCHOSOMATIC BIAS: The patient's symptom constellation (burning feet, ataxia, tachycardia, and malabsorption) is classical for neurological Celiac Disease. Previous routine CBC and standard metabolic panels do NOT rule out Celiac disease. Dismissal as 'anxiety' without ordering specific tTG-IgA, Total Serum IgA, and deep ferritin constitutes diagnostic delay.",
+      riskFactors: "HLA-DQ2/DQ8 genetic predisposition, microscopic cross-contamination, selective IgA deficiency risk.",
+      diagnosticConfidence: "High pre-test probability for Celiac Neuropathy; requires formal serology."
+    },
+    plan: {
+      recommendedCptCodes: [
+        {
+          code: "CPT 83516",
+          name: "Tissue Transglutaminase (tTG-IgA & tTG-IgG) Antibodies",
+          typicalCashRate: "$45 - $65",
+          hospitalBilledAvg: "$240+",
+          rationale: "Gold standard serological screen for autoimmune small bowel enteropathy.",
+          panelCategory: "Celiac Panel"
+        },
+        {
+          code: "CPT 82784",
+          name: "Total Serum Immunoglobulin A (Total IgA)",
+          typicalCashRate: "$25 - $40",
+          hospitalBilledAvg: "$110+",
+          rationale: "MANDATORY: Rule out Selective IgA Deficiency, which causes false-negative tTG-IgA results in 3% of Celiac patients.",
+          panelCategory: "Celiac Panel"
+        },
+        {
+          code: "CPT 82607",
+          name: "Vitamin B12 (Cyanocobalamin / Active Cobalamin)",
+          typicalCashRate: "$20 - $35",
+          hospitalBilledAvg: "$95+",
+          rationale: "Assess terminal ileal absorption capacity; essential to treat small fiber sensory neuropathy.",
+          panelCategory: "Malabsorption / Neuropathy"
+        },
+        {
+          code: "CPT 82306",
+          name: "Vitamin D; 25-hydroxy (Total 25-OH)",
+          typicalCashRate: "$30 - $48",
+          hospitalBilledAvg: "$180+",
+          rationale: "Evaluate duodenal fat-soluble nutrient malabsorption.",
+          panelCategory: "Malabsorption / Neuropathy"
+        },
+        {
+          code: "CPT 82728",
+          name: "Ferritin (Iron Storage Protein)",
+          typicalCashRate: "$22 - $38",
+          hospitalBilledAvg: "$115+",
+          rationale: "Duodenal villous atrophy causes profound non-anemic iron deficiency.",
+          panelCategory: "Malabsorption / Neuropathy"
+        },
+        {
+          code: "CPT 86255",
+          name: "Endomysial Antibody (EMA) Screen with Reflex Titer",
+          typicalCashRate: "$55 - $80",
+          hospitalBilledAvg: "$280+",
+          rationale: "99% specificity for active Celiac villous atrophy.",
+          panelCategory: "Celiac Panel"
+        }
+      ],
+      clinicalDirectives: [
+        "Order comprehensive Celiac Panel (CPT 83516 + CPT 82784) and Malabsorption Panel prior to long-term diet modification.",
+        "Continue high-dose sublingual Methyl-B12 (1,000 mcg) to bypass damaged gastrointestinal villi.",
+        "Strict zero-tolerance policy for café steam wand cross-contamination and uncertified barista oat milks.",
+        "Consult Dr. Priya Shah for duodenal bulb biopsy staging if serology is equivocal."
+      ],
+      followUpNote: "Review results during June 12 video appointment with Dr. Priya Shah and Dr. Jordan Lee."
+    }
+  };
+}
+
 app.post('/api/generate-soap', async (req: Request, res: Response) => {
   try {
-    const { markedDays = [], language = 'en', patientName = 'Maya', age = 28 } = req.body;
-
-    const fallbackSoap = {
-      patientInfo: {
-        name: patientName,
-        age: age,
-        dateGenerated: 'June 10, 2025',
-        primaryProvider: 'Dr. Jordan Lee, MD (Wellness Clinic)',
-        upcomingVisit: 'June 12, 2025 · 10:30 AM (Video Appointment)'
-      },
-      subjective: {
-        summary: "Patient reports recurrent cyclical facial erythema (malar distribution) and episodic symmetric PIP/MCP joint pain over the past 30 days. Correlates exacerbations with specific cosmetic preservatives and nightshade vegetable intake. Compliant with Vitamin D3 2000 IU daily (14-day streak logged).",
-        patientQuotes: [
-          "My cheeks feel like a severe sunburn 18 to 24 hours after trying new serums.",
-          "Waking up with stiff knuckles especially after having tomato pasta or peppers."
-        ],
-        symptomTimeline: "Onset 6 weeks prior; acute flare spikes recorded on June 3, June 7, June 18, and June 24."
-      },
-      objective: {
-        vitalsSummary: "Blood Pressure: 118/76 mmHg | Resting HR: 68 bpm | Temp: 98.4°F",
-        loggedFlaresCount: markedDays.length || 6,
-        flareLogBreakdown: [
-          { date: "June 3, 2025", event: "Facial burning & redness (7/10)", trigger: "New SPF chemical sunscreen" },
-          { date: "June 7, 2025", event: "Bilateral cheek flare (8.5/10)", trigger: "CeraGlow Serum (Methylisothiazolinone)" },
-          { date: "June 12, 2025", event: "Upcoming Medical Evaluation", trigger: "Provider Check-in" },
-          { date: "June 18, 2025", event: "Joint stiffness & fatigue (6/10)", trigger: "Arrabbiata pasta (Nightshade alkaloids)" },
-          { date: "June 24, 2025", event: "Cheek erythema & sensitivity (7.5/10)", trigger: "High UV exposure + scented cleanser" },
-          { date: "June 28, 2025", event: "Mild wrist arthralgia (5/10)", trigger: "Sleep deficit + dietary trigger" }
-        ],
-        physicalFindings: "Photos show non-scarring erythematous plaques over zygomatic arches sparing nasolabial folds. No oral ulcers or active alopecia noted."
-      },
-      assessment: {
-        primaryImpression: "1. Suspected Subacute Cutaneous Lupus Erythematosus (SCLE) vs. Allergic Contact Dermatitis superimposed on Rosacea.\n2. Reactive inflammatory arthropathy exacerbated by dietary alkaloids and barrier breakdown.",
-        riskFactors: "Strong correlation with isothiazolinone topical preservatives (Risk Score 8.8/10) and high-solanine nightshade consumption.",
-        diagnosticConfidence: "Moderate-High. Serological confirmation required before initiating immunosuppressive therapy."
-      },
-      plan: {
-        recommendedCptCodes: [
-          {
-            code: "CPT 86038",
-            name: "Antinuclear Antibodies (ANA) Screen with Reflex Titer",
-            typicalCashRate: "$35 - $65",
-            hospitalBilledAvg: "$185+",
-            rationale: "Rule out systemic autoimmunity, titer pattern analysis (speckled vs. homogenous)."
-          },
-          {
-            code: "CPT 86140",
-            name: "C-Reactive Protein (CRP) Quantitative",
-            typicalCashRate: "$25 - $45",
-            hospitalBilledAvg: "$75+",
-            rationale: "Assess acute systemic inflammatory burden vs. localized cutaneous reaction."
-          },
-          {
-            code: "CPT 82306",
-            name: "Vitamin D; 25-hydroxy (Total)",
-            typicalCashRate: "$30 - $55",
-            hospitalBilledAvg: "$95+",
-            rationale: "Verify therapeutic immunomodulatory serum concentration."
-          }
-        ],
-        clinicalDirectives: [
-          "Discontinue all cosmetic products containing Methylisothiazolinone, Methylchloroisothiazolinone, and synthetic fragrance.",
-          "Strict 21-day nightshade dietary elimination trial.",
-          "Continue daily mineral broad-spectrum sunscreen (Zinc Oxide 20%).",
-          "Order ANA reflex panel and high-sensitivity CRP at community low-cost lab partner."
-        ],
-        followUpNote: "Review lab results at follow-up with Dr. Jordan Lee and consult Dr. Priya Shah for formal patch testing."
-      }
-    };
+    const { markedDays = [], language = 'en', patientName = 'Sheila', age = 28 } = req.body;
 
     if (!ai) {
-      return res.json({ success: true, data: fallbackSoap, source: 'cached-clinical' });
+      return res.json({ success: true, data: getFallbackSoap(patientName, age), source: 'cached-clinical' });
     }
 
-    const systemInstruction = `You are an expert Clinical Medical Scribe and Physician Assistant synthesizing chronic flare logs into a formal 1-Page Clinical SOAP Note (Subjective, Objective, Assessment, Plan) for patient ${patientName}, age ${age}.
-Include standard CMS CPT diagnostic codes (CPT 86038 ANA, CPT 86140 CRP, CPT 82306 Vitamin D) with fair cash market prices vs inflated hospital charges.
+    const systemInstruction = `You are an expert Clinical Neuro-Gastroenterologist and Patient Advocacy Scribe synthesizing chronic illness logs into an "8-Doctor-Proof" Clinical SOAP Note for Sheila (age 28).
+The patient was repeatedly gaslighted with "it's just anxiety" by 8 previous doctors. You must document her clinical neurological cluster (burning feet, hand tingling, tremors/ataxia, rapid heartbeat, villi malabsorption).
+List the exact Celiac panel CPT codes (CPT 83516 tTG-IgA/IgG, CPT 82784 Total Serum IgA, CPT 86255 EMA) and Malabsorption codes (CPT 82607 B12, CPT 82306 Vitamin D, CPT 82728 Ferritin).
 Language: ${language}. Return structured JSON.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: `Synthesize patient flare history for June 2025. Marked days: ${JSON.stringify(markedDays)}. Patient triggers include Methylisothiazolinone in cosmetics, dietary nightshades, and sun sensitivity. Generate comprehensive SOAP Note.`,
+      contents: `Synthesize patient neurological symptom logs for June 2025. Marked days: ${JSON.stringify(markedDays)}. Patient triggers: oat milk cross-contamination, barley malt caramel, low sleep. Generate 8-Doctor-Proof SOAP note.`,
       config: {
         systemInstruction,
         responseMimeType: 'application/json',
@@ -365,14 +409,16 @@ Language: ${language}. Return structured JSON.`;
                 summary: { type: Type.STRING },
                 patientQuotes: { type: Type.ARRAY, items: { type: Type.STRING } },
                 symptomTimeline: { type: Type.STRING },
+                neurologicalClusterDetected: { type: Type.BOOLEAN },
               },
-              required: ['summary', 'patientQuotes', 'symptomTimeline'],
+              required: ['summary', 'patientQuotes', 'symptomTimeline', 'neurologicalClusterDetected'],
             },
             objective: {
               type: Type.OBJECT,
               properties: {
                 vitalsSummary: { type: Type.STRING },
                 loggedFlaresCount: { type: Type.NUMBER },
+                villiRecoveryDays: { type: Type.NUMBER },
                 flareLogBreakdown: {
                   type: Type.ARRAY,
                   items: {
@@ -381,22 +427,24 @@ Language: ${language}. Return structured JSON.`;
                       date: { type: Type.STRING },
                       event: { type: Type.STRING },
                       trigger: { type: Type.STRING },
+                      clusterSymptoms: { type: Type.STRING },
                     },
-                    required: ['date', 'event', 'trigger'],
+                    required: ['date', 'event', 'trigger', 'clusterSymptoms'],
                   },
                 },
                 physicalFindings: { type: Type.STRING },
               },
-              required: ['vitalsSummary', 'loggedFlaresCount', 'flareLogBreakdown', 'physicalFindings'],
+              required: ['vitalsSummary', 'loggedFlaresCount', 'villiRecoveryDays', 'flareLogBreakdown', 'physicalFindings'],
             },
             assessment: {
               type: Type.OBJECT,
               properties: {
                 primaryImpression: { type: Type.STRING },
+                gaslightingDefenseNote: { type: Type.STRING },
                 riskFactors: { type: Type.STRING },
                 diagnosticConfidence: { type: Type.STRING },
               },
-              required: ['primaryImpression', 'riskFactors', 'diagnosticConfidence'],
+              required: ['primaryImpression', 'gaslightingDefenseNote', 'riskFactors', 'diagnosticConfidence'],
             },
             plan: {
               type: Type.OBJECT,
@@ -411,8 +459,9 @@ Language: ${language}. Return structured JSON.`;
                       typicalCashRate: { type: Type.STRING },
                       hospitalBilledAvg: { type: Type.STRING },
                       rationale: { type: Type.STRING },
+                      panelCategory: { type: Type.STRING },
                     },
-                    required: ['code', 'name', 'typicalCashRate', 'hospitalBilledAvg', 'rationale'],
+                    required: ['code', 'name', 'typicalCashRate', 'hospitalBilledAvg', 'rationale', 'panelCategory'],
                   },
                 },
                 clinicalDirectives: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -430,133 +479,88 @@ Language: ${language}. Return structured JSON.`;
     return res.json({ success: true, data: parsed, source: 'gemini-live' });
   } catch (error: any) {
     console.error('Error in /api/generate-soap:', error);
-    // Return robust fallback
-    return res.json({
-      success: true,
-      data: {
-        patientInfo: {
-          name: 'Maya',
-          age: 28,
-          dateGenerated: 'June 10, 2025',
-          primaryProvider: 'Dr. Jordan Lee, MD (Wellness Clinic)',
-          upcomingVisit: 'June 12, 2025 · 10:30 AM (Video Appointment)'
-        },
-        subjective: {
-          summary: "Patient reports recurrent cyclic malar erythema and bilateral hand stiffness over the past month. Clear temporal correlation with CeraGlow facial serum (Methylisothiazolinone) and spicy nightshades.",
-          patientQuotes: [
-            "My skin burns within 24 hours of using new leave-on products.",
-            "Joint pain flares significantly after heavy tomato/chili meals."
-          ],
-          symptomTimeline: "6 recorded flare episodes in June 2025."
-        },
-        objective: {
-          vitalsSummary: "BP: 118/76 mmHg | Pulse: 70 bpm | Afebrile",
-          loggedFlaresCount: 6,
-          flareLogBreakdown: [
-            { date: "June 3, 2025", event: "Sunscreen reaction", trigger: "Chemical UV filters" },
-            { date: "June 7, 2025", event: "Cheek erythema (8.5/10)", trigger: "Methylisothiazolinone Serum" },
-            { date: "June 12, 2025", event: "Scheduled Visit", trigger: "Follow-up" },
-            { date: "June 18, 2025", event: "Hand stiffness (6/10)", trigger: "Nightshade pasta" },
-            { date: "June 24, 2025", event: "Sunlight sensitivity flare", trigger: "UV + fragrance" },
-            { date: "June 28, 2025", event: "Mild fatigue spike", trigger: "Sleep deficit" }
-          ],
-          physicalFindings: "Sharply demarcated malar erythema sparing melolabial sulci."
-        },
-        assessment: {
-          primaryImpression: "Cutaneous lupus erythematosus vs. severe contact dermatitis with inflammatory arthralgia.",
-          riskFactors: "Isothiazolinone exposure; dietary solanine alkaloid sensitivity.",
-          diagnosticConfidence: "High priority for serology."
-        },
-        plan: {
-          recommendedCptCodes: [
-            {
-              code: "CPT 86038",
-              name: "Antinuclear Antibodies (ANA) Screen",
-              typicalCashRate: "$35",
-              hospitalBilledAvg: "$185",
-              rationale: "Quantify autoimmune titers"
-            },
-            {
-              code: "CPT 86140",
-              name: "C-Reactive Protein (CRP)",
-              typicalCashRate: "$25",
-              hospitalBilledAvg: "$75",
-              rationale: "Measure systemic inflammation"
-            }
-          ],
-          clinicalDirectives: [
-            "Eliminate all products containing isothiazolinones.",
-            "Schedule low-cost cash lab visit for CPT 86038 & 86140.",
-            "Maintain daily Vitamin D adherence."
-          ],
-          followUpNote: "Present this packet to Dr. Priya Shah or Dr. Jordan Lee."
-        }
-      },
-      source: 'fallback-resilient'
-    });
+    return res.json({ success: true, data: getFallbackSoap(), source: 'fallback-resilient' });
   }
 });
 
-// Medical Bill & EOB Audit Endpoint
+// 3. Medical Bill & Massive Blood Panel Denial Defender Endpoint
 const fallbackAudit = {
-  facilityName: 'Metro Specialty Health & Pathology Partners',
+  facilityName: 'Metro Regional Hospital & Specialty Diagnostic Labs',
   billDate: 'May 28, 2025',
-  patientName: 'Maya',
-  accountNumber: 'ACC-849201-DERM',
-  totalBilled: 640.00,
-  fairCashRate: 135.00,
-  overchargeAmount: 505.00,
-  overchargePercentage: 78.9,
+  patientName: 'Sheila',
+  accountNumber: 'ACC-918241-CELIAC-LAB',
+  totalBilled: 890.00,
+  fairCashRate: 110.00,
+  overchargeAmount: 780.00,
+  overchargePercentage: 87.6,
+  denialReason: 'Insurance carrier denied CPT 82306 (Vitamin D) and CPT 83516 (tTG-IgA) stating "Routine screening not covered without pre-existing malabsorption diagnosis / deemed investigational".',
   lineItems: [
     {
-      cptCode: 'CPT 99204',
-      description: 'New Patient Office Visit (Moderate/High Complexity 45m)',
-      billedAmount: 380.00,
-      fairCmsRate: 110.00,
-      overcharge: 270.00,
-      violationFlag: 'Inflated 345% over CMS Physician Fee Schedule.'
+      cptCode: 'CPT 83516',
+      description: 'Tissue Transglutaminase (tTG-IgA) Celiac Screen',
+      billedAmount: 260.00,
+      fairCmsRate: 45.00,
+      overcharge: 215.00,
+      violationFlag: 'Marked up 577% over CMS Clinical Diagnostic Lab Fee Schedule; improperly denied.'
     },
     {
-      cptCode: 'CPT 86038',
-      description: 'Antinuclear Antibodies (ANA) Screen',
-      billedAmount: 185.00,
-      fairCmsRate: 35.00,
-      overcharge: 150.00,
-      violationFlag: 'Laboratory markup; Labcorp/Quest direct cash rate is $35.'
-    },
-    {
-      cptCode: 'CPT 86140',
-      description: 'C-Reactive Protein (CRP) Quantitative',
-      billedAmount: 75.00,
+      cptCode: 'CPT 82784',
+      description: 'Total Serum Immunoglobulin A (Total IgA)',
+      billedAmount: 140.00,
       fairCmsRate: 25.00,
-      overcharge: 50.00,
-      violationFlag: 'Out-of-network markup on routine blood chemistry.'
+      overcharge: 115.00,
+      violationFlag: 'Essential standard-of-care companion code to prevent false-negative Celiac screen.'
+    },
+    {
+      cptCode: 'CPT 82607',
+      description: 'Vitamin B12 Assay (Cyanocobalamin)',
+      billedAmount: 180.00,
+      fairCmsRate: 20.00,
+      overcharge: 160.00,
+      violationFlag: 'Marked up 900% over Labcorp/Quest direct self-pay rate of $20.'
+    },
+    {
+      cptCode: 'CPT 82306',
+      description: 'Vitamin D; 25-hydroxy (Total)',
+      billedAmount: 195.00,
+      fairCmsRate: 30.00,
+      overcharge: 165.00,
+      violationFlag: 'Carrier denied as "investigational"; clinical notes substantiate severe malabsorption.'
+    },
+    {
+      cptCode: 'CPT 82728',
+      description: 'Ferritin (Serum Iron Storage)',
+      billedAmount: 115.00,
+      fairCmsRate: 22.00,
+      overcharge: 93.00,
+      violationFlag: 'Inflated hospital outpatient facility surcharge.'
     }
   ],
   legalCitations: [
     'CMS Hospital Price Transparency Final Rule (45 CFR § 180.50)',
-    'No Surprises Act (Consolidated Appropriations Act 2021, Pub. L. 116-260)',
-    'IRC Section 501(r)(4) Financial Assistance & Charity Care Regulations'
+    'Affordable Care Act § 2713 & Diagnostic Medical Necessity Standards',
+    'IRC Section 501(r)(4) Charity Care & Plain-Language Summary Protections',
+    'No Surprises Act (Consolidated Appropriations Act 2021, Pub. L. 116-260)'
   ],
   financialAssistanceEligibility: {
     eligible: true,
-    thresholdDescription: 'Under federal 501(r) guidelines for non-profit facilities, patients earning under 400% Federal Poverty Level ($60,240 for single individual) qualify for a 50% to 100% charity care discount or prompt-pay cash adjustment.'
+    thresholdDescription: 'Under IRC § 501(r) non-profit hospital regulations, patients earning under 400% Federal Poverty Level qualify for a 100% charity care forgiveness or reduction to the Medicare reimbursement benchmark ($110).'
   },
   phoneScripts: {
     en: {
-      title: "English Negotiation Phone Script",
-      script: `“Hello, my name is Maya and I am calling regarding Account #ACC-849201-DERM. I received a bill for $640.00. I have cross-referenced your line items with published CMS pricing and local cash benchmarks. You billed $380 for CPT 99204 and $185 for CPT 86038, whereas the standard CMS cash rate for these codes is $110 and $35 respectively. Under CMS Price Transparency rules and your facility's financial assistance policy, I am requesting to resolve this balance today at the published cash-pay rate of $135.00, or to receive an application for charity care under Section 501(r). Can you apply the prompt-pay cash discount to my account now?”`
+      title: "Bilingual English Negotiation Phone Script",
+      script: `“Hello, my name is Sheila and I am calling regarding Account #ACC-918241-CELIAC-LAB. I received a bill for $890.00 for diagnostic Celiac antibodies and malabsorption panels. My insurer improperly denied CPT 82306 and CPT 83516 as investigational, despite documented peripheral neuropathy and villous atrophy. Furthermore, your line items exceed published CMS rates by over 500% ($260 for CPT 83516 vs $45 CMS cash rate). Under CMS Price Transparency rules and your facility's 501(r) financial assistance policy, I am requesting to resolve this balance today at the published Quest/CMS cash rate of $110.00, or to have your billing supervisor submit a clinical appeal with diagnosis code K90.0 (Celiac Disease). Can you apply this prompt-pay adjustment now?”`
     },
     es: {
       title: "Guión Telefónico de Negociación en Español",
-      script: `“Hola, mi nombre es Maya y llamo en relación a la cuenta #ACC-849201-DERM. Recibí una factura por $640.00. He verificado sus códigos con las tarifas públicas de CMS y precios en efectivo locales. Facturaron $380 por el código CPT 99204 y $185 por CPT 86038, cuando la tarifa estándar de CMS en efectivo es de $110 y $35 respectivamente. Bajo las regulaciones federales de Transparencia de Precios de CMS y su política de ayuda financiera, solicito liquidar este saldo hoy con la tarifa en efectivo de $135.00 o recibir la solicitud de asistencia caritativa bajo la Sección 501(r). ¿Podría aplicar el descuento de pago inmediato a mi cuenta ahora?”`
+      script: `“Hola, mi nombre es Sheila y llamo sobre la cuenta #ACC-918241-CELIAC-LAB. Recibí una factura por $890.00 por pruebas de celiaquía y malabsorción. El seguro denegó erróneamente los códigos CPT 82306 y 83516 como investigacionales a pesar de mi neuropatía documentada. Sus cargos superan en más del 500% las tarifas de CMS ($260 por CPT 83516 frente a $45 de tarifa CMS). Bajo las reglas federales de Transparencia de Precios y su política 501(r), solicito liquidar este saldo con la tarifa en efectivo de $110.00 o tramitar la apelación médica con el código K90.0. ¿Podría aplicar este ajuste de pago inmediato?”`
     },
     zh: {
-      title: "中文账单谈判电话话术",
-      script: `“您好，我叫Maya，我的账单账户是 #ACC-849201-DERM。我收到了640美元的账单。我已经对照联邦CMS医疗服务收费标准和本地现金价格进行了核查。贵机构对 CPT 99204 收取了 380 美元，对 CPT 86038 收取了 185 美元，而标准现金价格分别仅为 110 美元和 35 美元。根据联邦医院价格透明度法规以及贵院的财务援助计划（501(r) 条款），我请求以公开的现金价 135 美元结清该账单，或申请无力支付慈善救济。请问现在能否为我应用现金折扣调整账单？”`
+      title: "中文化验账单申诉谈判电话话术",
+      script: `“您好，我叫Sheila，账单账户是 #ACC-918241-CELIAC-LAB。我收到了890美元的乳糜泻抗体与吸收障碍血液生化账单。保险公司以‘实验性项目’为由错误拒付了 CPT 82306 和 83516，尽管我的病历明确记录了周围神经病变与肠道绒毛损伤。此外，贵院对 CPT 83516 收取 260 美元，远高于联邦 CMS 45 美元的现金标准。根据联邦医院价格透明度法规及 501(r) 慈善救济政策，我请求按公开基准价 110 美元自费结清，或由主管医生提交诊断代码 K90.0 的医学必要性申诉。请问能否立即为我应用现金折扣？”`
     }
   },
-  formalDisputeLetter: `To: Metro Specialty Health & Pathology Partners - Patient Billing & Compliance Dept\nDate: June 10, 2025\nRe: Formal Dispute of Inflated Charges & Request for Cash-Pay Adjustment\nAccount Number: ACC-849201-DERM | Patient: Maya | Amount In Dispute: $505.00\n\nDear Billing Director,\n\nI am writing to formally dispute the charges billed on statement dated May 28, 2025 totaling $640.00 for outpatient dermatological evaluation and diagnostic blood panels.\n\nUpon independent audit against the Centers for Medicare & Medicaid Services (CMS) Physician Fee Schedule and local laboratory self-pay rates, substantial disparities were identified:\n1. CPT 99204: Billed at $380.00 vs. Regional Benchmark Cash Rate of $110.00 (345% markup)\n2. CPT 86038 (ANA): Billed at $185.00 vs. Quest/Labcorp Self-Pay Rate of $35.00 (528% markup)\n3. CPT 86140 (CRP): Billed at $75.00 vs. Standard Rate of $25.00 (300% markup)\n\nPursuant to the CMS Hospital Price Transparency Rule (45 CFR § 180) and federal financial assistance obligations under IRC § 501(r), I am formally requesting that this balance be adjusted to the fair aggregate cash rate of $135.00.\n\nPlease place this account on immediate hold while this dispute is reviewed. I am prepared to remit payment of $135.00 upon receipt of an adjusted itemized statement reflecting fair market pricing.\n\nSincerely,\nMaya\nPatient & Self-Advocate`
+  formalDisputeLetter: `To: Metro Regional Hospital & Specialty Diagnostic Labs - Patient Accounts & Billing Compliance\nDate: June 10, 2025\nRe: Formal Dispute of Denied Diagnostic Panels & Request for Cash-Pay Adjustment\nAccount Number: ACC-918241-CELIAC-LAB | Patient: Sheila | Amount In Dispute: $780.00\n\nDear Billing Compliance Director,\n\nI am writing to formally dispute statement dated May 28, 2025 totaling $890.00 for diagnostic Celiac serology (CPT 83516, 82784) and micronutrient malabsorption panels (CPT 82607, 82306, 82728).\n\n1. MEDICAL NECESSITY: The denial of CPT 82306 and CPT 83516 as 'investigational' is clinically erroneous. Under ACG Celiac Guidelines, tTG-IgA is the recommended gold-standard first-line diagnostic test for suspected small bowel enteropathy and gluten ataxia (ICD-10 K90.0, G60.8).\n\n2. PRICE TRANSPARENCY VIOLATIONS: The billed charges reflect an unconscionable 700%+ markup over the Centers for Medicare & Medicaid Services (CMS) Clinical Diagnostic Laboratory Fee Schedule:\n- CPT 83516 (tTG-IgA): Billed $260.00 vs CMS Rate $45.00\n- CPT 82607 (B12): Billed $180.00 vs Commercial Cash Rate $20.00\n- CPT 82306 (Vitamin D): Billed $195.00 vs Fair Cash Rate $30.00\n\nPursuant to the CMS Hospital Price Transparency Rule (45 CFR § 180) and IRC § 501(r), I hereby request that this balance be adjusted to the fair aggregate benchmark rate of $110.00.\n\nPlease place this account on immediate administrative hold. I am prepared to pay $110.00 immediately upon receipt of a corrected itemized billing statement.\n\nSincerely,\nSheila\nPatient & Healthcare Self-Advocate`
 };
 
 app.post('/api/audit-bill', async (req: Request, res: Response) => {
@@ -567,8 +571,8 @@ app.post('/api/audit-bill', async (req: Request, res: Response) => {
       return res.json({ success: true, data: fallbackAudit, source: 'cached-clinical' });
     }
 
-    const systemInstruction = `You are a certified Medical Billing Auditor, Patient Advocate, and Healthcare Price Transparency Specialist.
-Audit the provided medical bill or charges. Extract billed CPT codes, calculate the price markup relative to CMS fair cash rates, check financial assistance eligibility under 501(r), provide bilingual negotiation phone scripts, and draft a formal legal dispute letter.
+    const systemInstruction = `You are a certified Medical Billing Auditor, Patient Advocate, and Healthcare Price Transparency Specialist specializing in Celiac Disease, small bowel malabsorption, and diagnostic laboratory denials.
+Audit the provided lab bill or charges. Extract billed CPT codes, calculate the price markup relative to CMS fair cash rates, check financial assistance eligibility under 501(r), provide bilingual negotiation phone scripts, and draft a formal legal dispute letter.
 Language preference: ${language}.`;
 
     const parts: any[] = [];
@@ -581,7 +585,7 @@ Language preference: ${language}.`;
       });
     }
 
-    const promptText = `Audit this medical bill:\n${billText || 'Dermatology visit and ANA lab test bill totaling $640.00'}`;
+    const promptText = `Audit this diagnostic laboratory bill:\n${billText || 'Celiac antibodies and B12/Vitamin D/Ferritin malabsorption blood panel totaling $890.00'}`;
     const contents = parts.length > 0 ? { parts: [...parts, { text: promptText }] } : promptText;
 
     const response = await ai.models.generateContent({
@@ -601,6 +605,7 @@ Language preference: ${language}.`;
             fairCashRate: { type: Type.NUMBER },
             overchargeAmount: { type: Type.NUMBER },
             overchargePercentage: { type: Type.NUMBER },
+            denialReason: { type: Type.STRING },
             lineItems: {
               type: Type.ARRAY,
               items: {
@@ -657,6 +662,7 @@ Language preference: ${language}.`;
             'fairCashRate',
             'overchargeAmount',
             'overchargePercentage',
+            'denialReason',
             'lineItems',
             'legalCitations',
             'financialAssistanceEligibility',
@@ -671,12 +677,7 @@ Language preference: ${language}.`;
     return res.json({ success: true, data: parsed, source: 'gemini-live' });
   } catch (error: any) {
     console.error('Error in /api/audit-bill:', error);
-    // Return fallback
-    return res.json({
-      success: true,
-      data: fallbackAudit,
-      source: 'fallback-resilient'
-    });
+    return res.json({ success: true, data: fallbackAudit, source: 'fallback-resilient' });
   }
 });
 
