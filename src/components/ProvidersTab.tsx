@@ -44,7 +44,7 @@ export const ProvidersTab: React.FC<ProvidersTabProps> = ({
     try {
       const res = await auditBillApi({
         billText: useDemo
-          ? 'Metro Pathology Lab - CPT 83516 tTG-IgA $480.00, CPT 82306 25-OH Vitamin D $410.00. Denial code CO-50 Non-covered investigational test.'
+          ? 'Metro Pathology Lab - CPT 83516 tTG-IgA 80.00, CPT 82306 25-OH Vitamin D 10.00. Denial code CO-50 Non-covered investigational test.'
           : 'Patient request itemized billing review with CMS cash rates',
         billImageBase64: useDemo ? DEMO_ASSETS.medicalBill : undefined,
         language,

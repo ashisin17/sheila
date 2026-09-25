@@ -515,11 +515,11 @@ export default function App() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         userProfile={userProfile}
-        onSave={(updated) => {
+        language={language}
+        onSave={(updated: UserProfile) => {
           setUserProfile(updated);
           showToast('✓ Health Board profile updated');
         }}
-        language={language}
       />
     </div>
   );
