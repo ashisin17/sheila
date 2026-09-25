@@ -5,9 +5,6 @@ import {
   MessageCircle,
   Mic,
   Send,
-  Play,
-  Pause,
-  Download,
   Camera,
   X,
   Sparkles,
@@ -50,9 +47,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   // Reminder Carousel state
   const [carouselIndex, setCarouselIndex] = useState(0);
   const currentReminder = INITIAL_CAROUSEL_ITEMS[carouselIndex];
-
-  // Voice playback tour state (for PLAY button in top subheader)
-  const [isPlayingTour, setIsPlayingTour] = useState(false);
 
   // Check-in input state
   const [inputText, setInputText] = useState('');
@@ -97,38 +91,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     onIncrementStreak();
     showQuickToast(`✓ Logged: ${currentReminder.title} (Streak: ${streakCount + 1} days)`);
     nextReminder();
-  };
-
-  // Play audio greeting using browser SpeechSynthesis or friendly chime
-  const handlePlayVoiceTour = () => {
-    if (isPlayingTour) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      setIsPlayingTour(false);
-      return;
-    }
-
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const message =
-        language === 'es'
-          ? 'Hola querida, soy Sheila, tu defensora de salud. Cuéntame cómo te sientes hoy o revisa tus sensores de inflamación.'
-          : language === 'zh'
-          ? '亲爱的你好，我是你的AI健康伙伴 Sheila。记录你今天的身体感受，或核查任何餐食与麸质隐患。'
-          : "Hey lovely, I'm Sheila, your health advocate. Share what's on your mind, or check your inflammation sensors below.";
-
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.rate = 0.95;
-      utterance.pitch = 1.05;
-      utterance.onend = () => setIsPlayingTour(false);
-      utterance.onerror = () => setIsPlayingTour(false);
-      setIsPlayingTour(true);
-      window.speechSynthesis.speak(utterance);
-    } else {
-      setIsPlayingTour(true);
-      setTimeout(() => setIsPlayingTour(false), 2500);
-    }
   };
 
   // File Upload
@@ -320,51 +282,19 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       )}
 
-      {/* TOP SUBHEADER (Matches Mockup: "Home" on left, Download & PLAY on right) */}
-      <div className="flex items-center justify-between pt-1 pb-1">
-        <h1 className="text-sm font-semibold text-slate-700 tracking-tight">Home</h1>
-        <div className="flex items-center gap-2">
-          {/* Download / Export summary icon */}
-          <button
-            onClick={() => onOpenSoapModal()}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition cursor-pointer"
-            title="Download / View Advocacy Summary"
-          >
-            <Download className="w-4 h-4 stroke-[1.8]" />
-          </button>
-
-          {/* PLAY button */}
-          <button
-            onClick={handlePlayVoiceTour}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] font-semibold transition cursor-pointer ${
-              isPlayingTour
-                ? 'bg-purple-200 border-purple-400 text-purple-900 animate-pulse'
-                : 'border-slate-600/70 text-slate-800 hover:bg-slate-200/60'
-            }`}
-            title="Listen to Sheila's voice guidance"
-          >
-            {isPlayingTour ? (
-              <Pause className="w-2.5 h-2.5 fill-current" />
-            ) : (
-              <Play className="w-2.5 h-2.5 fill-current" />
-            )}
-            <span>PLAY</span>
-          </button>
-        </div>
+      {/* Top action row: Message Bubble on top right */}
+      <div className="flex justify-end pt-1 mb-1">
+        <button
+          onClick={() => onOpenSoapModal()}
+          className="w-8 h-8 rounded-full bg-[#ECE2F2] hover:bg-[#E3D6EA] text-purple-950 flex items-center justify-center transition shadow-2xs cursor-pointer"
+          title="Open Clinical Chat & SOAP Note"
+        >
+          <MessageCircle className="w-4 h-4 stroke-[2]" />
+        </button>
       </div>
 
       {/* REMINDER CARD (Soft muted lavender card matching mockup, NO "today 1 of 5" text) */}
       <div className="relative">
-        {/* Floating Message Bubble Icon on top right */}
-        <div className="flex justify-end mb-2">
-          <button
-            onClick={() => onOpenSoapModal()}
-            className="w-8 h-8 rounded-full bg-[#ECE2F2] hover:bg-[#E3D6EA] text-purple-950 flex items-center justify-center transition shadow-2xs cursor-pointer"
-            title="Open Clinical Chat & SOAP Note"
-          >
-            <MessageCircle className="w-4 h-4 stroke-[2]" />
-          </button>
-        </div>
 
         {/* Soft Lavender Card */}
         <div

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Download, Play } from 'lucide-react';
 import { Language, MarkedDay, UserProfile, Provider, BillAuditResult, HealthBoardTrigger } from '../types';
 import { HomeTab } from './HomeTab';
 import { CalendarTab } from './CalendarTab';
@@ -68,18 +67,9 @@ export const FourScreenShowcase: React.FC<FourScreenShowcaseProps> = (props) => 
 
         {/* SCREEN 1: HOME */}
         <div className="w-[370px] shrink-0 space-y-2">
-          {/* Top Title Bar matching mockup */}
+          {/* Top Title Bar */}
           <div className="flex items-center justify-between px-2 text-slate-700">
             <span className="font-extrabold text-sm text-slate-800">Home</span>
-            <div className="flex items-center gap-1.5">
-              <button className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-slate-600 border border-slate-300 shadow-2xs">
-                <Download className="w-3.5 h-3.5" />
-              </button>
-              <button className="flex items-center gap-1 bg-white/70 hover:bg-white text-slate-900 border border-slate-400/80 px-2.5 py-1 rounded-full text-[11px] font-extrabold shadow-2xs">
-                <Play className="w-2.5 h-2.5 fill-slate-900" />
-                <span>PLAY</span>
-              </button>
-            </div>
           </div>
 
           {/* Screen Card Mockup */}
@@ -104,18 +94,9 @@ export const FourScreenShowcase: React.FC<FourScreenShowcaseProps> = (props) => 
 
         {/* SCREEN 2: CALENDAR */}
         <div className="w-[370px] shrink-0 space-y-2">
-          {/* Top Title Bar matching mockup */}
+          {/* Top Title Bar */}
           <div className="flex items-center justify-between px-2 text-slate-700">
             <span className="font-extrabold text-sm text-slate-800">Calendar</span>
-            <div className="flex items-center gap-1.5">
-              <button className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-slate-600 border border-slate-300 shadow-2xs">
-                <Download className="w-3.5 h-3.5" />
-              </button>
-              <button className="flex items-center gap-1 bg-white/70 hover:bg-white text-slate-900 border border-slate-400/80 px-2.5 py-1 rounded-full text-[11px] font-extrabold shadow-2xs">
-                <Play className="w-2.5 h-2.5 fill-slate-900" />
-                <span>PLAY</span>
-              </button>
-            </div>
           </div>
 
           {/* Screen Card Mockup */}
@@ -138,18 +119,9 @@ export const FourScreenShowcase: React.FC<FourScreenShowcaseProps> = (props) => 
 
         {/* SCREEN 3: PROVIDERS */}
         <div className="w-[370px] shrink-0 space-y-2">
-          {/* Top Title Bar matching mockup */}
+          {/* Top Title Bar */}
           <div className="flex items-center justify-between px-2 text-slate-700">
             <span className="font-extrabold text-sm text-slate-800">Providers</span>
-            <div className="flex items-center gap-1.5">
-              <button className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-slate-600 border border-slate-300 shadow-2xs">
-                <Download className="w-3.5 h-3.5" />
-              </button>
-              <button className="flex items-center gap-1 bg-white/70 hover:bg-white text-slate-900 border border-slate-400/80 px-2.5 py-1 rounded-full text-[11px] font-extrabold shadow-2xs">
-                <Play className="w-2.5 h-2.5 fill-slate-900" />
-                <span>PLAY</span>
-              </button>
-            </div>
           </div>
 
           {/* Screen Card Mockup */}
@@ -174,18 +146,9 @@ export const FourScreenShowcase: React.FC<FourScreenShowcaseProps> = (props) => 
 
         {/* SCREEN 4: YOU */}
         <div className="w-[370px] shrink-0 space-y-2">
-          {/* Top Title Bar matching mockup */}
+          {/* Top Title Bar */}
           <div className="flex items-center justify-between px-2 text-slate-700">
             <span className="font-extrabold text-sm text-slate-800">You</span>
-            <div className="flex items-center gap-1.5">
-              <button className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-slate-600 border border-slate-300 shadow-2xs">
-                <Download className="w-3.5 h-3.5" />
-              </button>
-              <button className="flex items-center gap-1 bg-white/70 hover:bg-white text-slate-900 border border-slate-400/80 px-2.5 py-1 rounded-full text-[11px] font-extrabold shadow-2xs">
-                <Play className="w-2.5 h-2.5 fill-slate-900" />
-                <span>PLAY</span>
-              </button>
-            </div>
           </div>
 
           {/* Screen Card Mockup */}
